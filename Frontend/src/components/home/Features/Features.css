@@ -1,0 +1,153 @@
+.features {
+  padding: 100px 60px 40px; /* Reduced bottom padding */
+  background-color: #EAFBF7;
+  text-align: center;
+  overflow: hidden; 
+}
+
+.features-container h2 {
+  font-size: 36px;
+  font-weight: 800;
+  margin-bottom: 10px;
+  margin-top: -70px;
+}
+
+.features-desc {
+  max-width: 700px;
+  margin: 0 auto 60px;
+  margin-top: 10px;
+  font-size: 16px;
+  color: #555;
+  line-height: 1.6;
+}
+
+/* Visual Section */
+.features-visual {
+  position: relative;
+  width: 900px;
+  height: 450px;
+  margin: 0 auto;
+}
+
+/* Paper */
+.paper-img {
+  width: 228px;
+  height: auto;
+  margin-left: -1310px;
+  margin-top: -100px;
+}
+
+/* Clouds with floating animation (Option 1 style) */
+.cloud {
+  position: absolute;
+  text-align: center;
+  animation: floatCloud 6s ease-in-out infinite;
+}
+
+/* Different timing for each cloud for natural look */
+.cloud-1 {
+  top: 40px;
+  left: 80px;
+  animation: floatCloud 7s ease-in-out infinite;
+  animation-delay: 0s;
+}
+
+.cloud-2 {
+  top: 40px;
+  right: 80px;
+  animation: floatCloud 8s ease-in-out infinite;
+  animation-delay: 1s;
+}
+
+.cloud-3 {
+  bottom: 60px;
+  left: -200px;
+  animation: floatCloud 6.5s ease-in-out infinite;
+  animation-delay: 0.5s;
+}
+
+.cloud-4 {
+  bottom: 60px;
+  right: 320px;
+  animation: floatCloud 7.5s ease-in-out infinite;
+  animation-delay: 1.5s;
+}
+
+.cloud-5 {
+  bottom: 60px;
+  right: -200px;
+  animation: floatCloud 9s ease-in-out infinite;
+  animation-delay: 2s;
+}
+
+/* Floating animation */
+@keyframes floatCloud {
+  0%, 100% {
+    transform: translateY(0) scale(1);
+  }
+  50% {
+    transform: translateY(-15px) scale(1.02);
+  }
+}
+
+.cloud img {
+  width: 255px;
+  transition: all 0.3s ease;
+  filter: drop-shadow(0 5px 15px rgba(0, 0, 0, 0.1));
+}
+
+/* Optional hover effect (keep if you want) */
+.cloud:hover img {
+  transform: scale(1.05);
+  filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.15));
+}
+
+.cloud span {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-weight: 600;
+  font-size: 17px;
+  color: #77BEF0;
+  /* Keep text always visible */
+  opacity: 1;
+  visibility: visible;
+
+}
+
+/* Stars */
+.feature-star {
+  position: absolute;
+  width: 40px;
+}
+
+.star-1_b {
+  width: 66px;
+  margin-top: -40px;
+  margin-left: 1000px;
+}
+
+.star-2_b {
+  margin-top: -70px;
+  margin-left: 1040px;
+}
+
+.features-wave {
+  position: relative;
+  width: 1521px;
+  margin-left: -80px;
+  height: 100px;
+  overflow: hidden;
+  line-height: 0;
+  margin-top: -60px;
+  margin-bottom: -70px;
+}
+
+.wave-svg {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  left: 0;
+  top: 0;
+}

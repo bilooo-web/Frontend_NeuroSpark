@@ -1,0 +1,209 @@
+/* Feedback.css */
+.feedback-section {
+  position: relative;
+  background: #fff8e6;
+  padding: 140px 80px;
+  overflow: hidden;
+}
+
+.feedback-content {
+  text-align: center;
+  position: relative;
+  z-index: 2;
+}
+
+.feedback-title {
+    margin-top: -20px;
+  font-size: 42px;
+  font-weight: 800;
+  margin-bottom: 80px;
+  color: #2a4365;
+}
+
+.feedback-grid {
+  display: flex;
+  gap: 40px;
+  justify-content: center;
+}
+
+.feedback-item {
+  width: 320px;
+  padding: 40px 30px;
+  border-radius: 24px;
+  text-align: center;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.feedback-item:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.12);
+}
+
+.feedback-item img {
+  width: 100px;
+  height: 100px;
+  object-fit: contain;
+  margin-bottom: 25px;
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.1));
+}
+
+.feedback-item h4 {
+  font-size: 16px;
+  font-weight: 700;
+  margin-bottom: 20px;
+  line-height: 1.4;
+}
+
+.feedback-item p {
+  font-size: 15px;
+  line-height: 1.7;
+  font-weight: 400;
+}
+
+/* Card colors with enhanced gradients */
+.feedback-item-blue {
+  background: linear-gradient(135deg, #e7f3fb 0%, #d4e9f9 100%);
+  color: #2c5282;
+  border: 1px solid rgba(59, 130, 246, 0.2);
+}
+
+.feedback-item-pink {
+  background: linear-gradient(135deg, #ffd9f0 0%, #ffcceb 100%);
+  color: #9b2c7a;
+  border: 1px solid rgba(236, 72, 153, 0.2);
+}
+
+.feedback-item-green {
+  background: linear-gradient(135deg, #dff9ec 0%, #caf5e0 100%);
+  color: #2d7a5f;
+  border: 1px solid rgba(56, 178, 172, 0.2);
+}
+
+/* Clouds with animation */
+.feedback-cloud {
+  position: absolute;
+  width: 200px;
+  opacity: 0.8;
+  z-index: 1;
+  animation: feedback-cloud-float 20s ease-in-out infinite;
+}
+
+.feedback-cloud-tl {
+  top: 90px;
+  left: -1%;
+  animation-delay: 0s;
+}
+
+.feedback-cloud-br {
+  bottom: 50px;
+  right: 0%;
+  animation: feedback-cloud-float-flipped 20s ease-in-out infinite;
+}
+
+@keyframes feedback-cloud-float {
+  0%, 100% {
+    transform: translateX(0) translateY(0);
+  }
+  25% {
+    transform: translateX(10px) translateY(-5px);
+  }
+  50% {
+    transform: translateX(0) translateY(-10px);
+  }
+  75% {
+    transform: translateX(-10px) translateY(-5px);
+  }
+}
+@keyframes feedback-cloud-float-flipped {
+  0%, 100% {
+    transform: scaleX(-1) translateX(0) translateY(0);
+  }
+  25% {
+    transform: scaleX(-1) translateX(10px) translateY(-5px);
+  }
+  50% {
+    transform: scaleX(-1) translateX(0) translateY(-10px);
+  }
+  75% {
+    transform: scaleX(-1) translateX(-10px) translateY(-5px);
+  }
+}
+/* Enhanced Waves */
+.feedback-wave {
+  position: absolute;
+  width: 100%;
+  height: 100px;
+  left: 0;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.feedback-wave-top {
+  top: 0;
+  transform: rotate(180deg);
+  margin-top: 0px;
+  margin-bottom: 20px;
+}
+
+.feedback-wave-bottom {
+  bottom: -80px;
+  transform: rotate(180deg);
+}
+
+.feedback-wave-svg {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  left: 0;
+}
+
+/* Green wave - more pronounced */
+.feedback-wave-green {
+  top: 0;
+}
+
+.feedback-wave-green path {
+  fill: #8BE3D8;
+  opacity: 0.9;
+}
+
+/* Light wave - more subtle */
+.feedback-wave-light {
+  top: 20px;
+  opacity: 0.6;
+}
+
+.feedback-wave-light path {
+  fill: #8BE3D8;
+  opacity: 0.7;
+}
+
+/* Wave animation enhancement */
+.feedback-wave path {
+  animation-duration: 12s !important;
+  animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+/* Additional decorative elements */
+.feedback-section::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 300px;
+  background: linear-gradient(to bottom, rgba(113, 208, 185, 0.15), transparent);
+  z-index: 0;
+}
+
+.feedback-section::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 300px;
+  background: linear-gradient(to top, rgba(113, 208, 185, 0.15), transparent);
+  z-index: 0;
+}

@@ -1,0 +1,170 @@
+.knowledge {
+  background-color: #8BE3D8;
+  position: relative;
+  overflow: hidden;
+  margin-top: -50px;
+  padding: 60px 20px;
+}
+
+.knowledge-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  text-align: center;
+  position: relative;
+  z-index: 2;
+}
+
+/* Title */
+.knowledge h2 {
+  font-size: 36px;
+  font-weight: 800;
+  margin-top: -40px;
+  margin-bottom: 40px;
+  line-height: 1.3;
+  color: white;
+}
+
+.books {
+  position: absolute;
+  width: 400px;
+  z-index: 1;
+  opacity: 0.8;
+  transition: all 0.5s ease;
+}
+
+.books-left {
+  left: -60px;
+  top: 60%;
+  transform: 
+    translateY(-50%) 
+    perspective(800px) 
+    rotateY(10deg)
+    translateX(-20px);
+  filter: 
+    blur(0.5px)
+    brightness(1.05)
+    sepia(0.1);
+  animation: subtleFloatLeft 8s ease-in-out infinite;
+}
+
+.books-right {
+  right: -60px;
+  top: 60%;
+  transform: 
+    translateY(-50%) 
+    perspective(800px) 
+    rotateY(-10deg)
+    translateX(20px);
+  filter: 
+    blur(0.5px)
+    brightness(0.95)
+    hue-rotate(10deg);
+  animation: subtleFloatRight 8s ease-in-out infinite 1s;
+}
+
+@keyframes subtleFloatLeft {
+  0%, 100% {
+    transform: 
+      translateY(-50%) 
+      perspective(800px) 
+      rotateY(10deg)
+      translateX(-20px)
+      translateY(0);
+  }
+  50% {
+    transform: 
+      translateY(-50%) 
+      perspective(800px) 
+      rotateY(10deg)
+      translateX(-20px)
+      translateY(-10px);
+  }
+}
+
+@keyframes subtleFloatRight {
+  0%, 100% {
+    transform: 
+      translateY(-50%) 
+      perspective(800px) 
+      rotateY(-10deg)
+      translateX(20px)
+      translateY(0);
+  }
+  50% {
+    transform: 
+      translateY(-50%) 
+      perspective(800px) 
+      rotateY(-10deg)
+      translateX(20px)
+      translateY(10px);
+  }
+}
+
+/* Optional: Add hover effect */
+.books:hover {
+  opacity: 1;
+  transform: scale(1.02);
+  filter: none;
+}
+
+/* Cards grid - UPDATED */
+.knowledge-cards {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0px;
+  justify-items: center;
+  align-items: start;
+  margin: 0 auto;
+  max-width: 600px;
+  justify-content: center;
+}
+
+/* Card - UPDATED */
+.knowledge-card {
+  width: 320px;
+  height: 220px; /* Reduced height */
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* The card image - FIXED */
+.knowledge-card img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* Changed from contain to cover */
+  border-radius: 10px;
+}
+
+/* Text inside card - FIXED */
+.card-content {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  padding: 25px;
+  box-sizing: border-box;
+}
+
+.card-content h3 {
+  font-size: 18px;
+  font-weight: 700;
+  margin-bottom: 12px;
+  color: #7B378E;
+  line-height: 1.3;
+}
+
+.card-content p {
+  font-size: 14px;
+  line-height: 1.5;
+  color: #7573D6;
+  margin: 0;
+  max-width: 90%;
+}

@@ -1,0 +1,262 @@
+.challenges-hero {
+  position: relative;
+  background: #EAFBF7;
+  overflow: hidden;
+  padding: 120px 0 0;
+}
+
+.hero-paper {
+  position: absolute;
+  rotate: 70deg;
+  top: 40px;
+  left: 10px;
+  width: 160px;
+}
+
+.hero-direction {
+  position: absolute;
+  left: 120px;
+  bottom: 50px;
+  width: 300px;
+  filter: 
+    drop-shadow(5px 5px 0 rgba(255, 107, 53, 0.3))
+    drop-shadow(-5px -5px 0 rgba(0, 150, 255, 0.3));
+  animation: wobbleSign 6s ease-in-out infinite;
+  transform: rotate(-5deg);
+  cursor: pointer;
+}
+
+@keyframes wobbleSign {
+  0%, 100% {
+    transform: rotate(-5deg);
+  }
+  25% {
+    transform: rotate(-7deg);
+  }
+  75% {
+    transform: rotate(-3deg);
+  }
+}
+
+.hero-direction:hover {
+  animation: squishSign 0.5s ease-in-out;
+}
+
+@keyframes squishSign {
+  0%, 100% {
+    transform: rotate(-5deg) scale(1);
+  }
+  50% {
+    transform: rotate(-5deg) scale(0.95, 1.05);
+  }
+}
+
+.hero-direction::before {
+  content: '';
+  position: absolute;
+  top: -20px;
+  right: -20px;
+  width: 15px;
+  height: 15px;
+  background: #FF6B35;
+  border-radius: 50%;
+  animation: floatParticle 3s ease-in-out infinite;
+  z-index: -1;
+}
+
+.hero-direction::after {
+  content: '';
+  position: absolute;
+  bottom: -15px;
+  left: -15px;
+  width: 10px;
+  height: 10px;
+  background: #4DC9BD;
+  border-radius: 50%;
+  animation: floatParticle 4s ease-in-out infinite reverse;
+  z-index: -1;
+}
+
+@keyframes floatParticle {
+  0%, 100% {
+    transform: translate(0, 0);
+  }
+  25% {
+    transform: translate(10px, -10px);
+  }
+  50% {
+    transform: translate(0, -20px);
+  }
+  75% {
+    transform: translate(-10px, -10px);
+  }
+}
+.hero-content {
+  max-width: 700px;
+  margin: 0 auto;
+  text-align: center;
+  position: relative;
+  z-index: 2;
+}
+
+.hero-shine {
+  width: 200px;
+  margin-top: -20px;
+  margin-bottom: -40px;
+  animation: floatShine 4s ease-in-out infinite;
+  filter: 
+    drop-shadow(0 0 10px rgba(255, 215, 0, 0.4))
+    drop-shadow(0 0 20px rgba(255, 165, 0, 0.3));
+}
+
+@keyframes floatShine {
+  0%, 100% {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: translateY(-10px) scale(1.05);
+    opacity: 0.9;
+  }
+}
+
+.hero-content h1 {
+  font-size: 42px;
+  font-weight: 800;
+  line-height: 1.2;
+  color: #0b1c2d;
+}
+
+.hero-content h1 span {
+  color: #0b1c2d;
+}
+
+.hero-content p {
+  margin-top: 14px;
+  font-size: 16px;
+  color: #4b5d6b;
+}
+
+.characters-container {
+  position: absolute;
+  right: 80px;
+  top: 120px;
+  width: 260px;
+  height: 200px;
+  z-index: 3;
+}
+
+.character {
+  position: absolute;
+  opacity: 0;
+  transform: translateY(20px) scale(0.8);
+  animation: characterAppear 0.6s ease-out forwards;
+}
+
+.character-orange {
+  width: 180px;
+  top: 210px;
+  left: 0px;
+  animation-delay: 0.3s;
+  z-index: 4;
+}
+
+.character-blue {
+  width: 450px;
+  top: 8px;
+  left: -109px;
+  animation-delay: 0.6s;
+  z-index: 999;
+}
+
+.character-yellow {
+  width: 350px;
+  top: -29px;
+  left: -119px;
+  animation-delay: 0.9s;
+  z-index: 999;
+}
+
+.character-pink {
+  width: 350px;
+  top: -150px;
+  left: -10px;
+  animation-delay: 1.2s;
+  z-index: 5;
+}
+
+
+@keyframes characterAppear {
+  0% {
+    opacity: 0;
+    transform: translateY(20px) scale(0.8);
+  }
+  70% {
+    opacity: 1;
+    transform: translateY(-5px) scale(1.05);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.character:hover {
+  animation: characterFloat 3s ease-in-out infinite;
+  cursor: pointer;
+}
+
+@keyframes characterFloat {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.challenges-wave {
+  position: relative;
+  width: 100%;
+  height: 120px;
+  margin-top: 80px;
+  overflow: hidden;
+}
+
+.challenges-wave-svg {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.challenges-wave-primary {
+  height: 120px;
+  z-index: 2;
+}
+
+.challenges-wave-primary path {
+  fill: #6EDDD1;
+}
+
+.challenges-wave-secondary {
+  height: 100px;
+  z-index: 1;
+  opacity: 0.7;
+}
+
+.challenges-wave-secondary path {
+  fill: #8BE3D8;
+}
+
+.challenges-wave-tertiary {
+  height: 80px;
+  z-index: 0;
+  opacity: 0.5;
+}
+
+.challenges-wave-tertiary path {
+  fill: #A8E9DF;
+}

@@ -1,0 +1,177 @@
+.superpowers {
+  background: radial-gradient(circle at top left, #1f245f, #0c102f);
+  color: white;
+  overflow: hidden;
+  max-height: 700px; /* Minimum height */
+  display: flex;
+  align-items: center;
+  padding: 0 30px;
+}
+
+.superpowers-container {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-direction: row-reverse;
+  gap: 40px;
+  width: 100%;
+}
+
+.superpowers-grid {
+  display: flex;
+  gap: 30px;
+  height: 580px;
+  width: 100%;
+  max-width: 570px;
+  align-self: flex-start; /* Align to top */
+  margin-right: 70px;
+}
+
+.superpowers-content {
+  max-width: 420px;
+  flex-shrink: 0;
+  margin-left: 200px;
+  align-self: center; 
+  margin-left: 100px; 
+}
+
+.superpowers-content h2 {
+  font-size: 48px;
+  font-weight: 800;
+  line-height: 1.1;
+}
+
+.superpowers-content h2 span {
+  color: #8b6cff;
+}
+
+.superpowers-content p {
+  margin: 20px 0 20px;
+  line-height: 1.6;
+  font-size: 15px;
+  color: #d0d3ff;
+}
+
+.superpowers-btn {
+  padding: 14px 28px;
+  background-color: #8b6cff;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  overflow: hidden;
+  box-shadow: 0 6px 20px #5231c8;
+  animation: gentleBounce 3s ease-in-out infinite;
+}
+@keyframes gentleBounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+.superpowers-btn:hover {
+  background-color: #9d82ff;
+  transform: translateY(-3px) scale(1.05);
+  box-shadow: 0 10px 30px rgba(127, 205, 187, 0.4);
+}
+/* SCROLLING COLUMN */
+.scroll-column {
+  width: 350px;
+  overflow: hidden;
+  position: relative;
+  height: 700px;
+  
+}
+
+.scroll-inner {
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+  animation: scrollUp 110s linear infinite; /* SLOW: 100 seconds */
+  will-change: transform;
+}
+
+.scroll-column.reverse .scroll-inner {
+  animation: scrollDown 120s linear infinite; /* SLOW: 110 seconds */
+}
+
+/* FIXED ANIMATIONS */
+@keyframes scrollUp {
+  0% {
+    transform: translateY(0);
+  }
+  100% {
+    transform: translateY(-50%);
+  }
+}
+
+@keyframes scrollDown {
+  0% {
+    transform: translateY(-50%);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}
+/* Add pause on hover */
+.scroll-column:hover .scroll-inner {
+  animation-play-state: paused;
+}
+/* CARD */
+.power-card {
+  position: relative;
+  background: #2d3066;
+  border-radius: 20px;
+  padding: 60px 20px 25px 20px; /* More top padding for icon space */
+  margin-bottom: 20px;
+  text-align: center;
+  backdrop-filter: blur(10px);
+  transition: transform 0.3s ease, background 0.3s ease;
+  flex-shrink: 0;
+  min-height: 90px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.power-card:hover {
+  background: rgba(255, 255, 255, 0.12);
+  transform: translateY(-5px);
+}
+
+.icon-box {
+  background: #242753;
+  border-radius: 12px;
+  padding: 14px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 70px;
+  height: 90px;
+  transform: skew(-10deg);
+  position: absolute;
+  top: -30px; /* Half outside, half inside */
+  left: 50%;
+  transform: translateX(-50%) skew(-10deg);
+}
+
+/* Counter-skew the icon inside so it stays straight */
+.icon-box img {
+  width: 80px;
+  height: 80px;
+  object-fit: cover;
+  transform: skew(10deg); /* Counter the parent's skew */
+}
+
+.power-card p {
+  font-size: 20px;
+  font-weight: bold;
+  margin: 0;
+  line-height: 1.3;
+  margin-top: 50px; /* Space from icon */
+  width: 100%;
+}

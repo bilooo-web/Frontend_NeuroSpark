@@ -1,0 +1,165 @@
+/* Header.css */
+.header {
+    width: 100%;
+    padding: 15px 0;
+    background-color: #EAFBF7;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.header-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+/* Logo styling */
+.logo {
+    display: flex;
+    align-items: center;
+    margin-left: -90px;
+}
+
+.logo img {
+    height: 50px;
+    width: auto;
+    object-fit: contain;
+    transition: transform 0.3s ease;
+}
+
+.logo img:hover {
+    transform: scale(1.05);
+}
+
+/* Navigation styling */
+.nav {
+    display: flex;
+    gap: 30px;
+    flex-wrap: wrap;
+}
+
+.nav a {
+    text-decoration: none;
+    color: #2D3748;
+    font-weight: 600;
+    font-size: 16px;
+    padding: 8px 0;
+    position: relative;
+    transition: color 0.3s ease;
+}
+
+.nav a:hover {
+    color: #38B2AC;
+}
+
+/* Underline effect on hover */
+.nav a::after {
+    content: '';
+    position: absolute;
+    width: 0;
+    height: 2px;
+    bottom: 0;
+    left: 0;
+    background-color: #38B2AC;
+    transition: width 0.3s ease;
+}
+
+.nav a:hover::after {
+    width: 100%;
+}
+
+/* Button styling */
+.header-btn {
+    padding: 12px 30px;
+    background: linear-gradient(135deg, #4FD1C5 0%, #38B2AC 100%);
+    color: #fff;
+    border: none;
+    border-radius: 50px;
+    font-weight: 600;
+    font-size: 16px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(79, 209, 197, 0.3);
+}
+
+.header-btn:hover {
+    background: linear-gradient(135deg, #38B2AC 0%, #319795 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(79, 209, 197, 0.4);
+}
+
+.header-btn:active {
+    transform: translateY(0);
+}
+
+/* Responsive design */
+@media (max-width: 1024px) {
+    .header-container {
+        padding: 0 15px;
+    }
+    
+    .logo {
+        margin-left: 20px;
+    }
+    
+    .nav {
+        gap: 20px;
+    }
+    
+    .header-btn {
+        margin-right: 20px;
+    }
+}
+
+@media (max-width: 768px) {
+    .header-container {
+        flex-direction: column;
+        gap: 20px;
+        padding: 15px;
+    }
+    
+    .logo {
+        margin-left: 0;
+    }
+    
+    .logo img {
+        height: 40px;
+    }
+    
+    .nav {
+        gap: 15px;
+        justify-content: center;
+    }
+    
+    .nav a {
+        font-size: 14px;
+    }
+    
+    .header-btn {
+        margin-right: 0;
+        padding: 10px 25px;
+        font-size: 14px;
+    }
+}
+
+@media (max-width: 480px) {
+    .nav {
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+    }
+    
+    .nav a {
+        padding: 5px 0;
+    }
+    
+    .header-btn {
+        width: 80%;
+        max-width: 200px;
+    }
+}

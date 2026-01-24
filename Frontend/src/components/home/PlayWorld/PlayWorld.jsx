@@ -13,7 +13,7 @@ import g5 from '../../../assets/game2.png';
 const games = [g1, g2, g3, g4, g5];
 
 function PlayWorld() {
-  const [active, setActive] = useState(2); // center
+  const [active, setActive] = useState(2); 
 
   const next = () => {
     setActive((prev) => (prev + 1) % games.length);
@@ -58,7 +58,6 @@ function PlayWorld() {
               }}
               onClick={() => setActive(index)}
             >
-              {/* PHONE ON ACTIVE SLIDE */}
               {isActive && (
                 <img src={phoneHand} className="phone-hand" alt="" />
               )}

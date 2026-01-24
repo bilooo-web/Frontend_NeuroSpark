@@ -27,17 +27,14 @@ function Knowledge() {
     <section className="knowledge">
       <div className="knowledge-container">
 
-        {/* Title */}
         <h2>
           We convert time spent in games into <br />
           KNOWLEDGE and SKILLS
         </h2>
 
-        {/* Decorative books */}
         <img src={books} alt="Books" className="books books-left" />
         <img src={books} alt="Books" className="books books-right" />
 
-        {/* Cards */}
         <div className="knowledge-cards">
           {cardsData.map((cardItem, index) => (
             <div className="knowledge-card" key={index}>

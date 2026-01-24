@@ -1,6 +1,6 @@
 import './Universe.css';
 import kid from '../../../assets/kid-universe.png';
-import star from '../../../assets/star.png'; // Your star image
+import star from '../../../assets/star.png'; 
 import attention from '../../../assets/attention-mark.png';
 import plane from '../../../assets/plane.png';
 import lamp from '../../../assets/lamp.png';
@@ -9,7 +9,6 @@ function Universe() {
   return (
     <section className="universe">
       <div className="universe-container">
-        {/* LEFT SIDE - Visual */}
         <div className="universe-visual">
           <div className="green-circle"></div>
           <img src={kid} alt="Kid" className="universe-kid" />
@@ -18,13 +17,10 @@ function Universe() {
           <img src={star} alt="Star" className="universe-star star-2_U" />
         </div>
 
-        {/* RIGHT SIDE - Content */}
         <div className="universe-content">
           <h2>Clinically validated to improve:</h2>
           
-          {/* Two-column grid of bullet points */}
           <div className="universe-grid">
-            {/* Column 1 */}
             <div className="universe-column">
               <div className="universe-item">
                 <img src={lamp} alt="Bullet" className="bullet-image" />
@@ -55,7 +51,6 @@ function Universe() {
               </div>
             </div>
             
-            {/* Column 2 */}
             <div className="universe-column">
               <div className="universe-item">
                 <img src={lamp} alt="Bullet" className="bullet-image" />
@@ -88,9 +83,7 @@ function Universe() {
         </div>
         
       </div>
-      {/* Animated SVG Waves - Option 1 */}
         <div className="universe-features-wave">
-          {/* Green Wave */}
           <svg 
             className="wave-svg green-wave" 
             viewBox="0 0 1200 120" 
@@ -113,7 +106,6 @@ function Universe() {
             </path>
           </svg>
           
-          {/* White Wave */}
           <svg 
             className="wave-svg white-wave" 
             viewBox="0 0 1200 120" 

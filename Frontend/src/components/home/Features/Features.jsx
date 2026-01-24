@@ -11,10 +11,8 @@ function Features() {
         <h2>Everything You Want on NeuroSpark!</h2>
 
         <div className="features-visual">
-          {/* Background Paper */}
           <img src={paper} alt="Paper" className="paper-img" />
 
-          {/* Clouds */}
           <div className="cloud cloud-1">
             <img src={cloud} alt="Cloud" />
             <span>Impulse Control</span>
@@ -39,16 +37,13 @@ function Features() {
             <span> Performance Tracking</span>
           </div>
 
-          {/* Stars */}
           <img src={star_blue} alt="Star" className="feature-star star-1_b" />
           <img src={star_blue} alt="Star" className="feature-star star-2_b" />
         </div>
 
         
 
-        {/* Animated SVG Waves - Option 1 */}
         <div className="features-wave">
-          {/* Green Wave */}
           <svg 
             className="wave-svg green-wave" 
             viewBox="0 0 1200 120" 
@@ -71,7 +66,6 @@ function Features() {
             </path>
           </svg>
           
-          {/* White Wave */}
           <svg 
             className="wave-svg white-wave" 
             viewBox="0 0 1200 120" 

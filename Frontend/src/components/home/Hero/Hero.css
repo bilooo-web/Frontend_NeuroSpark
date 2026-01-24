@@ -1,7 +1,7 @@
 .hero {
   padding: 80px 60px;
   background-color: #EAFBF7;
-  overflow: hidden; /* Prevent circles from overflowing */
+  overflow: hidden; 
 }
 
 .hero-container {
@@ -40,7 +40,7 @@
 .hero-btn {
   padding: 18px 40px;
   background: linear-gradient(135deg, #7fcdbb 0%, #6ab8a6 100%);
-  margin-left: 250px;
+  margin-left: 200px;
   color: #fff;
   border: none;
   border-radius: 12px;
@@ -63,7 +63,6 @@
   box-shadow: 0 10px 30px rgba(127, 205, 187, 0.4);
   background: linear-gradient(135deg, #6ab8a6 0%, #5aa894 100%);
 }
-/* Add shine effect on hover */
 .hero-btn::after {
   content: '';
   position: absolute;
@@ -79,14 +78,12 @@
 .hero-btn:hover::after {
   left: 120%;
 }
-/* RIGHT SIDE */
 .hero-images {
   position: relative;
   width: 550px;
   height: 500px;
 }
 
-/* Circle elements */
 .circle {
   position: absolute;
   border-radius: 50%;
@@ -112,7 +109,6 @@
   margin-right: -32px;
 }
 
-/* Main images */
 .child-img {
   width: 300px;
   position: absolute;
@@ -137,10 +133,9 @@
   z-index: 4;
 }
 
-/* Star elements - FIXED POSITIONS */
 .star {
   position: absolute;
-  z-index: 5; /* Higher z-index to be above everything */
+  z-index: 5; 
   animation: starTwinkle 3s ease-in-out infinite;
 }
 
@@ -156,7 +151,6 @@
   margin-left: 300px;
 }
 
-/* Star twinkling animation */
 @keyframes starTwinkle {
   0%, 100% {
     opacity: 1;
@@ -168,7 +162,6 @@
   }
 }
 
-/* Optional: Add rotation animation for more movement */
 .star-1 {
   animation: starTwinkle 4s ease-in-out infinite, starFloat 8s ease-in-out infinite;
 }

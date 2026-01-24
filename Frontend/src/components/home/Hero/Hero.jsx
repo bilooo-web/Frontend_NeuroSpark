@@ -8,7 +8,6 @@ function Hero() {
   return (
     <section className="hero">
       <div className="hero-container">
-        {/* LEFT SIDE */}
         <div className="hero-text">
           <h1>
             What are you going to be <br/> when you grow up?
@@ -23,18 +22,14 @@ function Hero() {
           </button>
         </div>
 
-        {/* RIGHT SIDE */}
         <div className="hero-images">
-          {/* Circle elements */}
           <div className="circle circle-1"></div>
           <div className="circle circle-2"></div>
           
-          {/* Main images */}
           <img src={child} alt="Child" className="child-img" />
           <img src={dinosaur} alt="Dinosaur" className="dinosaur-img" />
           <img src={brain} alt="Brain" className="brain-img" />
           
-          {/* Decorative star elements */}
           <img src={star} alt="Star" className="star star-1" />
           <img src={star} alt="Star" className="star star-2" />
         </div>

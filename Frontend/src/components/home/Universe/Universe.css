@@ -1,24 +1,22 @@
 .universe {
   padding: 120px 60px;
-  background-color: #fff; /* Add background color */
+  background-color: #fff; 
 }
 
 .universe-container {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 40px; /* Add gap between visual and content */
+  gap: 40px; 
 }
 
-/* LEFT SIDE */
 .universe-visual {
   position: relative;
   width: 480px;
   height: 450px;
-  flex-shrink: 0; /* Prevent from shrinking */
+  flex-shrink: 0;
 }
 
-/* Green circle (NOT an image) */
 .green-circle {
   width: 320px;
   height: 320px;
@@ -65,7 +63,6 @@
   position: absolute;
   animation: starTwinkle 3s ease-in-out infinite;
 }
-/* Star twinkling animation */
 @keyframes starTwinkle {
   0%, 100% {
     opacity: 1;
@@ -89,11 +86,10 @@
   z-index: 3;
 }
 
-/* RIGHT SIDE - CONTENT */
 .universe-content {
   flex: 1;
   max-width: 600px;
-  margin-left: 0; /* Reset negative margin */
+  margin-left: 0;
   margin-top: -150px; 
 }
 
@@ -116,23 +112,21 @@
 
 .universe-item {
   display: flex;
-  align-items: flex-start; /* Changed from center to align with bullet better */
+  align-items: flex-start; 
   font-size: 16px;
   color: #444;
-  margin-bottom: 15px; /* Increased for better spacing */
+  margin-bottom: 15px; 
   margin-left: -200px;
 }
 
-/* Bullet image styling - CHANGE FROM YELLOW-DOT TO BULLET-IMAGE */
 .bullet-image {
   width: 31px;
   height: 41px;
   margin-right: 12px;
-  margin-top: 2px; /* Align with text */
+  margin-top: 2px; 
   flex-shrink: 0;
 }
 
-/* Item title styling */
 .item-title {
   font-weight: 600;
   color: #1a1a1a;
@@ -140,14 +134,9 @@
   display: block;
   margin-top: 10px;
 }
-
-
-/* Bullet points section */
 .bullet-points {
   margin-top: -70px;
 }
-
-/* Plane message */
 .plane-box {
   position: relative;
   max-width: 350px;
@@ -183,7 +172,7 @@
 
 .universe-features-wave {
   position: relative;
-  width: 1521px;
+  width: 1541px;
   margin-left: -80px;
   height: 100px;
   overflow: hidden;

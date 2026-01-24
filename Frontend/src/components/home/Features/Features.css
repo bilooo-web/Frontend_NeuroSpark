@@ -1,5 +1,5 @@
 .features {
-  padding: 100px 60px 40px; /* Reduced bottom padding */
+  padding: 100px 60px 40px; 
   background-color: #EAFBF7;
   text-align: center;
   overflow: hidden; 
@@ -21,7 +21,6 @@
   line-height: 1.6;
 }
 
-/* Visual Section */
 .features-visual {
   position: relative;
   width: 900px;
@@ -29,7 +28,6 @@
   margin: 0 auto;
 }
 
-/* Paper */
 .paper-img {
   width: 228px;
   height: auto;
@@ -37,14 +35,12 @@
   margin-top: -100px;
 }
 
-/* Clouds with floating animation (Option 1 style) */
 .cloud {
   position: absolute;
   text-align: center;
   animation: floatCloud 6s ease-in-out infinite;
 }
 
-/* Different timing for each cloud for natural look */
 .cloud-1 {
   top: 40px;
   left: 80px;
@@ -80,7 +76,6 @@
   animation-delay: 2s;
 }
 
-/* Floating animation */
 @keyframes floatCloud {
   0%, 100% {
     transform: translateY(0) scale(1);
@@ -96,7 +91,6 @@
   filter: drop-shadow(0 5px 15px rgba(0, 0, 0, 0.1));
 }
 
-/* Optional hover effect (keep if you want) */
 .cloud:hover img {
   transform: scale(1.05);
   filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.15));
@@ -110,13 +104,11 @@
   font-weight: 600;
   font-size: 17px;
   color: #77BEF0;
-  /* Keep text always visible */
   opacity: 1;
   visibility: visible;
 
 }
 
-/* Stars */
 .feature-star {
   position: absolute;
   width: 40px;
@@ -135,7 +127,7 @@
 
 .features-wave {
   position: relative;
-  width: 1521px;
+  width: 1541px;
   margin-left: -80px;
   height: 100px;
   overflow: hidden;

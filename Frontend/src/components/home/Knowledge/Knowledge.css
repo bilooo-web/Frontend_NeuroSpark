@@ -14,7 +14,6 @@
   z-index: 2;
 }
 
-/* Title */
 .knowledge h2 {
   font-size: 36px;
   font-weight: 800;
@@ -100,14 +99,12 @@
   }
 }
 
-/* Optional: Add hover effect */
 .books:hover {
   opacity: 1;
   transform: scale(1.02);
   filter: none;
 }
 
-/* Cards grid - UPDATED */
 .knowledge-cards {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -119,25 +116,22 @@
   justify-content: center;
 }
 
-/* Card - UPDATED */
 .knowledge-card {
   width: 320px;
-  height: 220px; /* Reduced height */
+  height: 220px;
   position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-/* The card image - FIXED */
 .knowledge-card img {
   width: 100%;
   height: 100%;
-  object-fit: cover; /* Changed from contain to cover */
+  object-fit: cover; 
   border-radius: 10px;
 }
 
-/* Text inside card - FIXED */
 .card-content {
   position: absolute;
   top: 0;

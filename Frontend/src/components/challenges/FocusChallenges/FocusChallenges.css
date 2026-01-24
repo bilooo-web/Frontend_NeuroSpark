@@ -1,21 +1,34 @@
-.focus-challenges {
+.focus-challenges-container {
   position: relative;
-  background: #8BE3D8;
-  padding: 80px 40px;
-  overflow: visible;
+  min-height: 100vh;
 }
 
+.focus-challenges {
+  position: relative;
+  padding: 40px 20px 100px; 
+  background: #8BE3D8;
+  overflow: visible;
+  min-height: 100vh;
+}
 .stars-bg {
   position: absolute;
   inset: 0;
   background-image:
-    radial-gradient(2px 2px at 20% 30%, #ffffff 50%, transparent 50%),
-    radial-gradient(1.5px 1.5px at 80% 70%, #ffffff 50%, transparent 50%),
-    radial-gradient(1px 1px at 40% 80%, #ffffff 50%, transparent 50%),
-    radial-gradient(1.5px 1.5px at 60% 20%, #ffffff 50%, transparent 50%),
-    radial-gradient(2px 2px at 10% 50%, #ffffff 50%, transparent 50%);
+    radial-gradient(3px 3px at 20% 30%, #ffffff 100%, transparent 100%),
+    radial-gradient(1.5px 1.5px at 80% 70%, #ffffff 100%, transparent 100%),
+    radial-gradient(1px 1px at 40% 80%, #ffffff 100%, transparent 100%),
+    radial-gradient(1.5px 1.5px at 60% 20%, #ffffff 100%, transparent 100%),
+    radial-gradient(2px 2px at 10% 100%, #ffffff 100%, transparent 100%),
+    radial-gradient(1.5px 1.5px at 80% 70%, #ffffff 100%, transparent 100%),
+    radial-gradient(1px 1px at 40% 80%, #ffffff 100%, transparent 100%),
+    radial-gradient(1.5px 1.5px at 60% 20%, #ffffff 100%, transparent 100%),
+    radial-gradient(2px 2px at 20% 30%, #ffffff 100%, transparent 100%),
+    radial-gradient(1.5px 1.5px at 80% 70%, #ffffff 100%, transparent 100%),
+    radial-gradient(1px 1px at 40% 80%, #ffffff 100%, transparent 100%),
+    radial-gradient(1.5px 1.5px at 60% 20%, #ffffff 100%, transparent 100%);
   background-size: 300px 300px;
   animation: starsMove 60s linear infinite;
+  z-index: 0;
 }
 
 @keyframes starsMove {
@@ -26,179 +39,148 @@
 
 .challenges-title {
   text-align: center;
-  margin-top: -40px;
   font-size: 48px;
   font-weight: 800;
-  margin-bottom: 130px;
-  z-index: 2;
+  color: #2D3436;
+  margin-top: -10px;
+  margin-bottom: 60px;
+  letter-spacing: -0.5px;
   position: relative;
-  color: #0b1c2d;
+  z-index: 2;
+}
+
+.challenges-subtitle {
+  text-align: center;
+  font-size: 18px;
+  color: #636E72;
+  margin-bottom: 50px;
+  font-weight: 500;
+  position: relative;
+  z-index: 2;
 }
 
 .challenges-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr); 
-  gap: 150px;
-  max-width: 1200px; 
-  margin: auto;
-  z-index: 2;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 80px 30px;
+  overflow: visible;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 20px;
   position: relative;
+  z-index: 2;
 }
 
 .challenge-wrapper {
-  text-align: center;
+  text-decoration: none; 
+  color: inherit; 
+  flex: 0 0 400px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transition: transform 0.3s ease;
+}
+.challenge-wrapper:hover {
+  transform: translateY(-5px); 
 }
 
-.challenge-stack {
+.challenge-card {
   position: relative;
-  height: 320px; 
-}
-
-.quote-back {
-    margin-top: -50px;
-    margin-left: -40px;
-  position: absolute;
-  width: 270px;
-  height: 270px;
-  overflow: hidden;
-  transform: rotate(8deg) translate(-10px, 10px);
-  z-index: 1;
-}
-
-.quote-back img {
   width: 100%;
-  height: 100%;
-  object-fit: cover;
+  max-width: 280px;
+  background: #1CC4AF;
+  padding: 70px 25px 35px; 
+  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+  z-index: 3;
+  transition: all 0.3s ease; 
+  cursor: pointer;
+}
+.challenge-card:hover {
+  transform: scale(1.02); 
+  box-shadow: 0 15px 40px rgba(0,0,0,0.2); 
 }
 
-.game-front {
+.challenge-card:active {
+  transform: scale(0.98);
+}
+.tape-container {
   position: absolute;
-  width: 250px;
-  height: 250px;
-  margin-top: -30px;
-  margin-left: 20px;
-  overflow: hidden;
-  transform: rotate(-6deg);
-  z-index: 2;
-}
-
-.game-front img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.pin {
-  position: absolute;
-  top: -120px;
+  top: -25px;
   left: 50%;
   transform: translateX(-50%);
-  width: 85px;
-  height: 140px;
-  z-index: 5;
+  width: 190px;
+  height: 50px;
+  z-index: 4;
 }
 
-.play-btn {
-  margin-top: -40px;
-  width: 350px;
-  padding: 14px;
-  border-radius: 12px;
-  margin-left: -90px;
-  text-align: center;
-  border: none;
-  background: #1CC4AF;
-  color: #fff;
-  font-weight: 600;
-  font-size: 16px;
-  cursor: pointer;
-  overflow: hidden;
-  box-shadow: 0 6px 20px rgba(127, 205, 187, 0.3);
-  animation: gentleBounce 3s ease-in-out infinite;
-  position: relative;
-  z-index: 3; 
+.tape-image {
+  margin-top: -2px;
+  width: 100%;
+  height: 70px;
+  object-fit: cover;
 }
-@keyframes gentleBounce {
-  0%, 100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-5px);
-  }
-}
-.play-btn:hover {
-  transform: translateY(-3px) scale(1.05);
-  box-shadow: 0 10px 30px rgba(127, 205, 187, 0.4);
-  background: #1CC4AF;
-}
-.play-btn::after {
-  content: '';
+
+.tape-text {
   position: absolute;
-  top: -50%;
-  left: -60%;
-  width: 20%;
-  height: 200%;
-  background: rgba(255, 255, 255, 0.3);
-  transform: rotate(30deg);
-  transition: all 0.5s ease;
+  margin-top: -70px;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
 }
 
-.play-btn:hover::after {
-  left: 120%;
+.card-title {
+  margin-top: 15px; 
+  font-size: 20px;
+  font-weight: 700;
+  color: black;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+  padding: 0 10px;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: normal;
+  word-wrap: break-word;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  line-height: 1.2;
+  min-height: 2.4em;
 }
 
-@media (max-width: 1100px) {
-  .challenges-grid {
-    grid-template-columns: repeat(2, 1fr); 
-    gap: 30px;
-  }
-  
-  .quote-back,
-  .game-front {
-    width: 100%;
-    max-width: 300px;
-    height: 280px;
-    margin: 0 auto;
-  }
+.game-image {
+  position: relative;
+  width: 100%;
+  height: 200px;
+  padding: 5px; 
+  box-sizing: border-box; 
 }
 
-@media (max-width: 800px) {
-  .challenges-grid {
-    grid-template-columns: repeat(2, 1fr); 
-    gap: 25px;
-  }
-  
-  .focus-challenges {
-    padding: 60px 20px;
-  }
-  
-  .challenges-title {
-    font-size: 36px;
-    margin-bottom: 40px;
-  }
-  
-  .challenge-stack {
-    height: 280px;
-  }
-  
-  .quote-back,
-  .game-front {
-    height: 260px;
-  }
+.game-image img {
+  margin-top: -50px;
+  width: 270px;
+  height: 250px;
+  object-fit: cover;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+  display: block;
 }
 
-@media (max-width: 600px) {
-  .challenges-grid {
-    grid-template-columns: 1fr; 
-    gap: 30px;
-    max-width: 400px;
-  }
-  
-  .challenge-stack {
-    height: 300px;
-  }
-  
-  .quote-back,
-  .game-front {
-    height: 280px;
-  }
+.note-text {
+  margin-bottom: -15px;
+  font-size: 14px;
+  color: white;
+  font-style: italic;
+  font-weight: 600;
+  text-align: center;
+  line-height: 1.2;
+  min-height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 10px;
 }

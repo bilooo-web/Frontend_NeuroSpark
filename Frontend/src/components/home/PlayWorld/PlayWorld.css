@@ -22,7 +22,6 @@
   line-height: 1.6;
 }
 
-/* Decorations */
 .decor-top-left {
   position: absolute;
   top: 60px;
@@ -39,7 +38,6 @@
   animation: float 6s ease-in-out infinite 1s;
 }
 
-/* Carousel Container */
 .carousel {
   position: relative;
   height: 520px;
@@ -51,7 +49,6 @@
   max-width: 1200px;
 }
 
-/* Slides */
 .slide {
   position: absolute;
   transition: transform 0.6s ease, opacity 0.6s ease, filter 0.6s ease;
@@ -59,7 +56,6 @@
   will-change: transform, opacity;
 }
 
-/* Phone Frame */
 .phone-hand {
   width: 320px;
   position: relative;
@@ -68,7 +64,6 @@
   filter: drop-shadow(0 20px 30px rgba(0, 0, 0, 0.15));
 }
 
-/* Game Screen */
 .game-screen {
   width: 230px;
   border-radius: 26px;
@@ -76,7 +71,6 @@
   transition: all 0.6s ease;
 }
 
-/* Inside Phone - Active Game */
 .inside-phone {
   position: absolute;
   top: 12%;
@@ -89,7 +83,6 @@
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
 }
 
-/* Non-active slides styling */
 .slide:not(.active) .game-screen {
   filter: brightness(0.9);
   cursor: pointer;
@@ -101,7 +94,6 @@
   box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
 }
 
-/* Carousel Navigation */
 .carousel-nav {
   display: flex;
   justify-content: center;
@@ -137,7 +129,6 @@
   transform: translateY(0);
 }
 
-/* Dots Indicator */
 .dots-indicator {
   display: flex;
   justify-content: center;
@@ -166,7 +157,6 @@
   transform: scale(1.1);
 }
 
-/* Game Title Overlay (optional) */
 .game-title {
   position: absolute;
   bottom: -40px;
@@ -185,7 +175,6 @@
   opacity: 1;
 }
 
-/* Hint */
 .hint {
   margin-top: 50px;
   font-size: 14px;
@@ -200,14 +189,12 @@
   margin: 0 2px;
 }
 
-/* Float Animation */
 @keyframes float {
   0% { transform: translateY(0) rotate(0deg); }
   50% { transform: translateY(-12px) rotate(2deg); }
   100% { transform: translateY(0) rotate(0deg); }
 }
 
-/* Background Decorative Elements */
 .decor-bottom {
   position: absolute;
   bottom: 0;
@@ -218,7 +205,6 @@
   pointer-events: none;
 }
 
-/* Responsive Design */
 @media (max-width: 1024px) {
   .carousel {
     height: 450px;

@@ -2,7 +2,7 @@
   background: radial-gradient(circle at top left, #1f245f, #0c102f);
   color: white;
   overflow: hidden;
-  max-height: 700px; /* Minimum height */
+  max-height: 700px; 
   display: flex;
   align-items: center;
   padding: 0 30px;
@@ -23,7 +23,7 @@
   height: 580px;
   width: 100%;
   max-width: 570px;
-  align-self: flex-start; /* Align to top */
+  align-self: flex-start; 
   margin-right: 70px;
 }
 
@@ -78,7 +78,6 @@
   transform: translateY(-3px) scale(1.05);
   box-shadow: 0 10px 30px rgba(127, 205, 187, 0.4);
 }
-/* SCROLLING COLUMN */
 .scroll-column {
   width: 350px;
   overflow: hidden;
@@ -91,15 +90,14 @@
   display: flex;
   flex-direction: column;
   gap: 40px;
-  animation: scrollUp 110s linear infinite; /* SLOW: 100 seconds */
+  animation: scrollUp 110s linear infinite; 
   will-change: transform;
 }
 
 .scroll-column.reverse .scroll-inner {
-  animation: scrollDown 120s linear infinite; /* SLOW: 110 seconds */
+  animation: scrollDown 120s linear infinite; 
 }
 
-/* FIXED ANIMATIONS */
 @keyframes scrollUp {
   0% {
     transform: translateY(0);
@@ -117,16 +115,14 @@
     transform: translateY(0);
   }
 }
-/* Add pause on hover */
 .scroll-column:hover .scroll-inner {
   animation-play-state: paused;
 }
-/* CARD */
 .power-card {
   position: relative;
   background: #2d3066;
   border-radius: 20px;
-  padding: 60px 20px 25px 20px; /* More top padding for icon space */
+  padding: 60px 20px 25px 20px; 
   margin-bottom: 20px;
   text-align: center;
   backdrop-filter: blur(10px);
@@ -154,17 +150,16 @@
   height: 90px;
   transform: skew(-10deg);
   position: absolute;
-  top: -30px; /* Half outside, half inside */
+  top: -30px; 
   left: 50%;
   transform: translateX(-50%) skew(-10deg);
 }
 
-/* Counter-skew the icon inside so it stays straight */
 .icon-box img {
   width: 80px;
   height: 80px;
   object-fit: cover;
-  transform: skew(10deg); /* Counter the parent's skew */
+  transform: skew(10deg); 
 }
 
 .power-card p {
@@ -172,6 +167,6 @@
   font-weight: bold;
   margin: 0;
   line-height: 1.3;
-  margin-top: 50px; /* Space from icon */
+  margin-top: 50px; 
   width: 100%;
 }

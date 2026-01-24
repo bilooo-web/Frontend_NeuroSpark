@@ -8,7 +8,6 @@ import dinoGreen from '../../../assets/dino-green.png';
 function Feedback() {
   return (
     <section className="feedback-section">      
-      {/* 🌊 TOP WAVES */}
       <div className="feedback-wave feedback-wave-top">
         <svg className="feedback-wave-svg feedback-wave-green" viewBox="0 0 1200 120" preserveAspectRatio="none">
           <path
@@ -47,11 +46,9 @@ function Feedback() {
         </svg>
       </div>
 
-      {/* ☁️ CLOUDS */}
       <img src={cloud} className="feedback-cloud feedback-cloud-tl" alt="" />
       <img src={cloud} className="feedback-cloud feedback-cloud-br" alt="" />
 
-      {/* CONTENT */}
       <div className="feedback-content">
         <h2 className="feedback-title">We get a lot of fan mail</h2>
 

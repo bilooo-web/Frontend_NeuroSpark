@@ -1,0 +1,337 @@
+.reading-section {
+  position: relative;
+  background: #DEF0FF;
+  padding: 140px 0; /* Reduced from 200px */
+  overflow: hidden;
+  margin-bottom: -160px;
+}
+
+/* Ticket */
+.reading-ticket {
+  position: relative;
+  text-align: center;
+  margin-top: -120px; /* Reduced from -220px */
+  z-index: 3;
+}
+
+.reading-ticket img {
+  width: 210px; /* Reduced from 300px */
+}
+
+.reading-ticket h2 {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 19.6px; /* Reduced from 28px */
+  font-weight: 800;
+}
+
+/* Clouds */
+.reading-cloud {
+  position: absolute;
+  width: 56px; /* Reduced from 80px */
+  animation: reading-float 8s ease-in-out infinite;
+}
+
+.reading-cloud-0 { 
+    top: 20%; 
+    margin-left: -14px; /* Reduced from -20px */
+    width: 180px; /* Reduced from 257px */
+}
+.reading-cloud-1 { 
+    top: 30%; 
+    margin-left: 180px; /* Reduced from 150px */
+    width: 180px; /* Reduced from 257px */
+}
+.reading-cloud-2 { 
+    top: 25%; 
+    right: 30%; 
+    width: 280px; /* Reduced from 400px */
+}
+.reading-cloud-3 { 
+    top: 10%; 
+    left: 75%; 
+    width: 180px; /* Reduced from 257px */
+}
+
+/* Stars */
+.reading-star {
+  position: absolute;
+  width: 30px; /* Reduced from 40px */
+  animation: reading-twinkle 4s infinite;
+}
+
+.reading-star-0 { 
+    top: 18%; 
+    right: 80%; 
+}
+.reading-star-1 { 
+    top: 28%;
+    right: 70%;
+}
+.reading-star-2 { 
+    top: 10%; 
+    left: 90%; 
+}
+.reading-star-3 { 
+    top: 15%; 
+    right: 30%; 
+}
+.reading-star-4 { 
+    top: 40%; 
+    left: 80%; 
+}
+
+/* Girl */
+.reading-girl {
+  position: absolute;
+  left: 53%;
+  bottom: 470px; /* Reduced from 450px */
+  width: 280px; /* Reduced from 400px */
+  z-index: 999;
+  animation: girlFly 6s ease-in-out infinite;
+}
+@keyframes girlFly {
+  0%, 100% {
+    transform: translateY(0) translateX(0);
+  }
+  25% {
+    transform: translateY(-12px) translateX(5px);
+  }
+  50% {
+    transform: translateY(-5px) translateX(0);
+  }
+  75% {
+    transform: translateY(-12px) translateX(-5px);
+  }
+}
+/* Books */
+.reading-books {
+  position: absolute;
+  right: 0%;
+  bottom: 180px; /* Reduced from 100px */
+  width: 154px; 
+  z-index: 999;
+  animation: booksSparkle 5s ease-in-out infinite;
+  filter: drop-shadow(0 0 5px rgba(127, 205, 187, 0.3));
+
+}
+@keyframes booksSparkle {
+  0%, 100% {
+    transform: translateY(0);
+    filter: drop-shadow(0 0 5px rgba(127, 205, 187, 0.3));
+  }
+  50% {
+    transform: translateY(-5px);
+    filter: drop-shadow(0 0 12px rgba(127, 205, 187, 0.5));
+  }
+}
+/* Quote */
+.reading-quote {
+  position: absolute;
+  left: 92%;
+  z-index: 1;
+  top: 15%;
+  width: 126px; 
+  animation: quoteSwing 5s ease-in-out infinite;
+}
+@keyframes quoteSwing {
+  0%, 100% {
+    transform: rotate(0deg);
+  }
+  25% {
+    transform: rotate(3deg);
+  }
+  50% {
+    transform: rotate(0deg);
+  }
+  75% {
+    transform: rotate(-3deg);
+  }
+}
+/* Big stamp container - LARGER SIZE */
+.reading-big-stamp-container {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  z-index: 3;
+}
+
+.reading-stamp-shape {
+  position: relative;
+  margin-top: -50px;
+  width: 700px; /* Increased from 350px to 500px */
+  height: 600px; /* Increased from 280px to 400px */
+  text-align: center;
+}
+
+.reading-stamp-image {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  filter: drop-shadow(0 14px 28px rgba(0, 0, 0, 0.15));
+}
+
+.stamp-content {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 85%;
+  max-width: 400px;
+  padding: 30px;
+}
+
+.stamp-content h3 {
+  font-size: 22px; /* Increased from 19.6px */
+  font-weight: 800;
+  color: #2D3436;
+  margin-bottom: 20px; /* Increased from 14px */
+  position: relative;
+  z-index: 2;
+  text-align: center;
+}
+
+.stamp-content p {
+  font-size: 13px; /* Increased from 11.2px */
+  font-weight: 500;
+  color: #636E72;
+  line-height: 1.7;
+  margin-bottom: 25px; /* Increased from 21px */
+  position: relative;
+  z-index: 2;
+  text-align: center;
+  padding: 0 10px; /* Increased from 7px */
+}
+
+/* Remove old cloud styles */
+.reading-big-cloud-container,
+.reading-cloud-shape,
+.reading-cloud-bump,
+.reading-cloud-shape::before,
+.reading-cloud-shape::after {
+  display: none;
+}
+
+/* Button */
+.reading-cloud-button {
+  padding: 12px 35px; /* Increased from 9.8px 28px */
+  background: linear-gradient(135deg, #7fcdbb 0%, #6ab8a6 100%);
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  overflow: hidden;
+  box-shadow: 0 6px 20px rgba(127, 205, 187, 0.3);
+  animation: gentleBounce 3s ease-in-out infinite;
+  margin-top: 10px;
+}
+@keyframes gentleBounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+.reading-cloud-button:hover {
+  transform: translateY(-3px) scale(1.05);
+  box-shadow: 0 10px 30px rgba(127, 205, 187, 0.4);
+  background: linear-gradient(135deg, #6ab8a6 0%, #5aa894 100%);
+}
+/* Add shine effect on hover */
+.reading-cloud-button::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -60%;
+  width: 20%;
+  height: 200%;
+  background: rgba(255, 255, 255, 0.3);
+  transform: rotate(30deg);
+  transition: all 0.5s ease;
+}
+
+.reading-cloud-button:hover::after {
+  left: 120%;
+}
+/* Character */
+.reading-book-character {
+  position: absolute;
+  bottom: 200px; /* Reduced from 200px */
+  left: 20%;
+  transform: translateX(-50%);
+  width: 180px; 
+}
+
+
+/* Animations */
+@keyframes reading-float {
+  0%, 100% { 
+    transform: translateY(0); 
+  }
+  50% { 
+    transform: translateY(-10.5px); /* Reduced from -15px */
+  }
+}
+
+@keyframes reading-twinkle {
+  0%, 100% { 
+    opacity: 1; 
+  }
+  50% { 
+    opacity: 0.4; 
+  }
+}
+
+/* Wave animations */
+.reading-wave-top,
+.reading-wave-bottom {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  overflow: hidden;
+  line-height: 0;
+}
+
+.reading-wave-top {
+  top: 0;
+}
+
+.reading-wave-bottom {
+  bottom: 0;
+}
+
+.reading-wave-svg {
+  position: relative;
+  display: block;
+  width: calc(200% + 1.3px);
+  height: 70px; /* Reduced from 100px */
+  animation: reading-waveMove 10s linear infinite;
+}
+
+/* Reverse direction animation */
+@keyframes reading-waveMove {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+/* Optional: Add a secondary wave */
+.reading-wave-top::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 200%;
+  height: 100%;
+  background: inherit;
+  animation: reading-waveMove 15s linear infinite;
+  opacity: 0.7;
+}

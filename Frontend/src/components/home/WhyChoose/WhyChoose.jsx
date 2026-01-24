@@ -32,7 +32,6 @@ function WhyChoose() {
   return (
     <section className="why-choose">
 
-      {/* 🔼 TOP WAVES */}
       <div className="Why-features-wave wave-top">
         <svg className="wave-svg green-wave" viewBox="0 0 1200 120" preserveAspectRatio="none">
           <path
@@ -71,7 +70,6 @@ function WhyChoose() {
         </svg>
       </div>
 
-      {/* ✅ CONTENT */}
       <div className="why-container">
 
         <h2>Why Choose NeuroSpark?</h2>
@@ -101,7 +99,6 @@ function WhyChoose() {
 
       </div>
 
-      {/* 🔽 BOTTOM WAVES - FIXED */}
       <div className="Why-features-wave-b wave-bottom">
         <svg className="wave-svg green-wave" viewBox="0 0 1200 120" preserveAspectRatio="none">
           <path

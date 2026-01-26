@@ -1,0 +1,176 @@
+.aboutus2-story {
+  position: relative;
+  width: 100%;
+  background-color: #9AD0EE; /* Match hero background color for seamless transition behind the curve */
+  padding-bottom: 80px;
+  overflow: hidden;
+}
+
+.story-curved-container {
+  position: relative;
+  background-color: #d8f1fa; /* Light blue color for the section */
+  width: 100%;
+  min-height: 600px;
+  padding: 80px 40px;
+  
+  /* Create the wave/curve effect */
+  /* This uses a clip-path to create a wave at the top and bottom */
+  /* Alternatively, we can use border-radius if it's a simple curve, but user said "curved on top and bottom and left" */
+  /* Let's try a complex border-radius or clip-path. Based on the image, it looks like a wave */
+  border-top-left-radius: 50% 100px;
+  border-top-right-radius: 50% 100px;
+  /* Actually, looking at the image, it's a wave shape. Let's use a clip-path for better control or just SVG background */
+  
+  /* Simpler approach for "curved container": */
+  border-radius: 0;
+  clip-path: polygon(0 50px, 100% 0, 100% 100%, 0 calc(100% - 50px));
+  /* Wait, the image shows a more organic wave. Let's try a subtle wave with clip-path or just use border-radius for the main container visual */
+  /* Adjusting to user request: "curved on top and bottom and left" */
+  
+  /* Let's use a large border radius approach for the left curve if desired, 
+     but clip-path is safer for the top/bottom wave. */
+  clip-path: path('M0,50 C300,0 900,100 1440,50 L1440,800 C900,750 300,850 0,800 Z');
+  /* Note: rigid paths might behave badly on resize. Let's use a safer shape or just margins/border-radius */
+}
+
+.story-curved-container {
+  /* Using Group 3756 background image */
+  background-image: url('../../../assets/Group 3756.png'); 
+  
+  /* Force stretch to full width and height as requested ("stretch it so it can the left section") */
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-color: transparent !important;
+  
+  /* Remove padding that might constrain it, let content handle spacing */
+  padding: 80px 20px; /* Reduced side padding to let bg go wider if needed */
+  
+  position: relative;
+  z-index: 1;
+  min-height: 600px !important; /* Further increased height */
+  width: 100%;
+  
+  /* Ensure it touches edges if parent has padding */
+  margin: 0;
+  
+  /* Reset old shape styles */
+  clip-path: none;
+  border-radius: 0;
+}
+
+/* Cleanup old styles */
+.story-curved-container::before {
+  display: none;
+}
+
+/* If user provides image, we can use this class on an img tag */
+.story-bg-image {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: fill; /* Stretch to fill */
+  z-index: -1;
+}
+
+/* Resetting to a safer full-width block with a wave Shape Divider strategy if needed, 
+   but for now, let's just make it a block and style content. */
+.story-curved-container {
+    clip-path: none;
+    border-radius: 0;
+    /* The image shows a "flag" like shape or wave. 
+       Let's use a border-radius approach to get "curved on left" */
+    border-top-left-radius: 200px 100px;
+    border-bottom-left-radius: 200px 100px;
+    margin-left: 0; /* Align to left edge? Or maybe pushed in? */
+    /* If it matches the hero connection, maybe just full width */
+    min-height: 400px; /* Reduced height */
+}
+
+.story-content-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 60px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* Left Content */
+.story-left {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+}
+
+.story-main-img {
+  width: 100%;
+  max-width: 400px; /* Slightly reduced max-width to prioritize right side */
+  height: auto;
+  object-fit: contain;
+  animation: float 5s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-15px); }
+}
+
+/* Right Content - Give it more space */
+.story-right {
+  flex: 1.5; /* Take up more space */
+  display: flex;
+  justify-content: center;
+  position: relative;
+}
+
+.story-paper-wrapper {
+  position: relative;
+  width: 100%;
+  max-width: 800px; /* Further increased size */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.story-paper-bg {
+  width: 100%;
+  height: auto;
+  display: block;
+  filter: drop-shadow(0 10px 20px rgba(0,0,0,0.15));
+  transform: rotate(2deg); /* Slight rotation for natural paper feel */
+}
+
+.story-text-overlay {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 80%; /* Increased from 75% */
+  text-align: center;
+}
+
+.story-text-overlay h2 {
+  font-family: 'Georgia', serif; /* or appropriate font */
+  font-size: 42px;
+  font-weight: 800;
+  color: #000;
+  margin-bottom: 20px;
+}
+
+.story-text-overlay p {
+  font-size: 16px;
+  line-height: 1.6;
+  color: #4b5d6b;
+  font-weight: 500;
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+  .story-content-wrapper {
+    flex-direction: column;
+    text-align: center;
+  }
+}

@@ -1,0 +1,238 @@
+.aboutus2-contact {
+  position: relative;
+  /* Gradient from previous section blue (#9AD0EE) to lighter blue (#d8f1fa) */
+  background: linear-gradient(180deg, #9AD0EE 0%, #d8f1fa 20%); /* Transition finishes quickly at top (20%) */
+  padding: 60px 40px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.contact2-title {
+  font-family: 'Georgia', serif;
+  font-size: 42px;
+  font-weight: 800;
+  color: #000;
+  margin-bottom: 50px;
+  text-align: center;
+  width: 100%;
+}
+
+.contact2-container {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 80px;
+  width: 100%;
+  max-width: 1200px;
+  margin-bottom: 60px;
+}
+
+/* Form Section */
+.contact2-left-form {
+  flex: 1;
+  max-width: 500px;
+}
+
+.form-card {
+  background: white;
+  border-radius: 40px;
+  padding: 40px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+}
+
+.form-card h3 {
+  color: #8ecae6; /* Light blue text */
+  font-size: 1.5rem;
+  font-weight: 800;
+  margin-bottom: 30px;
+  text-align: center;
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  display: block;
+  font-weight: 700;
+  color: #8ecae6;
+  margin-bottom: 8px;
+  font-size: 1rem;
+}
+
+.form-group input,
+.form-group textarea {
+  width: 100%;
+  padding: 12px 15px;
+  border: 2px solid #8ecae6;
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 0.95rem;
+  color: #555;
+  outline: none;
+  background: white;
+}
+
+.form-group input::placeholder,
+.form-group textarea::placeholder {
+  color: #ccc;
+  font-style: italic;
+}
+
+.form-check {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 25px;
+}
+
+.form-check input[type="checkbox"] {
+  width: 20px;
+  height: 20px;
+  border: 2px solid #8ecae6;
+  border-radius: 4px;
+}
+
+.form-check label {
+  color: #8ecae6;
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+
+.form-btn {
+  display: block;
+  margin: 0 auto;
+  background-color: #8ecae6;
+  color: white;
+  font-weight: 700;
+  padding: 10px 30px;
+  border-radius: 20px;
+  border: none;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.form-btn:hover {
+  background-color: #7ab8d4;
+}
+
+/* Right Section */
+.contact2-right-decor {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding-top: 40px;
+}
+
+/* Cloud Wrapper replacement for image */
+/* Cloud Wrapper */
+.clouds-wrapper {
+  position: relative;
+  width: 100%;
+  max-width: 600px;
+  height: 400px;
+  /* Ensure it has space */
+}
+
+/* Base Cloud Style from Features.css */
+.cloud-contact {
+  position: absolute;
+  text-align: center;
+  animation: floatCloud 6s ease-in-out infinite;
+}
+
+.cloud-contact img {
+  width: 255px;
+  transition: all 0.3s ease;
+  filter: drop-shadow(0 5px 15px rgba(0, 0, 0, 0.1));
+}
+
+.cloud-contact span {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-weight: 600;
+  font-size: 17px; /* Matches Features.css */
+  color: #77BEF0; /* Matches Features.css */
+  width: 100%;
+  line-height: 1.4;
+}
+
+.cloud-label {
+  font-size: 0.85em;
+  opacity: 0.9;
+  display: block;
+  margin-bottom: -5px; 
+}
+
+/* Positioning - Adapted for Contact Section layout */
+.cloud-c1 {
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  margin-left: -127px; /* Center alignment adjustment based on width */
+  animation: floatCloud 7s ease-in-out infinite;
+  z-index: 2;
+}
+
+.cloud-c2 {
+  bottom: 40px;
+  left: 0;
+  animation: floatCloud 8s ease-in-out infinite;
+  animation-delay: 1s;
+}
+
+.cloud-c3 {
+  bottom: 20px;
+  right: 0;
+  animation: floatCloud 9s ease-in-out infinite;
+  animation-delay: 2s;
+}
+
+/* Animation Keyframes from Features.css */
+@keyframes floatCloud {
+  0%, 100% {
+    transform: translateY(0) scale(1);
+  }
+  50% {
+    transform: translateY(-15px) scale(1.02);
+  }
+}
+
+/* Social Footer */
+.contact2-social {
+  width: 100%;
+  max-width: 1200px;
+  border-top: 2px solid #8ecae6;
+  padding-top: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.contact2-social span {
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: #8ecae6;
+}
+
+.social-strip {
+  height: 40px;
+  width: auto;
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+  .contact2-container {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .contact2-right-decor {
+    padding-top: 0;
+  }
+}

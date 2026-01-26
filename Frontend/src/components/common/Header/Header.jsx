@@ -13,12 +13,16 @@ function Header() {
         </div>
 
         <nav className="nav">
+<<<<<<< HEAD
           <Link to="/home">Home</Link>
+=======
+          <Link to="/">Home</Link>
+>>>>>>> 3c8a74f (Developing About Us page)
           <Link to="/challenges">Challenges</Link>
           <a href="#roadmap">Spark City</a>
           <a href="#customization">Customization</a>
           <a href="#homework">Homework</a>
-          <a href="#about">About Us</a>
+          <Link to="/about">About Us</Link>
         </nav>
 
         <button className="header-btn">

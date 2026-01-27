@@ -1,12 +1,8 @@
 import { useState } from "react";
 import "./AboutUs2Contact.css";
-import contactDecor from "../../../assets/Group contact.png";
+import cloud from "../../../assets/cloud.png";
 import facebook from "../../../assets/facebook.png";
 import twitter from "../../../assets/twitter.png";
-
-
-import socialIcon from "../../../assets/social.png";
-import cloud from "../../../assets/cloud.png";
 
 const AboutUs2Contact = () => {
   const [formData, setFormData] = useState({
@@ -31,15 +27,15 @@ const AboutUs2Contact = () => {
   };
 
   return (
-    <section className="aboutus2-contact">
-      <h2 className="contact2-title">We'd Love to Hear From You</h2>
+    <section className="aboutus2-contact-section">
+      <h2 className="section-main-title">We'd Love to Hear From You</h2>
       
-      <div className="contact2-container">
-        <div className="contact2-left-form">
-          <div className="form-card">
-            <h3>Leave your message</h3>
-            <form onSubmit={handleSubmit}>
-              <div className="form-group">
+      <div className="contact-main-flex">
+        <div className="contact-left-side">
+          <div className="contact-form-card">
+            <h3 className="contact-form-title">Leave your message</h3>
+            <form onSubmit={handleSubmit} className="contact-form">
+              <div className="form-group-item">
                 <label>Full name</label>
                 <input 
                   type="text" 
@@ -50,7 +46,7 @@ const AboutUs2Contact = () => {
                 />
               </div>
               
-              <div className="form-group">
+              <div className="form-group-item">
                 <label>Email</label>
                 <input 
                   type="email" 
@@ -61,7 +57,7 @@ const AboutUs2Contact = () => {
                 />
               </div>
               
-              <div className="form-group">
+              <div className="form-group-item">
                 <label>Subject</label>
                 <input 
                   type="text" 
@@ -72,7 +68,7 @@ const AboutUs2Contact = () => {
                 />
               </div>
               
-              <div className="form-group">
+              <div className="form-group-item">
                 <label>Message</label>
                 <textarea 
                   name="message" 
@@ -83,48 +79,62 @@ const AboutUs2Contact = () => {
                 />
               </div>
               
-              <div className="form-check">
+              <div className="form-checkbox-group">
                 <input 
                   type="checkbox" 
                   id="agree" 
                   name="agreed"
                   checked={formData.agreed}
                   onChange={handleChange}
+                  className="custom-checkbox"
                 />
                 <label htmlFor="agree">I agree to the privacy policy</label>
               </div>
               
-              <button type="submit" className="form-btn">Submit</button>
+              <button type="submit" className="contact-submit-btn">Submit</button>
             </form>
           </div>
         </div>
 
-        <div className="contact2-right-decor">
-          <div className="clouds-wrapper">
-             <div className="cloud-contact cloud-c1">
-               <img src={cloud} alt="Cloud" />
-               <span>Don't hesitate to <br/> contact us</span>
-             </div>
+        <div className="contact-right-side">
+          <div className="clouds-container">
+            <div className="floating-cloud cloud-large">
+              <img src={cloud} alt="Cloud" />
+              <div className="cloud-text">Don't hesitate to <br/> contact us</div>
+            </div>
+            
+            <div className="clouds-bottom">
+              <div className="floating-cloud cloud-small">
+                <img src={cloud} alt="Cloud" />
+                <div className="cloud-text">
+                  <span className="info-label">Phone:</span><br/>
+                  (+961) 71 444 900
+                </div>
+              </div>
+              
+              <div className="floating-cloud cloud-small">
+                <img src={cloud} alt="Cloud" />
+                <div className="cloud-text">
+                  <span className="info-label">Email:</span><br/>
+                  neurospark@gmail.com
+                </div>
+              </div>
+            </div>
+          </div>
 
-             <div className="cloud-contact cloud-c2">
-               <img src={cloud} alt="Cloud" />
-               <span>
-                 <span className="cloud-label">Phone:</span><br/>
-                 (+961) 71 444 900
-               </span>
-             </div>
-
-             <div className="cloud-contact cloud-c3">
-               <img src={cloud} alt="Cloud" />
-               <span>
-                 <span className="cloud-label">Email:</span><br/>
-                 neurospark@gmail.com
-               </span>
-             </div>
+          <div className="social-media-footer">
+            <div className="social-content">
+              <span className="social-label">Social Media:</span>
+              <div className="social-icons">
+                <img src={facebook} alt="Facebook" />
+                <img src={twitter} alt="Twitter" />
+                <img src={facebook} alt="LinkedIn" />
+                <img src={twitter} alt="WhatsApp" />
+              </div>
+            </div>
           </div>
         </div>
       </div>
-
     </section>
   );
 };

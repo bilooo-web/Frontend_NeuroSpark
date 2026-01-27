@@ -11,13 +11,11 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
+        <Route path="/" element={<Home />} />
         <Route path="/home" element={<Home />} />
         <Route path="/challenges" element={<Challenges />} />
-<<<<<<< HEAD
         <Route path="/challenges/:id" element={<ChallengeDetails />} />
-=======
         <Route path="/about" element={<AboutUs2 />} />
->>>>>>> 3c8a74f (Developing About Us page)
       </Routes>
     </BrowserRouter>
   );

@@ -1,9 +1,8 @@
 .aboutus2-mission {
   position: relative;
   background-color: #9AD0EE; /* Continued background color */
-  padding: 0 40px 40px 40px; /* Removed top padding */
+  padding: 0 40px 100px 40px; /* Added bottom padding to make space for lamps/wave */
   min-height: 400px; /* Reduced minimum height from 600px */
-  overflow: hidden;
 }
 
 .mission2-container {

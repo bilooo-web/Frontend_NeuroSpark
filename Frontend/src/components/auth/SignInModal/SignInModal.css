@@ -1,0 +1,218 @@
+@import url('https://fonts.googleapis.com/css2?family=Wendy+One&family=Poppins:wght@400;600;700;800&family=Inter:wght@400;700;800&family=Wavefont:wght@100..900&display=swap');
+
+.signin-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.4);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+}
+
+.signin-modal-container {
+    position: relative;
+    width: 95%;
+    max-width: 950px;
+    background: #DEF0FF;
+    border-radius: 40px;
+    padding: 25px 25px 15px 25px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+    display: flex;
+    overflow: visible;
+}
+
+.signin-modal-content {
+    display: flex;
+    background: #DEF0FF;
+    border-radius: 35px;
+    overflow: visible;
+    position: relative;
+    z-index: 2;
+    width: 100%;
+}
+
+.signin-left {
+    flex: 1;
+    background: #6D8DBF;
+    border-radius: 30px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+    position: relative;
+    z-index: 10;
+    border: none !important;
+    outline: none !important;
+}
+
+.duck-video {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    border: none;
+    display: block;
+}
+
+.signin-right {
+    flex: 1.1;
+    padding: 15px 40px 0px 40px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: #DEF0FF;
+    position: relative;
+    z-index: 2;
+}
+
+.signin-logo {
+    margin-bottom: 20px;
+}
+
+.signin-logo img {
+    height: 60px;
+    width: auto;
+}
+
+.welcome-text {
+    font-family: 'Wendy One', sans-serif;
+    font-weight: 400;
+    font-size: 36px;
+    color: #000;
+    margin-bottom: 5px;
+    letter-spacing: -0.5px;
+    text-transform: uppercase;
+    text-align: center;
+}
+
+.subtitle {
+    font-family: 'Poppins', sans-serif;
+    color: #4A5568;
+    font-size: 14px;
+    margin-bottom: 30px;
+    text-align: center;
+    font-weight: 600;
+    max-width: 300px;
+    line-height: 1.4;
+}
+
+.signin-form {
+    width: 100%;
+    max-width: 400px;
+    display: flex;
+    flex-direction: column;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    font-family: 'Poppins', sans-serif;
+    display: block;
+    font-weight: 800;
+    font-size: 18px;
+    margin-bottom: 10px;
+    color: #000;
+}
+
+.form-group input {
+    font-family: 'Poppins', sans-serif;
+    width: 100%;
+    padding: 14px 25px;
+    border: 2px solid #000;
+    border-radius: 11px;
+    font-size: 15px;
+    outline: none;
+    background-color: #EBF5FF;
+}
+
+.form-group input:focus {
+    background-color: #fff;
+}
+
+.form-options {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    font-size: 14px;
+}
+
+.remember-me {
+    font-family: 'Poppins', sans-serif;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 400; /* Regular as requested */
+    cursor: pointer;
+}
+
+.forgot-password {
+    font-family: 'Poppins', sans-serif;
+    color: #000;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.signin-button {
+    font-family: 'Inter', sans-serif;
+    width: 100%;
+    padding: 16px;
+    background-color: #6D8DBF;
+    color: white;
+    border: none;
+    border-radius: 50px;
+    font-size: 18px;
+    font-weight: 800;
+    cursor: pointer;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    margin-bottom: 12px;
+}
+
+.signup-prompt {
+    font-family: 'Poppins', sans-serif;
+    font-size: 14px;
+    color: #4A5568;
+    text-align: center;
+    margin: 0;
+}
+
+.signup-prompt a {
+    color: #000;
+    font-weight: 900;
+    text-decoration: none;
+}
+
+.cloud-item {
+    position: absolute;
+    z-index: 1;
+    pointer-events: none;
+    opacity: 1 !important;
+    transition: none !important;
+    animation: none !important;
+}
+
+.cloud-left-img {
+    top: 60px;
+    left: -100px;
+    width: 220px;
+}
+
+.cloud-right-img {
+    top: -30px;
+    right: -20px;
+    width: 180px;
+}
+
+@media (max-width: 768px) {
+    .signin-modal-content {
+        flex-direction: column;
+    }
+    .signin-left {
+        display: none;
+    }
+}

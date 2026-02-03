@@ -7,6 +7,7 @@ import Challenges from "./pages/Challenges";
 import ChallengeDetails from "./pages/ChallengeDetails";
 import SignInModal from "./components/auth/SignInModal/SignInModal";
 
+
 function App() {
   const [showSignIn, setShowSignIn] = useState(true);
 
@@ -19,6 +20,7 @@ function App() {
         <Route path="/challenges" element={<Challenges />} />
         <Route path="/challenges/:id" element={<ChallengeDetails />} />
         <Route path="/about" element={<AboutUs2 />} />
+        <Route path="*" element={<Home />} />
       </Routes>
     </BrowserRouter>
   );

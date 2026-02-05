@@ -1,89 +1,169 @@
-.aboutus2-mission {
+.mission-section {
   position: relative;
-  background-color: #9AD0EE; /* Continued background color */
-  padding: 0 40px 100px 40px; /* Added bottom padding to make space for lamps/wave */
-  min-height: 400px; /* Reduced minimum height from 600px */
-}
-
-.mission2-container {
-  max-width: 1200px;
-  margin: 0 auto;
-  position: relative;
+  background: #9AD0EE;
+  padding: 100px 0;
+  overflow: hidden;
+  min-height: 100vh;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
+  margin-bottom: -300px;
 }
 
-.mission2-content {
+.mission-content {
+  position: relative;
+  z-index: 2;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 40px;
+}
+
+.mission-text-container {
   text-align: center;
   max-width: 800px;
-  margin-top: 0; /* Removed top margin */
+  margin: 0 auto 60px;
+  z-index: 3;
+}
+
+.mission-text-container h2 {
+  font-size: 42px;
+  font-weight: 800;
+  color: #1f2d3d;
+  margin-top: 20px;
+  margin-bottom: 5px;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   position: relative;
+  display: inline-block;
+}
+
+.mission-text-with-shine {
+  position: relative;
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 30px;
+  padding: 50px 60px;
+  box-shadow: 0 20px 60px rgba(74, 144, 226, 0.2),
+              0 5px 20px rgba(0, 0, 0, 0.1),
+              inset 0 1px 0 rgba(255, 255, 255, 0.5);
+  backdrop-filter: blur(10px);
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  margin-top: 40px;
+  overflow: hidden;
+}
+
+.mission-text-with-shine::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(
+    45deg,
+    transparent 30%,
+    rgba(255, 255, 255, 0.1) 50%,
+    transparent 70%
+  );
+  animation: shineEffect 4s ease-in-out infinite;
+  z-index: 1;
+}
+
+@keyframes shineEffect {
+  0% {
+    transform: translateX(-100%) translateY(-100%) rotate(45deg);
+  }
+  100% {
+    transform: translateX(100%) translateY(100%) rotate(45deg);
+  }
+}
+
+
+.mission-paragraph {
+  position: relative;
+  z-index: 3;
+}
+
+.mission-paragraph p {
+  font-size: 16px;
+  line-height: 1.9;
+  color: #2d3748;
+  text-align: center;
+  margin: 0;
+  font-weight: 500;
+  text-shadow: 0 1px 1px rgba(255, 255, 255, 0.8);
+  letter-spacing: 0.3px;
+  position: relative;
+  padding: 0 10px;
+}
+.mission-paragraph::before {
+  content: '"';
+  position: absolute;
+  font-size: 80px;
+  color: rgba(74, 144, 226, 0.2);
+  font-family: Georgia, serif;
+  font-weight: bold;
+}
+
+.mission-paragraph::before {
+  top: -30px;
+  left: 0;
+}
+
+.mission-paragraph::after {
+  bottom: -60px;
+  right: 0;
+  transform: rotate(180deg);
+}
+
+.mission-three-guys {
+  position: absolute;
+  top: 20px;
+  right: -330px;
+  width: 300px;
+  height: auto;
   z-index: 2;
 }
 
-.mission2-content h2 {
-  font-family: 'Georgia', serif; /* or correct font */
-  font-size: 42px;
-  font-weight: 800;
-  color: #000;
-  margin-bottom: 30px;
-}
-
-.mission2-content p {
-  font-size: 16px;
-  line-height: 1.8;
-  color: #4b5d6b;
-  font-weight: 500;
-}
-
-/* Right Decoration: Three Guys */
-.mission2-right-decor {
-  position: absolute;
-  top: 0;
-  right: 0;
-  width: 150px;
-  height: auto;
-  z-index: 1; /* In the back */
-}
-
-.mission2-threeguys {
+.mission-three-guys img {
   width: 100%;
   height: auto;
-  display: block;
+  filter: drop-shadow(0 15px 30px rgba(0, 0, 0, 0.2));
+  animation: floatUpDown 5s ease-in-out infinite;
 }
 
-/* Bottom Left Decoration: Four Lamps */
-.mission2-bottom-left-decor {
+.mission-four-lamps {
   position: absolute;
-  bottom: -40px;
-  left: 0px; 
-  width: 250px;
+  bottom: -10px;
+  left: -350px;
+  width: 300px;
   height: auto;
-  z-index: 1; /* In the back */
+  z-index: 2;
 }
 
-.mission2-fourlamps {
+.mission-four-lamps img {
   width: 100%;
   height: auto;
-  display: block;
+  filter: drop-shadow(0 10px 25px rgba(0, 0, 0, 0.15));
+  animation: floatUpDown 5s ease-in-out infinite;
 }
 
-/* Responsive */
-@media (max-width: 900px) {
-  .mission2-right-decor {
-    position: relative;
-    right: auto;
-    top: auto;
-    transform: none;
-    margin: 40px auto;
+@keyframes floatUpDown {
+  0%, 100% {
+    transform: translateY(0) rotate(0deg);
   }
-  
-  .mission2-bottom-left-decor {
-    position: relative;
-    bottom: auto;
-    left: auto;
-    margin: 40px auto;
+  33% {
+    transform: translateY(-20px) rotate(2deg);
+  }
+  66% {
+    transform: translateY(10px) rotate(-1deg);
+  }
+}
+
+@keyframes gentlePulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1) rotate(0deg);
+  }
+  50% {
+    opacity: 0.95;
+    transform: scale(1.08) rotate(1deg);
   }
 }

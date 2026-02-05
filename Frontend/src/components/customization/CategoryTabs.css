@@ -1,0 +1,103 @@
+/* CategoryTabs.css - Clean version */
+.category-tabs {
+  background: #ffffff;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 12px 20px;
+  border-radius: 16px;
+  margin: 0 20px 15px;
+  gap: 10px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.category-tabs button {
+  background: #f0f9ff;
+  border: 2px solid transparent;
+  border-radius: 12px;
+  padding: 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  width: 48px;
+  height: 48px;
+}
+
+.category-tabs button:hover {
+  background: #e0f4f3;
+  transform: scale(1.05);
+  border-color: #3fa29b;
+}
+
+/* Active state */
+.category-tabs button.active {
+  background: #3fa29b;
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(63, 162, 155, 0.3);
+}
+
+.category-icon {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+  transition: all 0.2s ease;
+}
+
+/* Default icon color */
+.category-tabs button:not(.active) .category-icon {
+  filter: invert(53%) sepia(19%) saturate(1817%) hue-rotate(138deg) brightness(91%) contrast(87%);
+}
+
+/* Active state icon color */
+.category-tabs button.active .category-icon {
+  filter: brightness(0) invert(1);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .category-tabs {
+    padding: 10px 15px;
+    margin: 0 15px 12px;
+    gap: 8px;
+  }
+  
+  .category-tabs button {
+    width: 44px;
+    height: 44px;
+    padding: 10px;
+  }
+  
+  .category-icon {
+    width: 24px;
+    height: 24px;
+  }
+}
+
+@media (max-width: 480px) {
+  .category-tabs {
+    overflow-x: auto;
+    justify-content: flex-start;
+    padding: 8px 12px;
+    margin: 0 10px 10px;
+    gap: 6px;
+    scrollbar-width: none;
+  }
+  
+  .category-tabs::-webkit-scrollbar {
+    display: none;
+  }
+  
+  .category-tabs button {
+    flex-shrink: 0;
+    width: 42px;
+    height: 42px;
+    padding: 8px;
+  }
+  
+  .category-icon {
+    width: 22px;
+    height: 22px;
+  }
+}

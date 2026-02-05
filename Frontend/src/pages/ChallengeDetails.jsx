@@ -1,5 +1,6 @@
 import { useParams } from "react-router-dom";
 import { challengesData } from "../data/challengesData";
+import { useNavigate } from "react-router-dom";
 
 import Header from "../components/common/Header/Header";
 import Footer from "../components/common/Footer/Footer";
@@ -9,6 +10,9 @@ import "./ChallengeDetails.css";
 const ChallengeDetails = () => {
   const { id } = useParams();
   const challenge = challengesData[id];
+  const navigate = useNavigate();
+
+
 
   if (!challenge) {
     return (
@@ -70,7 +74,7 @@ const ChallengeDetails = () => {
               </div>
 
               {/* Start Button */}
-              <button className="start-btn">Start Challenge</button>
+              <button className="start-btn" onClick={() => navigate(`/challenges/${id}/play`)}>Start Challenge</button>
             </div>
           </div>
 

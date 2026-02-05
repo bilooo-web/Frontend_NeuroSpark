@@ -1,8 +1,7 @@
 import './Header.css';
-import logo_s from '../../../assets/logo_s.png'; // Import the logo
+import logo_s from '../../../assets/logo_s.png'; 
+import profileImage from '../../../assets/profile_h.png';
 import { Link } from "react-router-dom";
-
-
 
 function Header() {
   return (
@@ -22,9 +21,14 @@ function Header() {
           <Link to="/about">About Us</Link>
         </nav>
 
-        <button className="header-btn">
-          Get Started
-        </button>
+        <div className="header-right">
+          <button className="header-btn">
+            🪙 0
+          </button>
+          <div className="profile-container">
+            <img src={profileImage} alt="Profile" className="profile-img" />
+          </div>
+        </div>
 
       </div>
     </header>

@@ -9,7 +9,6 @@ function Footer() {
   return (
     <footer className="footer">
       
-      {/* 🌊 TOP WAVE */}
       <div className="footer-wave">
         <svg className="footer-wave-svg" viewBox="0 0 1200 120" preserveAspectRatio="none">
           <path
@@ -32,21 +31,18 @@ function Footer() {
 
       <div className="footer-container">
 
-        {/* BRAND */}
         <div className="footer-brand">
           <img src={logo} alt="NeuroSpark" className="footer-logo" />
           <p className="footer-tagline">
             Transforming learning into engaging play experiences that build focus, 
             confidence, and real-life skills through neuroscience-backed games.
           </p>
-          
         </div>
 
-        {/* LINKS */}
         <div className="footer-links-grid">
           
           <div className="footer-links-section">
-            <h4 className="footer-section-title">LEARNING </h4>
+            <h4 className="footer-section-title">LEARNING</h4>
             <a href="/challenges" className="footer-link">Game Challenges</a>
             <a href="/roadmap" className="footer-link">Virtual City</a>
             <a href="/reading" className="footer-link">Reading & Grammar</a>
@@ -80,28 +76,21 @@ function Footer() {
 
       </div>
 
-      {/* SOCIAL & BOTTOM */}
       <div className="footer-bottom-section">
         <div className="footer-social-container">
           <h4 className="social-title">Connect With Our Community</h4>
-          <p className="social-subtitle">Join thousands of therapists, educators, and parents</p>
           <div className="social-icons-container">
             <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" className="social-icon-link">
               <img src={facebook} alt="Facebook" className="social-icon" />
-              <span>Facebook</span>
             </a>
             <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="social-icon-link">
               <img src={instagram} alt="Instagram" className="social-icon" />
-              <span>Instagram</span>
             </a>
             <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" className="social-icon-link">
               <img src={twitter} alt="Twitter" className="social-icon" />
-              <span>Twitter</span>
             </a>
           </div>
         </div>
-
-        <div className="footer-divider"></div>
 
         <div className="footer-copyright">
           <div className="copyright-text">

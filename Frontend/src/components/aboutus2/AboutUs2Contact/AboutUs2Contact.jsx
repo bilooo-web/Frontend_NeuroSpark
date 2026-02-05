@@ -1,8 +1,10 @@
 import { useState } from "react";
 import "./AboutUs2Contact.css";
 import cloud from "../../../assets/cloud.png";
-import facebook from "../../../assets/facebook.png";
-import twitter from "../../../assets/twitter.png";
+import facebook from "../../../assets/facebook_a.png";
+import twitter from "../../../assets/twitter_a.png";
+import linkedin from "../../../assets/linkedin_a.png";
+import whatsapp from "../../../assets/whatsapp_a.png";
 
 const AboutUs2Contact = () => {
   const [formData, setFormData] = useState({
@@ -128,8 +130,8 @@ const AboutUs2Contact = () => {
               <div className="social-icons">
                 <img src={facebook} alt="Facebook" />
                 <img src={twitter} alt="Twitter" />
-                <img src={facebook} alt="LinkedIn" />
-                <img src={twitter} alt="WhatsApp" />
+                <img src={linkedin} alt="LinkedIn" />
+                <img src={whatsapp} alt="WhatsApp" />
               </div>
             </div>
           </div>

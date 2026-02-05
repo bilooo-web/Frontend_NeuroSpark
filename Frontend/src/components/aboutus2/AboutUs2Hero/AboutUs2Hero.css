@@ -1,109 +1,145 @@
-.aboutus2-hero {
+.about-hero {
   position: relative;
-  width: 100%;
-  min-height: 100vh; /* Full viewport height */
-  background-color: #9AD0EE;
-  display: flex;
-  align-items: flex-start; /* Align content to top */
+  min-height: 70vh;
+  background-color: #9AD0EE; 
   overflow: hidden;
-  padding-top: 0; /* Remove top padding */
+  padding: 50px 70px 0;
 }
 
-/* Repeating background on top */
-.repeating-bg {
+.about-stars-layer {
   position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%; /* Cover full section height */
-  background-repeat: repeat-x;
-  background-size: contain;
-  opacity: 0.6; /* Adjust opacity if needed */
-  pointer-events: none;
+  inset: 0;
+  background-repeat: repeat;
+  background-size: 200px;
   z-index: 1;
 }
 
-.hero2-container {
-  display: flex;
-  align-items: flex-start; /* Align items to top */
-  justify-content: center;
-  width: 100%;
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 40px;
-  gap: 40px;
+.about-hero-content {
   position: relative;
   z-index: 2;
-  margin-top: 0;
-}
-
-/* Left Section */
-.hero2-left {
-  flex: 1;
   display: flex;
-  justify-content: center;
-  max-width: 550px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 60px;
 }
 
-.paper-wrapper {
+.about-paper {
   position: relative;
-  width: 100%;
-  max-width: 500px;
+  width: 500px;
+  margin-top: -80px;
+  margin-left: 100px;
 }
 
 .paper-bg {
   width: 100%;
-  height: auto;
   display: block;
-  filter: drop-shadow(0 10px 20px rgba(0,0,0,0.1));
 }
 
-.paper-content {
+.paper-text {
   position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 75%;
-  text-align: center;
-  color: #1a3a4a;
-}
-
-.paper-content h1 {
-  font-size: 42px;
-  line-height: 1.2;
-  margin-bottom: 15px;
-  font-family: sans-serif; /* Or custom font */
-  font-weight: 800;
-}
-
-.paper-content p {
-  font-size: 16px;
-  line-height: 1.5;
-  color: #4b5d6b;
-}
-
-/* Right Section */
-.hero2-right {
-  flex: 1;
+  inset: 0;
+  padding: 50px 45px;
   display: flex;
+  flex-direction: column;
   justify-content: center;
 }
 
-.kids-img {
-  width: 100%;
-  max-width: 550px;
-  height: auto;
-  object-fit: contain;
+.paper-text h2 {
+  font-size: 42px;
+  font-weight: 800;
+  margin-top: -10px;
+  color: #1f2d3d;
+  text-align: center;
+  margin-bottom: 20px;
 }
 
-/* Responsive */
-@media (max-width: 900px) {
-  .hero2-container {
-    flex-direction: column;
-    padding-top: 50px;
-  }
+.paper-text p {
+  font-size: 17px;
+  line-height: 1.6;
+  text-align: center;
+  color: #334155;
+}
+.about-hero-image{
+  margin-right: 100px;
+}
+.about-hero-image img {
+  max-width: 420px;
+  width: 100%;
+  z-index: 2;
+  
+}
+.about-wave-wrapper {
+  position: absolute;
+  top: 10;
+  margin-left: 17px;
+  width: 1500px;
+  height: 100px;
+  overflow: hidden;
+  line-height: 0;
+  z-index: 3;
+  
+}
 
-  .paper-content h1 {
-    font-size: 1.5rem;
+.about-wave {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+}
+
+.about-wave-green {
+  z-index: 1;
+}
+
+.about-wave-white {
+  z-index: 2;
+}
+
+@keyframes waveMove {
+  0%, 100% {
+    transform: translateX(0) translateY(0);
   }
+  25% {
+    transform: translateX(-10px) translateY(7px);
+  }
+  50% {
+    transform: translateX(5px) translateY(-7px);
+  }
+  75% {
+    transform: translateX(-10px) translateY(7px);
+  }
+}
+
+@keyframes waveDeform {
+  0%, 100% {
+    d: path("M0,40 C150,10 350,70 600,40 S850,10 1200,40 L1200,120 L0,120 Z");
+  }
+  50% {
+    d: path("M0,40 C180,5 320,80 600,40 S880,5 1200,40 L1200,120 L0,120 Z");
+  }
+}
+
+@keyframes waveDeform2 {
+  0%, 100% {
+    d: path("M0,60 C200,30 400,90 600,60 S800,30 1200,60 L1200,120 L0,120 Z");
+  }
+  50% {
+    d: path("M0,60 C220,20 380,100 600,60 S820,20 1200,60 L1200,120 L0,120 Z");
+  }
+}
+
+.about-wave-green {
+  animation: waveMove 8s ease-in-out infinite;
+}
+
+.about-wave-green path {
+  animation: waveDeform 10s ease-in-out infinite;
+}
+
+.about-wave-white {
+  animation: waveMove 6s ease-in-out infinite;
+  animation-delay: 0.5s;
+}
+
+.about-wave-white path {
+  animation: waveDeform2 7s ease-in-out infinite;
 }

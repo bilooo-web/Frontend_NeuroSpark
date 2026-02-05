@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 
 import AboutUs2 from "./pages/AboutUs2";
@@ -9,7 +9,14 @@ import SignInModal from "./components/auth/SignInModal/SignInModal";
 
 
 function App() {
-  const [showSignIn, setShowSignIn] = useState(true);
+  const [showSignIn, setShowSignIn] = useState(false);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowSignIn(true);
+    }, 5000);
+    return () => clearTimeout(timer);
+  }, []);
 
   return (
     <BrowserRouter>

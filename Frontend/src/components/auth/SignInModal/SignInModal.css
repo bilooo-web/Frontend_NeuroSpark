@@ -23,7 +23,8 @@
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
     display: flex;
     overflow: visible;
-    min-height: 600px; /* Ensure sufficient height for transition consistency */
+    max-height: 95vh;
+    overflow: visible;
 }
 
 .signin-modal-content {
@@ -37,21 +38,19 @@
     height: 100%;
 }
 
-/* --- Layout Variants --- */
 
-/* Sign In: Left=Visual, Right=Form */
 .content-signin {
     display: flex;
     width: 100%;
 }
 
-/* Sign Up: Left=Form, Right=Visual */
+
 .content-signup {
     display: flex;
     width: 100%;
 }
 
-/* Common Side Styles */
+
 .modal-side {
     flex: 1;
     display: flex;
@@ -78,7 +77,7 @@
 
 
 
-/* Specific Adjustments */
+
 .signin-visual {
     flex: 1;
 }
@@ -95,12 +94,16 @@
     flex: 1.2;
 }
 
-/* Visual Content */
+
 .duck-video, .signup-video {
     width: 100%;
     height: 100%;
     object-fit: cover;
     display: block;
+    display: block;
+    position: absolute;
+    top: 0;
+    left: 0;
 }
 
 .video-overlay-text {
@@ -122,7 +125,7 @@
     text-shadow: 2px 2px 0px rgba(255,255,255,0.2);
 }
 
-/* Form Content */
+
 .signin-logo, .signup-logo {
     margin-bottom: 15px;
 }
@@ -188,10 +191,12 @@
     width: 100%;
     padding: 12px 20px;
     border: 2px solid #000;
-    border-radius: 30px; /* Unified rounded style */
+    border-radius: 11px;
+
     font-size: 14px;
     outline: none;
     background-color: #EBF5FF;
+    box-sizing: border-box;
 }
 
 .form-group input::placeholder {
@@ -203,7 +208,7 @@
     background-color: #fff;
 }
 
-/* Sign In Specifics */
+
 .remember-me {
     font-family: 'Poppins', sans-serif;
     display: flex;
@@ -229,7 +234,7 @@
     margin-bottom: 25px;
 }
 
-/* Buttons */
+
 .auth-button {
     font-family: 'Inter', sans-serif;
     width: 100%;
@@ -262,7 +267,7 @@
     color: #000;
 }
 
-/* Decoration */
+
 .cloud-item {
     position: absolute;
     z-index: 1;
@@ -281,7 +286,7 @@
     width: 180px;
 }
 
-/* Sign Up Specifics - Roles */
+
 .role-selection-container {
     display: flex;
     flex-direction: column;
@@ -319,7 +324,7 @@
 
 .flower-icon {
     width: 70px;
-    height: auto;
+    height: 100%;
 }
 
 .flower-icon.right {
@@ -432,12 +437,8 @@
     max-width: 420px !important;
 }
 
-.form-group input[type="email"] {
-    width: 418px !important;
-    height: 32px !important;
-    max-width: 100%;
-    border-radius: 11px !important;
-}
+
+
 
 .form-group.half {
     width: 202px !important;
@@ -462,3 +463,25 @@
     border: 2px solid #000 !important;
 }
 
+
+.form-content-wrapper {
+    max-height: 85vh;
+    overflow-y: auto;
+    overflow-x: hidden;
+    width: 100%;
+    padding: 5px;
+    scrollbar-width: thin;
+    box-sizing: border-box;
+}
+
+
+.form-content-wrapper::-webkit-scrollbar {
+    width: 6px;
+}
+.form-content-wrapper::-webkit-scrollbar-track {
+    background: transparent;
+}
+.form-content-wrapper::-webkit-scrollbar-thumb {
+    background-color: rgba(0,0,0,0.2);
+    border-radius: 20px;
+}

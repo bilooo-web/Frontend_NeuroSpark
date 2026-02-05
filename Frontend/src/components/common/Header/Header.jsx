@@ -3,6 +3,7 @@ import logo_s from '../../../assets/logo_s.png'; // Import the logo
 import { Link } from "react-router-dom";
 
 
+
 function Header() {
   return (
     <header className="header">
@@ -16,7 +17,7 @@ function Header() {
           <Link to="/home">Home</Link>
           <Link to="/challenges">Challenges</Link>
           <a href="#roadmap">Spark City</a>
-          <a href="#customization">Customization</a>
+          <Link to="/customization">Customization</Link>
           <a href="#homework">Homework</a>
           <Link to="/about">About Us</Link>
         </nav>

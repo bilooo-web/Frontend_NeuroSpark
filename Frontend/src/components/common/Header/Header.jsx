@@ -2,8 +2,15 @@ import './Header.css';
 import logo_s from '../../../assets/logo_s.png'; 
 import profileImage from '../../../assets/profile_h.png';
 import { Link } from "react-router-dom";
+import { useState } from "react";
+
+import SignInModal from "../../auth/SignInModal/SignInModal";
+import SignUp from "../../auth/SignUp/SignUp";
 
 function Header() {
+  const [showSignIn, setShowSignIn] = useState(false);
+  const [showSignUp, setShowSignUp] = useState(false);
+
   return (
     <header className="header">
       <div className="header-container">
@@ -22,15 +29,41 @@ function Header() {
         </nav>
 
         <div className="header-right">
-          <button className="header-btn">
-            🪙 0
-          </button>
+          <button className="header-btn">🪙 0</button>
+
           <div className="profile-container">
-            <img src={profileImage} alt="Profile" className="profile-img" />
+            <img
+              src={profileImage}
+              alt="Profile"
+              className="profile-img"
+              onClick={() => setShowSignIn(true)}
+              style={{ cursor: "pointer" }}
+            />
           </div>
         </div>
 
       </div>
+
+      {/* AUTH MODALS */}
+      {showSignIn && (
+        <SignInModal
+          onClose={() => setShowSignIn(false)}
+          onSwitch={() => {
+            setShowSignIn(false);
+            setShowSignUp(true);
+          }}
+        />
+      )}
+
+      {showSignUp && (
+        <SignUp
+          onClose={() => setShowSignUp(false)}
+          onSwitch={() => {
+            setShowSignUp(false);
+            setShowSignIn(true);
+          }}
+        />
+      )}
     </header>
   );
 }

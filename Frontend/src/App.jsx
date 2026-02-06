@@ -5,6 +5,7 @@ import AboutUs2 from "./pages/AboutUs2";
 import Home from "./pages/Home";
 import Challenges from "./pages/Challenges";
 import ChallengeDetails from "./pages/ChallengeDetails";
+import SignInModal from "./components/auth/SignInModal/SignInModal";
 
 
 

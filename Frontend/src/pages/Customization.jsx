@@ -1,8 +1,8 @@
 import { useState } from "react";
 import Header from "../components/common/Header/Header";
-import AvatarPreview from "../components/Customization/AvatarPreview";
-import CategoryTabs from "../components/Customization/CategoryTabs";
-import ItemsGrid from "../components/Customization/ItemsGrid";
+import AvatarPreview from "../components/customization/AvatarPreview";
+import CategoryTabs from "../components/customization/CategoryTabs";
+import ItemsGrid from "../components/customization/ItemsGrid";
 import { items } from "../data/customizationData"; 
 import "./Customization.css";
 import Footer from "../components/common/Footer/Footer";

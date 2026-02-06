@@ -1,28 +1,28 @@
 import "./CategoryTabs.css";
 
-// Import your icon images
-import heartIcon from "../../assets/heart.png";
-import gridIcon from "../../assets/grid.png";
-import tshirtIcon from "../../assets/tshirt.png";
-import pantIcon from "../../assets/pant.png";
-import hatIcon from "../../assets/hat.png";
-import glassesIcon from "../../assets/glasses.png";
-import scarfIcon from "../../assets/scarf.png";
-import jacketIcon from "../../assets/jacket.png";
-import bagIcon from "../../assets/bag.png";
-import shoesIcon from "../../assets/shoes.png";
+// Import your icon images - commented out missing files
+// import heartIcon from "../../assets/heart.png";
+// import gridIcon from "../../assets/grid.png";
+// import tshirtIcon from "../../assets/tshirt.png";
+// import pantIcon from "../../assets/pant.png";
+// import hatIcon from "../../assets/hat.png";
+// import glassesIcon from "../../assets/glasses.png";
+// import scarfIcon from "../../assets/scarf.png";
+// import jacketIcon from "../../assets/jacket.png";
+// import bagIcon from "../../assets/bag.png";
+// import shoesIcon from "../../assets/shoes.png";
 
 const categories = [
-  { id: "favorites", icon: heartIcon },
-  { id: "all", icon: gridIcon },
-  { id: "shirts", icon: tshirtIcon },
-  { id: "pants", icon: pantIcon },
-  { id: "hats", icon: hatIcon },
-  { id: "glasses", icon: glassesIcon },
-  { id: "scarves", icon: scarfIcon },
-  { id: "jackets", icon: jacketIcon },
-  { id: "bags", icon: bagIcon },
-  { id: "shoes", icon: shoesIcon }
+  { id: "favorites", icon: null },
+  { id: "all", icon: null },
+  { id: "shirts", icon: null },
+  { id: "pants", icon: null },
+  { id: "hats", icon: null },
+  { id: "glasses", icon: null },
+  { id: "scarves", icon: null },
+  { id: "jackets", icon: null },
+  { id: "bags", icon: null },
+  { id: "shoes", icon: null }
 ];
 
 const CategoryTabs = ({ active, onChange }) => {

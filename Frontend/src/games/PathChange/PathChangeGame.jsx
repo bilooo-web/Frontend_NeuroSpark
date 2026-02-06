@@ -5,7 +5,7 @@ import "./PathChangeGame.css";
 
 import meditationVideo from "../../assets/breathing-exercise.mp4";
 
-function PathChangePuzzle() {
+function PathChangeGame() {
   const [tile1Rotation, setTile1Rotation] = useState(0);
   const [tile2Rotation, setTile2Rotation] = useState(0);
   const [tile3Rotation, setTile3Rotation] = useState(0);
@@ -279,4 +279,4 @@ function PathChangePuzzle() {
   );
 }
 
-export default PathChangePuzzle;
+export default PathChangeGame;

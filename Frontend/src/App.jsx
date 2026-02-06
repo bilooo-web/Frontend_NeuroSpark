@@ -6,7 +6,8 @@ import Home from "./pages/Home";
 import Challenges from "./pages/Challenges";
 import ChallengeDetails from "./pages/ChallengeDetails";
 import SignInModal from "./components/auth/SignInModal/SignInModal";
-
+import PathChangeGame from "./games/PathChange/PathChangeGame";
+import Customization from "./pages/Customization";
 
 
 function App() {
@@ -27,7 +28,10 @@ function App() {
         <Route path="/home" element={<Home />} />
         <Route path="/challenges" element={<Challenges />} />
         <Route path="/challenges/:id" element={<ChallengeDetails />} />
+        <Route path="/challenges/:id/play" element={<PathChangeGame />} />
         <Route path="/about" element={<AboutUs2 />} />
+        <Route path="/customization" element={<Customization />} />
+        <Route path="/path-change-game" element={<PathChangeGame />} />
       </Routes>
 
     </BrowserRouter>

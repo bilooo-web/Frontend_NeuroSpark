@@ -7,7 +7,7 @@ import flower from '../../../assets/flower.png';
 import star from '../../../assets/star.png';
 import { Link } from 'react-router-dom';
 
-const SignUp = () => {
+const SignUp = ({ onClose, onSwitch }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -19,13 +19,13 @@ const SignUp = () => {
       alert("Passwords don't match!");
       return;
     }
-    console.log('SignUp attempt:', { email, password, role });
-    // Specific things to be done later
+
+
   };
 
   return (
     <div className="signup-page">
-        {/* Background Stars scattered */}
+
         <img src={star} className="bg-star star-1" alt="" />
         <img src={star} className="bg-star star-2" alt="" />
         <img src={star} className="bg-star star-3" alt="" />
@@ -117,7 +117,7 @@ const SignUp = () => {
             <button type="submit" className="signup-button">Create your Account</button>
             
             <p className="login-prompt">
-              Already have an account have an account? <span className="login-link" onClick={() => window.location.reload()}>Sign In here</span>
+              Already have an account have an account? <span className="login-link" onClick={onSwitch}>Sign In here</span>
             </p>
           </form>
         </div>

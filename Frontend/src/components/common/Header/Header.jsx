@@ -8,8 +8,13 @@ import SignInModal from "../../auth/SignInModal/SignInModal";
 import SignUp from "../../auth/SignUp/SignUp";
 
 function Header() {
-  const [showSignIn, setShowSignIn] = useState(false);
-  const [showSignUp, setShowSignUp] = useState(false);
+  const openSignIn = () => {
+    window.dispatchEvent(new CustomEvent('open-auth', { detail: 'signin' }));
+  };
+
+  const openSignUp = () => {
+    window.dispatchEvent(new CustomEvent('open-auth', { detail: 'signup' }));
+  };
 
   return (
     <header className="header">
@@ -36,34 +41,13 @@ function Header() {
               src={profileImage}
               alt="Profile"
               className="profile-img"
-              onClick={() => setShowSignIn(true)}
+              onClick={openSignIn}
               style={{ cursor: "pointer" }}
             />
           </div>
         </div>
 
       </div>
-
-      {/* AUTH MODALS */}
-      {showSignIn && (
-        <SignInModal
-          onClose={() => setShowSignIn(false)}
-          onSwitch={() => {
-            setShowSignIn(false);
-            setShowSignUp(true);
-          }}
-        />
-      )}
-
-      {showSignUp && (
-        <SignUp
-          onClose={() => setShowSignUp(false)}
-          onSwitch={() => {
-            setShowSignUp(false);
-            setShowSignIn(true);
-          }}
-        />
-      )}
     </header>
   );
 }

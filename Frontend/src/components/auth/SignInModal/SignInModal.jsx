@@ -4,11 +4,12 @@ import duckVideo from '../../../assets/Duck.mp4';
 import signupVideo from '../../../assets/signup.mp4';
 import logo from '../../../assets/logo_s.png';
 import cloud from '../../../assets/cloud-blue.png';
+import cloudR from '../../../assets/cloud_r.png';
 import roleBg from '../../../assets/roleselection.png';
 import flower from '../../../assets/flower.png';
 import star from '../../../assets/stars-white.png';
 
-const SignInModal = ({ onClose }) => {
+const SignInModal = ({ onClose, onSwitch }) => {
   const [isSignUp, setIsSignUp] = useState(false);
 
 
@@ -34,7 +35,7 @@ const SignInModal = ({ onClose }) => {
   const [clinicName, setClinicName] = useState('');
   const handleSignInSubmit = (e) => {
     e.preventDefault();
-    console.log('SignIn attempt:', { email, password, rememberMe });
+
     onClose();
   };
 
@@ -44,24 +45,7 @@ const SignInModal = ({ onClose }) => {
       alert("Passwords don't match!");
       return;
     }
-    console.log('SignUp attempt:', { 
-        email: signUpEmail, 
-        password: signUpPassword, 
-        role,
-        ...(role === 'parent' && {
-            fullName,
-            phoneNumber,
-            childName,
-            childAge,
-            hasTherapist,
-            therapistEmail
-        }),
-        ...(role === 'therapist' && {
-            fullName,
-            phoneNumber,
-            clinicName
-        })
-    });
+
     onClose();
   };
 
@@ -94,7 +78,7 @@ const SignInModal = ({ onClose }) => {
 
               <div className="modal-side form-side signin-form-side">
                 <img src={cloud} alt="Cloud" className="cloud-item cloud-left-img" />
-                <img src={cloud} alt="Cloud" className="cloud-item cloud-right-img" />
+                <img src={cloudR} alt="Cloud" className="cloud-item cloud-right-img" />
 
                 <div className="form-content-wrapper">
                   <div className="signin-logo">
@@ -142,7 +126,7 @@ const SignInModal = ({ onClose }) => {
                     <button type="submit" className="auth-button">Sign in</button>
                     
                     <p className="switch-prompt">
-                      Don't have an account? <span className="switch-link" onClick={() => setIsSignUp(true)}>Sign Up</span>
+                      Don't have an account? <span className="switch-link" onClick={onSwitch}>Sign Up</span>
                     </p>
                   </form>
                 </div>
@@ -372,7 +356,7 @@ const SignInModal = ({ onClose }) => {
                     <button type="submit" className="auth-button">Create your Account</button>
                     
                     <p className="switch-prompt">
-                      Already have an account? <span className="switch-link" onClick={() => setIsSignUp(false)}>Sign In here</span>
+                      Already have an account? <span className="switch-link" onClick={onSwitch}>Sign In here</span>
                     </p>
                   </form>
                 </div>

@@ -69,6 +69,8 @@
 
 .signup-logo {
     margin-bottom: 10px;
+    display: flex;
+    justify-content: center;
 }
 
 .signup-logo img {
@@ -128,7 +130,7 @@
     width: 100%;
     padding: 12px 20px;
     border: 2px solid #000;
-    border-radius: 30px;
+    border-radius: 11px;
     font-size: 14px;
     outline: none;
     background-color: #EBF5FF;
@@ -149,8 +151,8 @@
 }
 
 .role-header {
-    width: 250px;
-    height: 60px;
+    width: 420px;
+    height: 120px;
     background-size: 100% 100%; 
     background-repeat: no-repeat;
     background-position: center;
@@ -237,7 +239,7 @@
     background-color: #6D8DBF;
     color: white;
     border: none;
-    border-radius: 50px; 
+    border-radius: 11px; 
     font-size: 18px;
     font-weight: 700;
     cursor: pointer;

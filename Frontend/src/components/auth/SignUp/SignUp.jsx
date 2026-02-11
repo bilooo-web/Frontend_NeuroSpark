@@ -12,6 +12,13 @@ const SignUp = ({ onClose, onSwitch }) => {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [role, setRole] = useState('');
+  const [fullName, setFullName] = useState('');
+  const [phoneNumber, setPhoneNumber] = useState('');
+  const [childName, setChildName] = useState('');
+  const [childAge, setChildAge] = useState('');
+  const [hasTherapist, setHasTherapist] = useState(null);
+  const [therapistEmail, setTherapistEmail] = useState('');
+  const [clinicName, setClinicName] = useState('');
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -113,6 +120,137 @@ const SignUp = ({ onClose, onSwitch }) => {
                     <img src={flower} alt="Flower" className="flower-icon right" />
                 </div>
             </div>
+
+            {role === 'parent' && (
+                <div className="parent-fields">
+                    <div className="form-row">
+                        <div className="form-group half">
+                            <label>Full Name</label>
+                            <input 
+                                type="text" 
+                                placeholder="Enter your full name"
+                                value={fullName}
+                                onChange={(e) => setFullName(e.target.value)}
+                                required
+                            />
+                        </div>
+                        <div className="form-group half">
+                            <label>Phone Number</label>
+                            <input 
+                                type="tel" 
+                                placeholder="Enter your phone number"
+                                value={phoneNumber}
+                                onChange={(e) => setPhoneNumber(e.target.value)}
+                                required
+                            />
+                        </div>
+                    </div>
+
+                    <div className="form-row">
+                        <div className="form-group half">
+                            <label>Child's Username</label>
+                            <input 
+                                type="text" 
+                                placeholder="Enter your child's name"
+                                value={childName}
+                                onChange={(e) => setChildName(e.target.value)}
+                                required
+                            />
+                        </div>
+                        <div className="form-group half">
+                            <label>Child's Age</label>
+                            <input 
+                                type="text" 
+                                placeholder="Enter your child age"
+                                value={childAge}
+                                onChange={(e) => setChildAge(e.target.value)}
+                                required
+                            />
+                        </div>
+                    </div>
+
+                    <div className="role-selection-container" style={{ margin: '15px 0' }}>
+                          <div className="role-header" style={{ backgroundImage: `url(${roleBg})` }}>
+                            <span>Child's therapist</span>
+                        </div>
+                        
+                        <div className="radios vertical-radios">
+                            <label className="radio-label">
+                                <input 
+                                    type="radio" 
+                                    name="hasTherapist" 
+                                    value="yes" 
+                                    checked={hasTherapist === 'yes'}
+                                    onChange={(e) => setHasTherapist(e.target.value)}
+                                />
+                                <span className="radio-custom"></span>
+                                Yes
+                            </label>
+                            <label className="radio-label">
+                                <input 
+                                    type="radio" 
+                                    name="hasTherapist" 
+                                    value="no" 
+                                    checked={hasTherapist === 'no'}
+                                    onChange={(e) => setHasTherapist(e.target.value)}
+                                />
+                                <span className="radio-custom"></span>
+                                No
+                            </label>
+                        </div>
+                    </div>
+
+                    {hasTherapist === 'yes' && (
+                          <div className="form-group">
+                            <label>Therapist Email</label>
+                            <input 
+                                type="email" 
+                                placeholder="Enter therapist's email address"
+                                value={therapistEmail}
+                                onChange={(e) => setTherapistEmail(e.target.value)}
+                                required
+                            />
+                        </div>
+                    )}
+                </div>
+            )}
+
+            {role === 'therapist' && (
+                <div className="therapist-fields">
+                    <div className="form-row">
+                        <div className="form-group half">
+                            <label>Full Name</label>
+                            <input 
+                                type="text" 
+                                placeholder="Enter your full name"
+                                value={fullName}
+                                onChange={(e) => setFullName(e.target.value)}
+                                required
+                            />
+                        </div>
+                        <div className="form-group half">
+                            <label>Phone number</label>
+                            <input 
+                                type="tel" 
+                                placeholder="Enter your phone number"
+                                value={phoneNumber}
+                                onChange={(e) => setPhoneNumber(e.target.value)}
+                                required
+                            />
+                        </div>
+                    </div>
+
+                    <div className="form-group">
+                        <label>Clinic / Center Name(optional)</label>
+                        <input 
+                            type="text" 
+                            placeholder="Enter clinic or center name"
+                            value={clinicName}
+                            onChange={(e) => setClinicName(e.target.value)}
+                        />
+                    </div>
+                </div>
+            )}
 
             <button type="submit" className="signup-button">Create your Account</button>
             

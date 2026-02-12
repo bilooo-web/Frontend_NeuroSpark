@@ -1,12 +1,12 @@
 import "./FocusChallenges.css";
 import { Link } from "react-router-dom";
 
-import game1 from "../../../assets/game1_c.jpg";
-import game2 from "../../../assets/game2_c.jpg";
-import game3 from "../../../assets/game3_c.jpg";
-import game4 from "../../../assets/game4_c.jpg";
-import game5 from "../../../assets/game5_c.jpg";
-import game6 from "../../../assets/game4_c.jpg";
+import game1 from "../../../assets/duck-game1.png";
+import game2 from "../../../assets/duck-game1.png";
+import game3 from "../../../assets/duck-game1.png";
+import game4 from "../../../assets/duck-game1.png";
+import game5 from "../../../assets/duck-game1.png";
+import game6 from "../../../assets/duck-game1.png";
 import game7 from "../../../assets/game4_c.jpg";
 import game8 from "../../../assets/game4_c.jpg";
 import game9 from "../../../assets/game4_c.jpg";
@@ -14,7 +14,7 @@ import game10 from "../../../assets/game4_c.jpg";
 import game11 from "../../../assets/game4_c.jpg";
 import game12 from "../../../assets/game4_c.jpg";
 
-import tape from "../../../assets/tape.png";
+import tape from "../../../assets/tape.png";     
 
 const allChallenges = [
   {

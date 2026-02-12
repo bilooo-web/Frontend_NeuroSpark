@@ -1,0 +1,238 @@
+.lets-read-together {
+  background-color: #DEF0FF;
+  overflow: hidden;
+}
+
+.content-container {
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 50px 40px 0;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  min-height: calc(100vh - 120px);
+}
+
+.billboard-section {
+  position: relative;
+  flex: 0 0 auto;
+  margin-left: 0px;
+  align-self: flex-start;
+  margin-top: -140px;
+}
+
+.billboard {
+  width: 500px;
+  height: auto;
+  display: block;
+  animation: gentleRock 8s ease-in-out infinite;
+  transform-origin: bottom center;
+}
+@keyframes gentleRock {
+  0%, 100% {
+    transform: rotate(0deg);
+  }
+  25% {
+    transform: rotate(0.8deg);
+  }
+  75% {
+    transform: rotate(-0.8deg);
+  }
+}
+.ducks-reading-section {
+  position: absolute;
+  bottom: 120px;
+  left: 80px;
+  z-index: 2;
+}
+
+.ducks-reading {
+  width: 280px;
+  height: auto;
+  display: block;
+  margin-left: 370px;
+  margin-bottom: -100px;
+  transform: rotate(-10deg);
+  animation: bobAndRotate 5s ease-in-out infinite;
+}
+@keyframes bobAndRotate {
+  0%, 100% {
+    transform: rotate(-10deg) translateY(0);
+  }
+  50% {
+    transform: rotate(-8deg) translateY(-10px);
+  }
+}
+.shine-section {
+  position: absolute;
+  top: 99px;
+  left: 42%;
+  transform: translateX(-50%);
+  transform: rotate(-50deg);
+  z-index: 1;
+}
+
+.shine-effect {
+  width: 150px;
+  height: auto;
+  opacity: 0.8;
+   animation: floatShine 4s ease-in-out infinite;
+  filter: 
+    drop-shadow(0 0 10px rgba(255, 215, 0, 0.4))
+    drop-shadow(0 0 20px rgba(255, 165, 0, 0.3));
+}
+@keyframes floatShine {
+  0%, 100% {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: translateY(-10px) scale(1.05);
+    opacity: 0.9;
+  }
+}
+
+.stamp-section {
+  position: relative;
+  flex: 0 0 auto;
+  z-index: 3;
+  transform: translateX(-250px);
+  margin-top: -200px;
+}
+.stamp-bg {
+  width: 500px;
+  height: auto;
+  display: block;
+}
+
+.pink-ticket {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(10%, -170%);
+  width: 50%;
+  height: auto;
+  z-index: -1;
+  animation: driftTicket 7s ease-in-out infinite;
+}
+@keyframes driftTicket {
+  0%, 100% {
+    transform: translate(10%, -170%) scale(1);
+  }
+  50% {
+    transform: translate(12%, -172%) scale(1.02);
+  }
+}
+.stamp-content {
+  position: absolute;
+  top: 45%; 
+  left: 48%; 
+  transform: translate(-50%, -50%);
+  text-align: center;
+  width: 85%;
+}
+.main-heading {
+  font-size: 39px;
+  font-weight: 800;
+  color: #000;
+  margin-top: 50px;
+  line-height: 1.2;
+}
+
+.description {
+  font-size: 14px;
+  line-height: 1.6;
+  color: #333;
+  margin-top: -20px;
+  max-width: 480px;
+}
+
+.girl-duck-section {
+  position: absolute;
+  bottom: 0px;
+  right: 40px;
+  z-index: 2;
+}
+
+.girl-duck {
+  width: 250px;
+  height: auto;
+  display: block;
+  animation: swayDuck 6s ease-in-out infinite;
+  transform-origin: bottom center;
+}
+@keyframes swayDuck {
+  0%, 100% {
+    transform: rotate(0deg);
+  }
+  25% {
+    transform: rotate(2deg);
+  }
+  75% {
+    transform: rotate(-2deg);
+  }
+}
+.wave-container {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  width: 100%;
+  height: 120px;
+  z-index: 1;
+}
+
+.wave {
+  width: 100%;
+  height: 100%;
+  display: block;
+  animation: waveFlow 8s ease-in-out infinite;
+}
+
+.wave path:first-child {
+  animation: waveMove1 12s ease-in-out infinite;
+  transform-origin: center;
+}
+
+.wave path:last-child {
+  animation: waveMove2 10s ease-in-out infinite;
+  transform-origin: center;
+}
+
+@keyframes waveFlow {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+@keyframes waveMove1 {
+  0%, 100% {
+    d: path("M0,64 C240,90 480,90 720,64 C960,38 1200,38 1440,64 L1440,120 L0,120 Z");
+  }
+  25% {
+    d: path("M0,68 C240,94 480,86 720,68 C960,42 1200,42 1440,68 L1440,120 L0,120 Z");
+  }
+  50% {
+    d: path("M0,72 C240,98 480,82 720,72 C960,46 1200,46 1440,72 L1440,120 L0,120 Z");
+  }
+  75% {
+    d: path("M0,68 C240,86 480,94 720,68 C960,50 1200,50 1440,68 L1440,120 L0,120 Z");
+  }
+}
+
+@keyframes waveMove2 {
+  0%, 100% {
+    d: path("M0,80 C240,100 480,100 720,80 C960,60 1200,60 1440,80 L1440,120 L0,120 Z");
+  }
+  33% {
+    d: path("M0,84 C240,104 480,96 720,84 C960,64 1200,64 1440,84 L1440,120 L0,120 Z");
+  }
+  66% {
+    d: path("M0,76 C240,96 480,104 720,76 C960,56 1200,56 1440,76 L1440,120 L0,120 Z");
+  }
+}

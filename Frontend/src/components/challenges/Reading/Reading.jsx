@@ -1,4 +1,5 @@
 import "./Reading.css";
+import { useNavigate } from "react-router-dom";
 import ticket from "../../../assets/ticket.png";
 import cloud_r from "../../../assets/cloud_r.png";
 import star_r from "../../../assets/star.png";
@@ -6,9 +7,11 @@ import girl from "../../../assets/girl-flying.png";
 import books_r from "../../../assets/books_r.png";
 import quote from "../../../assets/quote.png";
 import bookChar from "../../../assets/book-character.png";
-import stamp from "../../../assets/stamp.png"; // Add this import
+import stamp from "../../../assets/stamp.png";
+
 
 const Reading = () => {
+  const navigate = useNavigate();
   return (
     <section className="reading-section">
 
@@ -44,7 +47,7 @@ const Reading = () => {
               Choose a story you like, listen to the words, and read out loud as the text lights up for you. Take your time and read at your own pace. If you make a mistake, that's okay just try again. Every word you read helps you become a stronger and more confident reader.
             </p>
 
-            <button className="reading-cloud-button">Let's Read!</button>
+            <button className="reading-cloud-button" onClick={() => navigate("/ReadingPage")}>Let's Read!</button>
           </div>
         </div>
       </div>

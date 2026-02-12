@@ -9,6 +9,8 @@ import SignInModal from "./components/auth/SignInModal/SignInModal";
 import SignUp from "./components/auth/SignUp/SignUp";
 import PathChangeGame from "./games/PathChange/PathChangeGame";
 import Customization from "./pages/Customization";
+import Reading from "./pages/ReadingPage";
+
 
 
 function App() {
@@ -79,7 +81,7 @@ function App() {
         <Route path="/challenges/:id/play" element={<PathChangeGame />} />
         <Route path="/about" element={<AboutUs2 />} />
         <Route path="/customization" element={<Customization />} />
-        <Route path="/path-change-game" element={<PathChangeGame />} />
+        <Route path="/ReadingPage" element={<Reading />} />
       </Routes>
 
     </BrowserRouter>

@@ -1,0 +1,88 @@
+.story-corner {
+  position: relative;
+  width: 100%;
+  min-height: 70vh;
+  background-color: #77BEF0; 
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden; 
+  box-sizing: border-box;
+  padding: 2rem;
+  z-index: 1;
+  margin-top: -30px;
+}
+
+.content-card {
+  background-color: white;
+  text-align: center;
+  border-radius: 48px 48px 48px 48px; 
+  margin-top: 10px;
+  max-width: 600px;
+  width: 100%;
+  padding: 3rem 4rem;
+  box-shadow: 0 20px 30px rgba(0, 0, 0, 0.05);
+  z-index: 10;
+  position: relative;
+}
+.story-bg-shape {
+  position: absolute;
+  top: 240px;
+  left: 52%;
+  transform: translate(-50%, -50%);
+  width: 47%;
+  max-width: 1000px;
+  height: 65%;
+  max-height: 500px;
+  background-color: #9AD0EE;
+  border-radius: 60px;
+  z-index: 1;
+  opacity: 0.6;  
+  box-shadow: 0 15px 25px rgba(0, 0, 0, 0.05);
+}
+.text-section h1 {
+  margin-top: 0;
+  margin-bottom: 1.5rem;
+  font-size: 39px;
+  font-weight: 800;
+  color: #000;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+}
+.text-section p {
+  font-size: 1.2rem;
+  line-height: 1.6;
+  color: #3a4a5a;
+  margin-bottom: 0.5rem;
+}
+
+.character {
+  position: absolute;
+  z-index: 20;
+}
+
+.character.duck {
+  left: 2%;
+  top: 13%;
+  width: 130px;
+}
+
+.character.duck img {
+  width: 270px;
+  height: auto;
+  display: block;
+  filter: drop-shadow(0 8px 12px rgba(0,0,0,0.08));
+}
+
+.character.yellow {
+  right: 11%;
+  top: -13%;
+  width: 110px;
+}
+
+.character.yellow img {
+  width: 280px;
+  height: auto;
+  display: block;
+  filter: drop-shadow(0 8px 12px rgba(0,0,0,0.08));
+}

@@ -133,19 +133,19 @@
   z-index: 4;
 }
 
-.star {
+.star_hero {
   position: absolute;
   z-index: 5; 
   animation: starTwinkle 3s ease-in-out infinite;
 }
 
-.star-1 {
+.star-1_hero {
   width: 50px;
   margin-top: 180px;
   margin-left: 50px;
 }
 
-.star-2 {
+.star-2_hero {
   width: 40px;
   margin-top: 100px;
   margin-left: 300px;

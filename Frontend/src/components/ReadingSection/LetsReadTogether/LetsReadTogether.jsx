@@ -39,8 +39,8 @@ const LetsReadTogether = () => {
         </div>
         </div>
 
-        <div className="wave-container">
-        <svg viewBox="0 0 1440 120" preserveAspectRatio="none" className="wave">
+        <div className="wave-together-container">
+        <svg viewBox="0 0 1440 120" preserveAspectRatio="none" className="wave-together">
             <path
             d="M0,64 C240,90 480,90 720,64 C960,38 1200,38 1440,64 L1440,120 L0,120 Z"
             fill="#9AD0EE"

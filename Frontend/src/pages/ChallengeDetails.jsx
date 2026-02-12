@@ -1,6 +1,6 @@
-import { useParams } from "react-router-dom";
+import { useEffect } from "react";
+import { useParams, useNavigate } from "react-router-dom";
 import { challengesData } from "../data/challengesData";
-import { useNavigate } from "react-router-dom";
 
 import Header from "../components/common/Header/Header";
 import Footer from "../components/common/Footer/Footer";
@@ -12,7 +12,9 @@ const ChallengeDetails = () => {
   const challenge = challengesData[id];
   const navigate = useNavigate();
 
-
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
 
   if (!challenge) {
     return (
@@ -29,7 +31,7 @@ const ChallengeDetails = () => {
   return (
     <>
       <Header />
-
+      
       <section className="challenge-details">
         <div className="stars-bg"></div>
         <div className="container">
@@ -40,9 +42,6 @@ const ChallengeDetails = () => {
                 <p className="category">{challenge.category}</p>
               </div>
 
-              
-
-              {/* Scores */}
               <div className="scores-section">
                 <div className="score-box">
                   <span className="score">{challenge.lastScore}</span>
@@ -54,13 +53,11 @@ const ChallengeDetails = () => {
                 </div>
               </div>
 
-              {/* Instructions */}
               <div className="section instructions-section">
                 <h3 className="section-title">Instructions</h3>
                 <p className="section-content">{challenge.instructions}</p>
               </div>
 
-              {/* Benefits */}
               <div className="section benefits-section">
                 <h3 className="section-title">Benefits</h3>
                 <div className="benefits-grid">
@@ -73,12 +70,12 @@ const ChallengeDetails = () => {
                 </div>
               </div>
 
-              {/* Start Button */}
-              <button className="start-btn" onClick={() => navigate(`/challenges/${id}/play`)}>Start Challenge</button>
+              <button className="start-btn" onClick={() => navigate(`/challenges/${id}/play`)}>
+                Start Challenge
+              </button>
             </div>
           </div>
 
-          {/* Right side  Character Image */}
           <div className="image-side">
             <div className="image-container">
               <div className="character-image-card">
@@ -92,7 +89,8 @@ const ChallengeDetails = () => {
           </div>
         </div>
       </section>
-
+      
+      <div style={{ height: '20px' }} /> 
       <Footer />
     </>
   );

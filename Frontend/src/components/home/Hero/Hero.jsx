@@ -2,7 +2,7 @@ import './Hero.css';
 import child from '../../../assets/child.png';
 import dinosaur from '../../../assets/dinosaur.png';
 import brain from '../../../assets/brain.png';
-import star from '../../../assets/star.png';
+import star_hero from '../../../assets/star.png';
 
 function Hero() {
   return (
@@ -30,8 +30,8 @@ function Hero() {
           <img src={dinosaur} alt="Dinosaur" className="dinosaur-img" />
           <img src={brain} alt="Brain" className="brain-img" />
           
-          <img src={star} alt="Star" className="star star-1" />
-          <img src={star} alt="Star" className="star star-2" />
+          <img src={star_hero} alt="Star" className="star_hero star-1_hero" />
+          <img src={star_hero} alt="Star" className="star_hero star-2_hero" />
         </div>
       </div>
     </section>

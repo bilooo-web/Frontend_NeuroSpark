@@ -6,6 +6,7 @@ import { useState } from "react";
 
 import SignInModal from "../../auth/SignInModal/SignInModal";
 import SignUp from "../../auth/SignUp/SignUp";
+import Home from '../../../pages/Home';
 
 function Header() {
   const openSignIn = () => {
@@ -20,7 +21,7 @@ function Header() {
     <header className="header">
       <div className="header-container">
 
-        <div className="logo">
+        <div className="logo" onClick={() => window.location.href = '/home'}>
           <img src={logo_s} alt="NeuroSpark" />
         </div>
 
@@ -41,7 +42,6 @@ function Header() {
               src={profileImage}
               alt="Profile"
               className="profile-img"
-              onClick={openSignIn}
               style={{ cursor: "pointer" }}
             />
           </div>

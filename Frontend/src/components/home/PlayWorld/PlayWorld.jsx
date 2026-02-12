@@ -1,8 +1,8 @@
 import { useEffect, useRef } from "react";
 import "./PlayWorld.css";
 
-import duckLeft from "../../../assets/duck-left.png";
-import duckRight from "../../../assets/duck-right.png";
+import duckLeft_h from "../../../assets/duck-left.png";
+import duckRight_h from "../../../assets/duck-right.png";
 import style1 from "../../../assets/style-1.png";
 
 const steps = [
@@ -34,13 +34,11 @@ export default function PlayWorld() {
   const duckRightRef = useRef(null);
 
   useEffect(() => {
-    // Create intersection observer for step items
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
-            entry.target.classList.add("animate-in");
-            // Unobserve after animation starts
+            entry.target.classList.add("playworld-step-visible");
             observer.unobserve(entry.target);
           }
         });
@@ -51,21 +49,17 @@ export default function PlayWorld() {
       }
     );
 
-    // Copy ref to local variable for cleanup function
     const currentRefs = stepRefs.current;
 
-    // Observe step items
     currentRefs.forEach((ref) => {
       if (ref) observer.observe(ref);
     });
 
-    // Duck animations on load
     setTimeout(() => {
-      if (duckLeftRef.current) duckLeftRef.current.classList.add("duck-float");
-      if (duckRightRef.current) duckRightRef.current.classList.add("duck-float");
+      if (duckLeftRef.current) duckLeftRef.current.classList.add("playworld-duck-float");
+      if (duckRightRef.current) duckRightRef.current.classList.add("playworld-duck-float");
     }, 300);
 
-    // Cleanup
     return () => {
       currentRefs.forEach((ref) => {
         if (ref) observer.unobserve(ref);
@@ -74,47 +68,44 @@ export default function PlayWorld() {
   }, []);
 
   return (
-    <section className="playworld">
-      {/* Animated Ducks */}
+    <section className="playworld-container">
       <img 
         ref={duckLeftRef}
-        src={duckLeft} 
-        className="duck duck-left" 
+        src={duckLeft_h} 
+        className="playworld-duck playworld-duck-left" 
         alt="Floating duck"
       />
       <img 
         ref={duckRightRef}
-        src={duckRight} 
-        className="duck duck-right" 
+        src={duckRight_h} 
+        className="playworld-duck playworld-duck-right" 
         alt="Floating duck"
       />
 
-      {/* Text */}
-      <h2 className="playworld-title">
+      <h2 className="playworld-heading">
         How NeuroSpark Works <br /> for Your Family
       </h2>
 
-      <p className="playworld-subtitle">
+      <p className="playworld-description">
         NeuroSpark provides your child with the same routines and the same
         support, no matter where they are or who they're with.
       </p>
 
-      {/* Animated Steps */}
-      <div className="steps-container">
+      <div className="playworld-steps-grid">
         {steps.map((step, index) => (
           <div 
             key={index} 
             ref={(el) => (stepRefs.current[index] = el)}
-            className="step-item"
+            className="playworld-step-item"
             style={{ animationDelay: `${index * 0.2}s` }}
           >
-            <div className="step-circle">
-              <div className="step-circle-inner">
+            <div className="playworld-step-circle-outer">
+              <div className="playworld-step-circle-inner">
                 <img src={step.icon} alt="" />
               </div>
             </div>
 
-            <div className="step-card">
+            <div className="playworld-step-card">
               <strong>{step.title}</strong>
               <p>{step.text}</p>
             </div>

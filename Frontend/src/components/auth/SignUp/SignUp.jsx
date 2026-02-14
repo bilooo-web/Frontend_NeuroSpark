@@ -8,17 +8,25 @@ import star from '../../../assets/star.png';
 import { Link } from 'react-router-dom';
 
 const SignUp = ({ onClose, onSwitch }) => {
+  const [fullName, setFullName] = useState('');
+  const [username, setUsername] = useState('');
+  const [phoneNumber, setPhoneNumber] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+
   const [role, setRole] = useState('');
-  const [fullName, setFullName] = useState('');
-  const [phoneNumber, setPhoneNumber] = useState('');
-  const [childName, setChildName] = useState('');
-  const [childAge, setChildAge] = useState('');
+
+  const [childFullName, setChildFullName] = useState('');
+  const [childDob, setChildDob] = useState('');
+  const [childUsername, setChildUsername] = useState('');
+  const [childPassword, setChildPassword] = useState('');
+  const [childConfirmPassword, setChildConfirmPassword] = useState('');
+  
   const [hasTherapist, setHasTherapist] = useState(null);
   const [therapistEmail, setTherapistEmail] = useState('');
-  const [clinicName, setClinicName] = useState('');
+  
+  const [hasChild, setHasChild] = useState(false);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -26,9 +34,150 @@ const SignUp = ({ onClose, onSwitch }) => {
       alert("Passwords don't match!");
       return;
     }
-
-
+    
+    const payload = {
+        role,
+        fullName,
+        username,
+        phoneNumber,
+        email,
+        password,
+        ...(role === 'parent' || (role === 'therapist' && hasChild) ? {
+            childFullName,
+            childDob,
+            childUsername,
+            childPassword
+        } : {}),
+        ...(role === 'parent' && hasTherapist === 'yes' ? { therapistEmail } : {})
+    };
+    
+    console.log("Sign Up Payload:", payload);
   };
+
+  const renderBasicFields = () => (
+    <>
+        <div className="form-group">
+            <label>Full Name</label>
+            <input 
+                type="text" 
+                placeholder="Enter Full Name"
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
+                required
+            />
+        </div>
+        <div className="form-group">
+            <label>Username</label>
+            <input 
+                type="text" 
+                placeholder="Enter Username"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                required
+            />
+        </div>
+        <div className="form-group">
+            <label>Phone Number</label>
+            <input 
+                type="tel" 
+                placeholder="Enter Phone Number"
+                value={phoneNumber}
+                onChange={(e) => setPhoneNumber(e.target.value)}
+                required
+            />
+        </div>
+        <div className="form-group">
+            <label>Email</label>
+            <input 
+                type="email" 
+                placeholder="Enter Email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+            />
+        </div>
+        <div className="form-row">
+          <div className="form-group half">
+            <label>Password</label>
+            <input 
+              type="password" 
+              placeholder="Enter Password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
+          </div>
+          <div className="form-group half">
+            <label>Confirm Password</label>
+            <input 
+              type="password" 
+              placeholder="Confirm Password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              required
+            />
+          </div>
+        </div>
+    </>
+  );
+
+  const renderChildFields = () => (
+    <div className="child-fields-section">
+        <h3 className="section-title">Child's Information</h3>
+        <div className="form-group">
+            <label>Child Full Name</label>
+            <input 
+                type="text" 
+                placeholder="Enter Child's Full Name"
+                value={childFullName}
+                onChange={(e) => setChildFullName(e.target.value)}
+                required={role === 'parent' || (role === 'therapist' && hasChild)}
+            />
+        </div>
+        <div className="form-group">
+            <label>Child Date of Birth</label>
+            <input 
+                type="date" 
+                value={childDob}
+                onChange={(e) => setChildDob(e.target.value)}
+                required={role === 'parent' || (role === 'therapist' && hasChild)}
+                style={{ fontStyle: 'normal' }}
+            />
+        </div>
+        <div className="form-group">
+            <label>Child Username</label>
+            <input 
+                type="text" 
+                placeholder="Enter Child's Username"
+                value={childUsername}
+                onChange={(e) => setChildUsername(e.target.value)}
+                required={role === 'parent' || (role === 'therapist' && hasChild)}
+            />
+        </div>
+        <div className="form-row">
+            <div className="form-group half">
+            <label>Child Password</label>
+            <input 
+                type="password" 
+                placeholder="Child's Password"
+                value={childPassword}
+                onChange={(e) => setChildPassword(e.target.value)}
+                required={role === 'parent' || (role === 'therapist' && hasChild)}
+            />
+            </div>
+            <div className="form-group half">
+            <label>Confirm Password</label>
+            <input 
+                type="password" 
+                placeholder="Confirm Child Password"
+                value={childConfirmPassword}
+                onChange={(e) => setChildConfirmPassword(e.target.value)}
+                required={role === 'parent' || (role === 'therapist' && hasChild)}
+            />
+            </div>
+        </div>
+    </div>
+  );
 
   return (
     <div className="signup-page">
@@ -50,39 +199,8 @@ const SignUp = ({ onClose, onSwitch }) => {
           <p className="signup-subtitle">Let's get you started , it only takes a moment</p>
 
           <form onSubmit={handleSubmit} className="signup-form">
-            <div className="form-group">
-              <label>Email</label>
-              <input 
-                type="email" 
-                placeholder="Enter Your Email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-              />
-            </div>
-
-            <div className="form-row">
-              <div className="form-group half">
-                <label>Password</label>
-                <input 
-                  type="password" 
-                  placeholder="Enter Your password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                />
-              </div>
-              <div className="form-group half">
-                <label>Confirm Password</label>
-                <input 
-                  type="password" 
-                  placeholder="Confirm Your password"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  required
-                />
-              </div>
-            </div>
+            
+            {renderBasicFields()}
 
             <div className="role-selection-container">
                 <div className="role-header" style={{ backgroundImage: `url(${roleBg})` }}>
@@ -99,7 +217,9 @@ const SignUp = ({ onClose, onSwitch }) => {
                                 name="role" 
                                 value="parent" 
                                 checked={role === 'parent'}
-                                onChange={(e) => setRole(e.target.value)}
+                                onChange={(e) => {
+                                    setRole('parent');
+                                }}
                             />
                             <span className="radio-custom"></span>
                             Parent
@@ -110,7 +230,9 @@ const SignUp = ({ onClose, onSwitch }) => {
                                 name="role" 
                                 value="therapist" 
                                 checked={role === 'therapist'}
-                                onChange={(e) => setRole(e.target.value)}
+                                onChange={(e) => {
+                                    setRole('therapist');
+                                }}
                             />
                             <span className="radio-custom"></span>
                             Therapist
@@ -123,57 +245,12 @@ const SignUp = ({ onClose, onSwitch }) => {
 
             {role === 'parent' && (
                 <div className="parent-fields">
-                    <div className="form-row">
-                        <div className="form-group half">
-                            <label>Full Name</label>
-                            <input 
-                                type="text" 
-                                placeholder="Enter your full name"
-                                value={fullName}
-                                onChange={(e) => setFullName(e.target.value)}
-                                required
-                            />
-                        </div>
-                        <div className="form-group half">
-                            <label>Phone Number</label>
-                            <input 
-                                type="tel" 
-                                placeholder="Enter your phone number"
-                                value={phoneNumber}
-                                onChange={(e) => setPhoneNumber(e.target.value)}
-                                required
-                            />
-                        </div>
-                    </div>
-
-                    <div className="form-row">
-                        <div className="form-group half">
-                            <label>Child's Username</label>
-                            <input 
-                                type="text" 
-                                placeholder="Enter your child's name"
-                                value={childName}
-                                onChange={(e) => setChildName(e.target.value)}
-                                required
-                            />
-                        </div>
-                        <div className="form-group half">
-                            <label>Child's Age</label>
-                            <input 
-                                type="text" 
-                                placeholder="Enter your child age"
-                                value={childAge}
-                                onChange={(e) => setChildAge(e.target.value)}
-                                required
-                            />
-                        </div>
-                    </div>
-
+                    {renderChildFields()}
+                    
                     <div className="role-selection-container" style={{ margin: '15px 0' }}>
                           <div className="role-header" style={{ backgroundImage: `url(${roleBg})` }}>
                             <span>Child's therapist</span>
                         </div>
-                        
                         <div className="radios vertical-radios">
                             <label className="radio-label">
                                 <input 
@@ -205,7 +282,7 @@ const SignUp = ({ onClose, onSwitch }) => {
                             <label>Therapist Email</label>
                             <input 
                                 type="email" 
-                                placeholder="Enter therapist's email address"
+                                placeholder="Enter Therapist's Email"
                                 value={therapistEmail}
                                 onChange={(e) => setTherapistEmail(e.target.value)}
                                 required
@@ -217,45 +294,34 @@ const SignUp = ({ onClose, onSwitch }) => {
 
             {role === 'therapist' && (
                 <div className="therapist-fields">
-                    <div className="form-row">
-                        <div className="form-group half">
-                            <label>Full Name</label>
-                            <input 
-                                type="text" 
-                                placeholder="Enter your full name"
-                                value={fullName}
-                                onChange={(e) => setFullName(e.target.value)}
-                                required
-                            />
+                     <div className="role-selection-container" style={{ margin: '15px 0' }}>
+                          <div className="role-header" style={{ backgroundImage: `url(${roleBg})` }}>
+                            <span>Do you have a child?</span>
                         </div>
-                        <div className="form-group half">
-                            <label>Phone number</label>
-                            <input 
-                                type="tel" 
-                                placeholder="Enter your phone number"
-                                value={phoneNumber}
-                                onChange={(e) => setPhoneNumber(e.target.value)}
-                                required
-                            />
+                        <div className="radios vertical-radios">
+                            <label className="radio-label">
+                                <input 
+                                    type="radio" 
+                                    name="hasChild" 
+                                    value="yes" 
+                                    checked={hasChild === true}
+                                    onClick={() => setHasChild(!hasChild)}
+                                    onChange={() => {}}
+                                />
+                                <span className="radio-custom"></span>
+                                Yes
+                            </label>
                         </div>
                     </div>
 
-                    <div className="form-group">
-                        <label>Clinic / Center Name(optional)</label>
-                        <input 
-                            type="text" 
-                            placeholder="Enter clinic or center name"
-                            value={clinicName}
-                            onChange={(e) => setClinicName(e.target.value)}
-                        />
-                    </div>
+                    {hasChild && renderChildFields()}
                 </div>
             )}
 
             <button type="submit" className="signup-button">Create your Account</button>
             
             <p className="login-prompt">
-              Already have an account have an account? <span className="login-link" onClick={onSwitch}>Sign In here</span>
+              Already have an account? <span className="login-link" onClick={onSwitch}>Sign In here</span>
             </p>
           </form>
         </div>

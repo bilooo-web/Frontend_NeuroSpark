@@ -123,7 +123,7 @@ const SignUp = ({ onClose, onSwitch }) => {
 
   const renderChildFields = () => (
     <div className="child-fields-section">
-        <h3 className="section-title">Child's Information</h3>
+        <h3 className="signup-section-title">Child's Information</h3>
         <div className="form-group">
             <label>Child Full Name</label>
             <input 

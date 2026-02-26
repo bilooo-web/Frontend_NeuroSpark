@@ -96,6 +96,7 @@ const SignInModal = ({ onClose, onSwitch }) => {
                         placeholder="Enter your email"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
+                        autoComplete="email"
                         required
                       />
                     </div>
@@ -107,6 +108,7 @@ const SignInModal = ({ onClose, onSwitch }) => {
                         placeholder="Enter your password"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
+                        autoComplete="current-password"
                         required
                       />
                     </div>
@@ -153,13 +155,14 @@ const SignInModal = ({ onClose, onSwitch }) => {
                   <form onSubmit={handleSignUpSubmit} className="auth-form">
                     <div className="form-group">
                       <label>Email</label>
-                      <input 
-                        type="email" 
-                        placeholder="Enter Your Email"
-                        value={signUpEmail}
-                        onChange={(e) => setSignUpEmail(e.target.value)}
-                        required
-                      />
+                        <input 
+                          type="email" 
+                          placeholder="Enter Your Email"
+                          value={signUpEmail}
+                          onChange={(e) => setSignUpEmail(e.target.value)}
+                          autoComplete="email"
+                          required
+                        />
                     </div>
   
                     <div className="form-row">
@@ -170,6 +173,7 @@ const SignInModal = ({ onClose, onSwitch }) => {
                           placeholder="Enter Your password"
                           value={signUpPassword}
                           onChange={(e) => setSignUpPassword(e.target.value)}
+                          autoComplete="new-password"
                           required
                         />
                       </div>
@@ -180,6 +184,7 @@ const SignInModal = ({ onClose, onSwitch }) => {
                           placeholder="Confirm Your password"
                           value={signUpConfirmPassword}
                           onChange={(e) => setSignUpConfirmPassword(e.target.value)}
+                          autoComplete="new-password"
                           required
                         />
                       </div>
@@ -232,6 +237,7 @@ const SignInModal = ({ onClose, onSwitch }) => {
                                         placeholder="Enter your full name"
                                         value={fullName}
                                         onChange={(e) => setFullName(e.target.value)}
+                                        autoComplete="name"
                                         required
                                     />
                                 </div>
@@ -242,6 +248,7 @@ const SignInModal = ({ onClose, onSwitch }) => {
                                         placeholder="Enter your phone number"
                                         value={phoneNumber}
                                         onChange={(e) => setPhoneNumber(e.target.value)}
+                                        autoComplete="tel"
                                         required
                                     />
                                 </div>
@@ -255,6 +262,7 @@ const SignInModal = ({ onClose, onSwitch }) => {
                                         placeholder="Enter your child's name"
                                         value={childName}
                                         onChange={(e) => setChildName(e.target.value)}
+                                        autoComplete="off"
                                         required
                                     />
                                 </div>
@@ -265,6 +273,7 @@ const SignInModal = ({ onClose, onSwitch }) => {
                                         placeholder="Enter your child age"
                                         value={childAge}
                                         onChange={(e) => setChildAge(e.target.value)}
+                                        autoComplete="bday"
                                         required
                                     />
                                 </div>
@@ -309,6 +318,7 @@ const SignInModal = ({ onClose, onSwitch }) => {
                                         placeholder="Enter therapist's email address"
                                         value={therapistEmail}
                                         onChange={(e) => setTherapistEmail(e.target.value)}
+                                        autoComplete="email"
                                         required
                                     />
                                 </div>
@@ -326,6 +336,7 @@ const SignInModal = ({ onClose, onSwitch }) => {
                                         placeholder="Enter your full name"
                                         value={fullName}
                                         onChange={(e) => setFullName(e.target.value)}
+                                        autoComplete="name"
                                         required
                                     />
                                 </div>
@@ -336,6 +347,7 @@ const SignInModal = ({ onClose, onSwitch }) => {
                                         placeholder="Enter your phone number"
                                         value={phoneNumber}
                                         onChange={(e) => setPhoneNumber(e.target.value)}
+                                        autoComplete="tel"
                                         required
                                     />
                                 </div>
@@ -348,6 +360,7 @@ const SignInModal = ({ onClose, onSwitch }) => {
                                     placeholder="Enter clinic or center name"
                                     value={clinicName}
                                     onChange={(e) => setClinicName(e.target.value)}
+                                    autoComplete="organization"
                                 />
                             </div>
                         </div>

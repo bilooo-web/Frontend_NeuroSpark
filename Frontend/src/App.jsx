@@ -10,6 +10,7 @@ import SignUp from "./components/auth/SignUp/SignUp";
 import PathChangeGame from "./games/PathChange/PathChangeGame";
 import Customization from "./pages/Customization";
 import Reading from "./pages/ReadingPage";
+import StoryBook from "./pages/StoryBook";
 
 
 
@@ -82,6 +83,7 @@ function App() {
         <Route path="/about" element={<AboutUs2 />} />
         <Route path="/customization" element={<Customization />} />
         <Route path="/ReadingPage" element={<Reading />} />
+        <Route path="/story/:id" element={<StoryBook />} />
       </Routes>
 
     </BrowserRouter>

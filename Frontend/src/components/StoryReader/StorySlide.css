@@ -1,0 +1,102 @@
+.slide {
+  width: 100%;
+  height: 100vh;
+  background-size: cover;
+  background-position: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.slide-content {
+  width: 90%;
+  max-width: 1200px;
+  display: flex;
+  align-items: center;
+  gap: 40px;
+}
+
+.slide-content.left {
+  flex-direction: row;
+}
+
+.slide-content.right {
+  flex-direction: row-reverse;
+}
+
+.slide-content.center {
+  flex-direction: column;
+  text-align: center;
+}
+
+.slide-character {
+  height: 420px;
+  object-fit: contain;
+  animation: float 3s ease-in-out infinite;
+}
+
+.slide-text-box {
+  background: rgba(255,255,255,0.9);
+  padding: 25px 35px;
+  border-radius: 20px;
+  font-size: 24px;
+  line-height: 1.6;
+  max-width: 500px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+}
+
+@keyframes float {
+  0%,100% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+}
+ and I created a slides folder that include: .slide {
+  width: 100%;
+  height: 100vh;
+  background-size: cover;
+  background-position: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.slide-content {
+  width: 90%;
+  max-width: 1200px;
+  display: flex;
+  align-items: center;
+  gap: 40px;
+}
+
+.slide-content.left {
+  flex-direction: row;
+}
+
+.slide-content.right {
+  flex-direction: row-reverse;
+}
+
+.slide-content.center {
+  flex-direction: column;
+  text-align: center;
+}
+
+.slide-character {
+  height: 420px;
+  object-fit: contain;
+  animation: float 3s ease-in-out infinite;
+}
+
+.slide-text-box {
+  background: rgba(255,255,255,0.9);
+  padding: 25px 35px;
+  border-radius: 20px;
+  font-size: 24px;
+  line-height: 1.6;
+  max-width: 500px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+}
+
+@keyframes float {
+  0%,100% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+}

@@ -63,6 +63,7 @@ const SignUp = ({ onClose, onSwitch }) => {
                 placeholder="Enter Full Name"
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
+                autoComplete="name"
                 required
             />
         </div>
@@ -73,6 +74,7 @@ const SignUp = ({ onClose, onSwitch }) => {
                 placeholder="Enter Username"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
+                autoComplete="username"
                 required
             />
         </div>
@@ -83,6 +85,7 @@ const SignUp = ({ onClose, onSwitch }) => {
                 placeholder="Enter Phone Number"
                 value={phoneNumber}
                 onChange={(e) => setPhoneNumber(e.target.value)}
+                autoComplete="tel"
                 required
             />
         </div>
@@ -93,6 +96,7 @@ const SignUp = ({ onClose, onSwitch }) => {
                 placeholder="Enter Email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                autoComplete="email"
                 required
             />
         </div>
@@ -104,6 +108,7 @@ const SignUp = ({ onClose, onSwitch }) => {
               placeholder="Enter Password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              autoComplete="new-password"
               required
             />
           </div>
@@ -114,6 +119,7 @@ const SignUp = ({ onClose, onSwitch }) => {
               placeholder="Confirm Password"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
+              autoComplete="new-password"
               required
             />
           </div>
@@ -131,6 +137,7 @@ const SignUp = ({ onClose, onSwitch }) => {
                 placeholder="Enter Child's Full Name"
                 value={childFullName}
                 onChange={(e) => setChildFullName(e.target.value)}
+                autoComplete="off"
                 required={role === 'parent' || (role === 'therapist' && hasChild)}
             />
         </div>
@@ -140,6 +147,7 @@ const SignUp = ({ onClose, onSwitch }) => {
                 type="date" 
                 value={childDob}
                 onChange={(e) => setChildDob(e.target.value)}
+                autoComplete="bday"
                 required={role === 'parent' || (role === 'therapist' && hasChild)}
                 style={{ fontStyle: 'normal' }}
             />
@@ -151,6 +159,7 @@ const SignUp = ({ onClose, onSwitch }) => {
                 placeholder="Enter Child's Username"
                 value={childUsername}
                 onChange={(e) => setChildUsername(e.target.value)}
+                autoComplete="off"
                 required={role === 'parent' || (role === 'therapist' && hasChild)}
             />
         </div>
@@ -162,6 +171,7 @@ const SignUp = ({ onClose, onSwitch }) => {
                 placeholder="Child's Password"
                 value={childPassword}
                 onChange={(e) => setChildPassword(e.target.value)}
+                autoComplete="new-password"
                 required={role === 'parent' || (role === 'therapist' && hasChild)}
             />
             </div>
@@ -172,6 +182,7 @@ const SignUp = ({ onClose, onSwitch }) => {
                 placeholder="Confirm Child Password"
                 value={childConfirmPassword}
                 onChange={(e) => setChildConfirmPassword(e.target.value)}
+                autoComplete="new-password"
                 required={role === 'parent' || (role === 'therapist' && hasChild)}
             />
             </div>
@@ -285,6 +296,7 @@ const SignUp = ({ onClose, onSwitch }) => {
                                 placeholder="Enter Therapist's Email"
                                 value={therapistEmail}
                                 onChange={(e) => setTherapistEmail(e.target.value)}
+                                autoComplete="email"
                                 required
                             />
                         </div>

@@ -1,0 +1,26 @@
+.storybook-container {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.book-page {
+  flex: 1;
+  position: relative;
+  width: 100%;
+  transition: opacity 0.3s ease;
+}
+
+.page-indicator-book {
+  position: fixed;
+  bottom: 200px;
+  left: 78%;
+  transform: translateX(-50%);
+  color: rgb(80, 78, 78);
+  padding: 8px 20px;
+  border-radius: 30px;
+  font-size: 14px;
+  z-index: 100;
+  font-weight: 500;
+}

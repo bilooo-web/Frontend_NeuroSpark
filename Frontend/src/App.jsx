@@ -9,6 +9,8 @@ import AuthModal from "./components/auth/AuthModal";
 import PathChangeGame from "./games/PathChange/PathChangeGame";
 import Customization from "./pages/Customization";
 import Reading from "./pages/ReadingPage";
+import GameSwitcher from "./games/GameSwitcher";
+import StoryBook from "./pages/StoryBook";
 
 function App() {
   const [showAuth, setShowAuth] = useState(false);
@@ -73,10 +75,16 @@ function App() {
         <Route path="/home" element={<Home />} />
         <Route path="/challenges" element={<Challenges />} />
         <Route path="/challenges/:id" element={<ChallengeDetails />} />
-        <Route path="/challenges/:id/play" element={<PathChangeGame />} />
+        <Route 
+          path="/challenges/:id/play" 
+          element={
+            <GameSwitcher />
+          } 
+        />
         <Route path="/about" element={<AboutUs2 />} />
         <Route path="/customization" element={<Customization />} />
         <Route path="/ReadingPage" element={<Reading />} />
+        <Route path="/story/:id" element={<StoryBook />} />
       </Routes>
 
     </BrowserRouter>

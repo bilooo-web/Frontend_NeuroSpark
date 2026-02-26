@@ -1,0 +1,385 @@
+.memory-padlocks-game {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background: #8BE3D8;
+    font-family: 'Outfit', 'Poppins', sans-serif;
+    overflow-x: hidden;
+    color: #334155;
+}
+
+.memory-padlocks-game.full-screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 1000;
+}
+
+.game-content {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    position: relative;
+    z-index: 1;
+}
+
+.game-card {
+    background: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(10px);
+    padding: 2rem;
+    border-radius: 60px;
+    width: 100%;
+    max-width: 1000px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+}
+
+.phase-container {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    transition: all 0.5s ease;
+}
+
+.phase-label {
+    font-size: 2.2rem;
+    margin: 2rem 0;
+    color: #2c3e50;
+    font-weight: 700;
+    text-shadow: 2px 2px 0 rgba(255, 255, 255, 0.3);
+}
+
+
+.simple-progress-container {
+    width: 100vw;
+    height: 8px;
+    background: rgba(255, 255, 255, 0.3);
+    z-index: 100;
+    overflow: hidden;
+    position: relative;
+}
+
+.simple-progress-bar {
+    height: 100%;
+    position: absolute;
+    left: 0;
+    top: 0;
+    transition: width 1s linear;
+    background: linear-gradient(90deg, 
+        #2ecc71 0%,    
+        #f1c40f 50%,
+        #e74c3c 100%   
+    );
+    box-shadow: 
+        0 0 10px rgba(46, 204, 113, 0.5),
+        0 0 5px rgba(46, 204, 113, 0.3) inset;
+}
+
+.memorize-progress {
+    background: linear-gradient(90deg, #60a5fa, #3b82f6);
+}
+
+.match-progress {
+    background: linear-gradient(90deg, #2ecc71, #f1c40f, #e74c3c);
+}
+
+
+.squares-grid {
+    display: flex;
+    gap: 2rem;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin: 1rem 0;
+}
+
+.memory-square {
+    width: 130px;
+    height: 130px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 3.5rem;
+    font-weight: 800;
+    color: #2c3e50;
+    border-radius: 40px;
+    background: white;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+    animation: squirclePop 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+    border: 4px solid white;
+}
+
+@keyframes squirclePop {
+    from { transform: scale(0.8); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+}
+
+
+.padlocks-grid {
+    display: flex;
+    gap: 3rem;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin: 3rem 0 3rem 0;
+    align-items: center;
+}
+
+.padlock {
+    width: 135px;
+    height: 180px;
+    position: relative;
+    user-select: none;
+    filter: drop-shadow(0 10px 15px rgba(0, 0, 0, 0.2));
+}
+
+.padlock-shackle {
+    width: 90px;
+    height: 80px;
+    border: 9px solid #ffd700;
+    border-bottom: none;
+    border-radius: 45px 45px 0 0;
+    position: absolute;
+    top: -30px;
+    left: 22px;
+    z-index: 1;
+    transition: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+    background: transparent;
+}
+
+.unlocked .padlock-shackle {
+    transform: translateY(-35px) rotate(25deg);
+    border-color: #2ecc71;
+    box-shadow: 0 0 20px rgba(46, 204, 113, 0.4);
+}
+
+.padlock-body {
+    width: 100%;
+    height: 135px;
+    border-radius: 45px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    z-index: 2;
+    border: 4px solid white;
+    box-shadow: 
+        inset 0 4px 6px rgba(255,255,255,0.4),
+        0 15px 35px rgba(0,0,0,0.12);
+}
+
+
+.dial-area {
+    width: 75px;
+    height: 110px;
+    background: linear-gradient(145deg, #f0f0f0, #ffffff);
+    border-radius: 40px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 0;
+    border: 3px solid #ffd700;
+    box-shadow: 
+        inset 0 2px 4px rgba(0,0,0,0.05),
+        0 2px 4px rgba(255,255,255,0.8);
+}
+
+.dial-arrow {
+    background: transparent;
+    border: none;
+    color: #94a3b8;
+    cursor: pointer;
+    font-size: 1rem;
+    padding: 4px;
+    transition: all 0.2s;
+    line-height: 1;
+}
+
+.dial-arrow:hover {
+    color: #64748b;
+    transform: scale(1.2);
+}
+
+.dial-value {
+    font-size: 3.2rem;
+    font-weight: 800;
+    color: #1e293b;
+    line-height: 1;
+    font-family: 'Outfit', monospace;
+}
+
+.checkmark-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(46, 204, 113, 0.95);
+    border-radius: 45px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 3rem;
+    color: white;
+    z-index: 3;
+    border: 4px solid white;
+    animation: checkPop 0.3s ease-out;
+}
+
+@keyframes checkPop {
+    0% {
+        transform: scale(0.5);
+        opacity: 0;
+    }
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+.check-button {
+    padding: 1.2rem 5rem;
+    font-size: 1.8rem;
+    background: #4a90e2;
+    color: white;
+    border: none;
+    border-radius: 50px;
+    cursor: pointer;
+    font-weight: 700;
+    border: 3px solid white;
+    box-shadow: 0 8px 20px rgba(74, 144, 226, 0.3);
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    margin-top: 1rem;
+}
+
+.check-button:hover:not(:disabled) {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 25px rgba(74, 144, 226, 0.4);
+}
+
+.check-button.success {
+    background: #2ecc71;
+    box-shadow: 0 8px 20px rgba(46, 204, 113, 0.3);
+}
+
+.check-button:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+.shake {
+    animation: premiumShake 0.4s ease-in-out both;
+}
+
+@keyframes premiumShake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-4px); }
+    75% { transform: translateX(4px); }
+}
+
+
+.game-over-phase {
+    text-align: center;
+}
+
+.game-over-text {
+    font-size: 1.5rem;
+    color: #2c3e50;
+    margin-bottom: 2rem;
+    background: rgba(255, 255, 255, 0.3);
+    padding: 1rem 3rem;
+    border-radius: 50px;
+    border: 2px solid white;
+}
+
+@media (max-width: 768px) {
+    .game-card {
+        padding: 1rem;
+        border-radius: 40px;
+    }
+    
+    .phase-label {
+        font-size: 1.8rem;
+        margin: 1.5rem 0;
+    }
+    
+    .padlocks-grid {
+        gap: 1.5rem;
+        margin: 2rem 0 2rem 0;
+    }
+    
+    .padlock {
+        width: 110px;
+        height: 150px;
+    }
+    
+    .padlock-body {
+        height: 110px;
+        border-radius: 35px;
+    }
+    
+    .padlock-shackle {
+        width: 70px;
+        height: 60px;
+        left: 20px;
+        top: -20px;
+        border-width: 8px;
+    }
+    
+    .dial-area {
+        width: 60px;
+        height: 90px;
+    }
+    
+    .dial-value {
+        font-size: 2.5rem;
+    }
+    
+    .memory-square {
+        width: 100px;
+        height: 100px;
+        font-size: 2.5rem;
+    }
+    
+    .check-button {
+        padding: 1rem 4rem;
+        font-size: 1.5rem;
+        margin-top: 0.5rem;
+    }
+}
+
+.mp-background-stars {
+  position: absolute;
+  inset: 0;
+  background-image:
+    radial-gradient(3px 3px at 20% 30%, #ffffff 100%, transparent 100%),
+    radial-gradient(1.5px 1.5px at 80% 70%, #ffffff 100%, transparent 100%),
+    radial-gradient(1px 1px at 40% 80%, #ffffff 100%, transparent 100%),
+    radial-gradient(1.5px 1.5px at 60% 20%, #ffffff 100%, transparent 100%),
+    radial-gradient(2px 2px at 10% 100%, #ffffff 100%, transparent 100%),
+    radial-gradient(1.5px 1.5px at 80% 70%, #ffffff 100%, transparent 100%),
+    radial-gradient(1px 1px at 40% 80%, #ffffff 100%, transparent 100%),
+    radial-gradient(1.5px 1.5px at 60% 20%, #ffffff 100%, transparent 100%),
+    radial-gradient(2px 2px at 20% 30%, #ffffff 100%, transparent 100%),
+    radial-gradient(1.5px 1.5px at 80% 70%, #ffffff 100%, transparent 100%),
+    radial-gradient(1px 1px at 40% 80%, #ffffff 100%, transparent 100%),
+    radial-gradient(1.5px 1.5px at 60% 20%, #ffffff 100%, transparent 100%);
+  background-size: 300px 300px;
+  animation: mp-starsMove 60s linear infinite;
+  z-index: 0;
+  pointer-events: none;
+}
+
+@keyframes mp-starsMove {
+  to {
+    background-position: -1000px 1000px;
+  }
+}

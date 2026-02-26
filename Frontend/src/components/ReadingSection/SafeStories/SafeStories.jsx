@@ -1,5 +1,7 @@
 import React from 'react';
 import './SafeStories.css';
+import { useNavigate } from "react-router-dom";
+
 
 // Book images
 import ginger from "../../../assets/ginger-giraffe.png";
@@ -34,6 +36,7 @@ const bookData = [
 ];
 
 const SafeStories = () => {
+  const navigate = useNavigate();
   return (
     <div className="stories-container">
       <div className="safestories-stars-bg" />
@@ -51,7 +54,7 @@ const SafeStories = () => {
 
       <div className="books-grid">
         {bookData.map((book) => (
-          <div key={book.id} className="book-card">
+          <div key={book.id} className="book-card" onClick={() => navigate(`/story/${book.id}`)}>
             <img src={book.img} alt={book.title} className="book-cover" />
             <p className="book-title">{book.title}</p>
           </div>

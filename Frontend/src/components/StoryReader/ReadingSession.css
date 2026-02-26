@@ -1,0 +1,68 @@
+.reading-session {
+  margin-top: 20px;
+  padding: 20px;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 15px;
+  box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+}
+
+.target-sentence {
+  font-size: 28px;
+  line-height: 1.6;
+  margin-bottom: 20px;
+  padding: 15px;
+  background: #f8f9ff;
+  border-radius: 12px;
+  text-align: center;
+}
+
+.reading-word {
+  display: inline-block;
+  transition: all 0.2s ease;
+}
+
+.word-pending {
+  color: #999;
+}
+
+.word-current {
+  color: #007bff;
+  font-weight: bold;
+  text-decoration: underline;
+  animation: pulse 1.5s infinite;
+}
+
+.word-correct {
+  color: #28a745;
+  font-weight: 500;
+}
+
+@keyframes pulse {
+  0% { opacity: 1; }
+  50% { opacity: 0.7; }
+  100% { opacity: 1; }
+}
+
+.live-transcript {
+  margin: 15px 0;
+  padding: 12px;
+  background: #e3f2fd;
+  border-radius: 8px;
+  font-size: 18px;
+  border-left: 4px solid #2196f3;
+}
+
+.error-message {
+  color: #dc3545;
+  background: #ffe6e8;
+  padding: 10px;
+  border-radius: 8px;
+  margin: 10px 0;
+}
+
+.progress-indicator {
+  font-size: 16px;
+  color: #666;
+  margin-top: 10px;
+  text-align: right;
+}

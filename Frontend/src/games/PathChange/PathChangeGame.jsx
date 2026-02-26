@@ -1,736 +1,434 @@
-import { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef } from 'react';
+import './PathChangeGame.css';
 import Header from "../../components/common/Header/Header";
 import Footer from "../../components/common/Footer/Footer";
-import "./PathChangeGame.css";
 
-import meditationVideo from "../../assets/breathing-exercise.mp4";
+// Add roundRect method to CanvasRenderingContext2D
+CanvasRenderingContext2D.prototype.roundRect = function(x, y, w, h, r) {
+  if (w < 2 * r) r = w / 2;
+  if (h < 2 * r) r = h / 2;
+  this.moveTo(x + r, y);
+  this.lineTo(x + w - r, y);
+  this.quadraticCurveTo(x + w, y, x + w, y + r);
+  this.lineTo(x + w, y + h - r);
+  this.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+  this.lineTo(x + r, y + h);
+  this.quadraticCurveTo(x, y + h, x, y + h - r);
+  this.lineTo(x, y + r);
+  this.quadraticCurveTo(x, y, x + r, y);
+  return this;
+};
 
-function PathChangeGame() {
-  const [tile1Rotation, setTile1Rotation] = useState(0);
-  const [tile2Rotation, setTile2Rotation] = useState(0);
-  const [tile3Rotation, setTile3Rotation] = useState(0);
-  const [timeLeft, setTimeLeft] = useState(60);
-  const [isRunning, setIsRunning] = useState(true); 
-  const [gameOver, setGameOver] = useState(false);
+export default function PathChangeGame() {
+  const canvasRef = useRef(null);
+  const [selectedPiece, setSelectedPiece] = useState(null);
+  const [coins, setCoins] = useState(0);
+
+  // Game pieces positions and types (teal gate blocks)
+  const [pieces, setPieces] = useState([
+    { id: 1, x: 140, y: 380, type: 'gate', rotation: 0 },
+    { id: 2, x: 320, y: 230, type: 'gate', rotation: 0 },
+    { id: 3, x: 580, y: 350, type: 'gate', rotation: 0 },
+    { id: 4, x: 580, y: 500, type: 'gate', rotation: 0 }
+  ]);
+
+  // Target circles (level nodes)
+  const targets = [
+    { id: 1, x: 450, y: 150, color: '#ff5b5b', darkColor: '#c92c2c', glowColor: 'rgba(255, 91, 91, 0.4)' }, // Red
+    { id: 2, x: 1390, y: 70, color: '#ffc82e', darkColor: '#f28c00', glowColor: 'rgba(255, 200, 46, 0.4)' }, // Yellow
+    { id: 3, x: 320, y: 390, color: '#6cc36c', darkColor: '#2e7d32', glowColor: 'rgba(108, 195, 108, 0.4)' }, // Green
+    { id: 4, x: 1270, y: 480, color: '#a96adf', darkColor: '#6a1b9a', glowColor: 'rgba(169, 106, 223, 0.4)' }  // Purple
+  ];
+
+  // Starting point (not visible, path starts here)
+  const startPoint = { x: 100, y: 200 };
   
-  const CANVAS_OFFSET_Y = 70;
-  
-  const [ball, setBall] = useState({
-    color: 'red',
-    position: { x: 1370, y: window.innerHeight - 150 + CANVAS_OFFSET_Y },
-    velocity: { x: -2, y: 0 },
-    isMoving: true,
-    visible: true,
-    rotation: 0
+  // End point (blue full circle at bottom right)
+  const endPoint = { x: 1400, y: 660, color: '#3d8bd9' };
+
+  // Small red player marker
+  const playerMarker = { x: 870, y: 510 };
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const ctx = canvas.getContext('2d');
+    const dpr = window.devicePixelRatio || 1;
+    
+    // Set canvas size to match wide layout
+    canvas.width = 1500 * dpr;
+    canvas.height = 750 * dpr;
+    canvas.style.width = '1500px';
+    canvas.style.height = '750px';
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+    // Draw everything
+    drawGame(ctx);
   });
-  
-  const [showMeditation, setShowMeditation] = useState(true);
-  const [showCountdown, setShowCountdown] = useState(false);
-  const [showGame, setShowGame] = useState(false);
-  const [isMuted, setIsMuted] = useState(false);
-  const [countdown, setCountdown] = useState(3); 
-  
-  const timerRef = useRef(null);
-  const meditationVideoRef = useRef(null);
-  const countdownRef = useRef(null);
-  const animationFrameRef = useRef(null);
-  const lastTimeRef = useRef(Date.now());
-  
-  // SIMPLIFIED PHYSICS - CONSTANT SPEED
-  const BALL_SPEED = 2.5; // Constant speed
-  const TRANSITION_SMOOTHNESS = 0.3;
 
-  const rotateTile = (tileNumber) => {
-    if (tileNumber === 1) {
-      setTile1Rotation((prev) => prev + 90);
-    } else if (tileNumber === 2) {
-      setTile2Rotation((prev) => prev + 90);
-    } else if (tileNumber === 3) {
-      setTile3Rotation((prev) => prev + 90);
-    }
-  };
+  const drawGame = (ctx) => {
+    // Clear canvas
+    ctx.clearRect(0, 0, 1500, 750);
 
-  const toggleMute = () => {
-    setIsMuted(!isMuted);
-  };
+    // Draw white particles
+    drawParticles(ctx);
 
-  const skipMeditation = () => {
-    if (meditationVideoRef.current) {
-      meditationVideoRef.current.pause();
-    }
-    setShowMeditation(false);
-    setShowCountdown(true);
-  };
+    // Draw the main path tube with 3D effect
+    drawPathTube(ctx);
 
-  const handleMeditationEnd = () => {
-    setShowMeditation(false);
-    setShowCountdown(true);
-  };
-
-  // COMPLETELY REWRITTEN PATH DETECTION - SIMPLER AND MORE RELIABLE
-  const isOnRoad = (x, y) => {
-    const OFFSET = CANVAS_OFFSET_Y;
-    const TOL = 40; // Generous tolerance
-    
-    // Get tile states
-    const tile1Angle = tile1Rotation % 360;
-    const tile2Angle = tile2Rotation % 360;
-    const tile3Angle = tile3Rotation % 360;
-    
-    // 1. DESTINATION BLOCK
-    const destY = window.innerHeight - 210 + OFFSET;
-    if (x > 1300 - TOL && x < 1450 + TOL && y > destY - TOL && y < destY + 120 + TOL) {
-      return { onRoad: true, direction: { x: -1, y: 0 }, centerY: destY + 60 };
-    }
-    
-    // 2. ROAD-HORIZONTAL-1
-    const h1_y = window.innerHeight - 700 + OFFSET;
-    if (y > h1_y - TOL && y < h1_y + 60 + TOL && x > 900 - TOL && x < 1300 + TOL) {
-      return { onRoad: true, direction: { x: -1, y: 0 }, centerY: h1_y + 30 };
-    }
-    
-    // 3. ROAD-CURVE-1
-    const curve1_y = 559.2 - 60 + OFFSET;
-    const curve1_centerX = 906;
-    const curve1_centerY = curve1_y;
-    if (x > 776 - TOL && x < 906 + TOL && y > curve1_y - TOL && y < curve1_y + 130 + TOL) {
-      const dx = x - curve1_centerX;
-      const dy = y - curve1_centerY;
-      const dist = Math.sqrt(dx * dx + dy * dy);
-      
-      if (dist > 30 && dist < 150) {
-        const angle = Math.atan2(dy, dx);
-        return { 
-          onRoad: true, 
-          direction: { x: -Math.sin(angle), y: Math.cos(angle) }
-        };
-      }
-    }
-    
-    // 4. ROAD-VERTICAL-3
-    const v3_top = 460 - 60 + OFFSET;
-    const v3_left = window.innerWidth - 700;
-    const v3_centerX = v3_left + 30;
-    if (x > v3_left - TOL && x < v3_left + 60 + TOL && y > v3_top - TOL && y < v3_top + 110 + TOL) {
-      return { onRoad: true, direction: { x: 0, y: -1 }, centerX: v3_centerX };
-    }
-    
-    // 5-7. TILE-2 AREA with rotation support
-    const tile2_left = window.innerWidth - 115;
-    const tile2_top = 410 - 60 + OFFSET;
-    const tile2_centerX = tile2_left + 57.5;
-    const tile2_centerY = tile2_top + 57.5;
-    const connection_y = tile2_top + 57.5; // Center height
-    
-    if (tile2Angle === 0 || tile2Angle === 180) {
-      // CURVE ACTIVE - Creates a smooth 90-degree turn from horizontal (left) to vertical (down)
-      
-      // Extended horizontal approach path
-      if (x > v3_centerX - 30 && x < tile2_left - 10 && 
-          y > connection_y - 45 && y < connection_y + 45) {
-        return { onRoad: true, direction: { x: 1, y: 0 }, centerY: connection_y };
-      }
-      
-      // TILE-2 AREA - Large bounding box for curve detection
-      if (x > tile2_left - 50 && x < tile2_left + 130 && 
-          y > tile2_top - 50 && y < tile2_top + 130) {
-        
-        // The curve is in the BOTTOM-LEFT quadrant of the tile
-        // It goes from LEFT (horizontal) to DOWN (vertical)
-        const dx = x - tile2_centerX;
-        const dy = y - tile2_centerY;
-        const distFromCenter = Math.sqrt(dx * dx + dy * dy);
-        
-        // Check if in the curve area (bottom-left quadrant)
-        if (x < tile2_centerX + 10 && y > tile2_centerY - 10) {
-          
-          // ENTERING FROM LEFT (horizontal)
-          if (x < tile2_centerX - 20 && Math.abs(y - connection_y) < 45) {
-            return { onRoad: true, direction: { x: 1, y: 0 }, centerY: connection_y };
-          }
-          
-          // IN THE CURVE - calculate tangent direction
-          if (distFromCenter > 10 && distFromCenter < 70) {
-            const angle = Math.atan2(dy, dx);
-            
-            // For a curve in bottom-left quadrant going from left to down
-            // The tangent perpendicular to the radius
-            const tangentX = -dy;  // perpendicular to radius
-            const tangentY = dx;   // perpendicular to radius
-            const magnitude = Math.sqrt(tangentX * tangentX + tangentY * tangentY);
-            
-            if (magnitude > 0) {
-              // Normalize the tangent direction
-              const dirX = tangentX / magnitude;
-              const dirY = tangentY / magnitude;
-              
-              // Make sure we're going in the right direction (clockwise turn)
-              // From left (positive X) to down (positive Y)
-              if (dirX > -0.5 || dirY > -0.5) {
-                return {
-                  onRoad: true,
-                  direction: { x: dirX, y: dirY },
-                  centerX: tile2_centerX,
-                  centerY: tile2_centerY
-                };
-              }
-            }
-          }
-          
-          // EXITING DOWNWARD (vertical)
-          if (y > tile2_centerY + 15 && Math.abs(x - tile2_centerX) < 45) {
-            return { onRoad: true, direction: { x: 0, y: 1 }, centerX: tile2_centerX };
-          }
-        }
-      }
-      
-      // Extended vertical exit path after the tile
-      const exit_top = tile2_top + 95;
-      const exit_bottom = 372 - 60 + OFFSET + 80;
-      if (x > tile2_centerX - 45 && x < tile2_centerX + 45 && 
-          y > exit_top && y < exit_bottom) {
-        return { onRoad: true, direction: { x: 0, y: 1 }, centerX: tile2_centerX };
-      }
-      
-    } else {
-      // VERTICAL ACTIVE - straight through (90° or 270°)
-      const vertical_top = tile2_top - 60;
-      const vertical_bottom = 372 - 60 + OFFSET + 80;
-      
-      if (x > tile2_centerX - 45 && x < tile2_centerX + 45 && 
-          y > vertical_top && y < vertical_bottom) {
-        return { onRoad: true, direction: { x: 0, y: 1 }, centerX: tile2_centerX };
-      }
-    }
-    
-    // 8. ROAD-CURVE-9
-    const curve9_top = 372 - 60 + OFFSET;
-    const curve9_left = window.innerWidth - 790;
-    if (x > curve9_left - 40 && x < curve9_left + 140 && 
-        y > curve9_top - 40 && y < curve9_top + 140) {
-      const dx = x - curve9_left;
-      const dy = y - curve9_top;
-      const dist = Math.sqrt(dx * dx + dy * dy);
-      
-      if (dist > 25 && dist < 130) {
-        const angle = Math.atan2(dy, dx);
-        return { 
-          onRoad: true, 
-          direction: { x: -Math.sin(angle), y: Math.cos(angle) }
-        };
-      }
-    }
-    
-    // 9. ROAD-VERTICAL-4
-    const v4_top = 470 - 60 + OFFSET;
-    if (x > 644 - TOL && x < 704 + TOL && y > v4_top - TOL && y < v4_top + 80 + TOL) {
-      return { onRoad: true, direction: { x: 0, y: 1 }, centerX: 674 };
-    }
-    
-    // 10. ROAD-CURVE-4
-    const curve4_bottom = window.innerHeight - 190 + OFFSET;
-    const curve4_top = curve4_bottom - 135;
-    if (x > 569 - TOL && x < 704 + TOL && y > curve4_top - TOL && y < curve4_bottom + TOL) {
-      const dx = x - 569;
-      const dy = y - curve4_bottom;
-      const dist = Math.sqrt(dx * dx + dy * dy);
-      
-      if (dist > 35 && dist < 150) {
-        const angle = Math.atan2(dy, dx);
-        return { 
-          onRoad: true, 
-          direction: { x: -Math.sin(angle), y: Math.cos(angle) }
-        };
-      }
-    }
-    
-    // 11. ROAD-HORIZONTAL-4
-    const h4_bottom = window.innerHeight - 190 + OFFSET;
-    const h4_top = h4_bottom - 60;
-    if (y > h4_top - TOL && y < h4_bottom + TOL && x > 230 - TOL && x < 580 + TOL) {
-      return { onRoad: true, direction: { x: -1, y: 0 }, centerY: h4_top + 30 };
-    }
-    
-    // 12. TILE-3 with rotation
-    const tile3_top = 560 - 60 + OFFSET;
-    const tile3_left = 105;
-    const tile3_centerX = tile3_left + 57.5;
-    const tile3_centerY = tile3_top + 57.5;
-    
-    if (x > tile3_left - TOL && x < tile3_left + 115 + TOL && 
-        y > tile3_top - TOL && y < tile3_top + 115 + TOL) {
-      
-      if (tile3Angle === 0 || tile3Angle === 180) {
-        // Curve pattern
-        const dx = x - tile3_centerX;
-        const dy = y - tile3_centerY;
-        const dist = Math.sqrt(dx * dx + dy * dy);
-        
-        if (dist < 65) {
-          const angle = Math.atan2(dy, dx);
-          return { 
-            onRoad: true, 
-            direction: { x: -Math.sin(angle), y: Math.cos(angle) }
-          };
-        }
-      } else {
-        // Vertical pattern
-        return { onRoad: true, direction: { x: 0, y: -1 }, centerX: tile3_centerX };
-      }
-    }
-    
-    // 13. ROAD-CURVE-10
-    const curve10_top = 551 - 60 + OFFSET;
-    if (x > 100 - TOL && x < 230 + TOL && y > curve10_top - TOL && y < curve10_top + 130 + TOL) {
-      const dx = x - 100;
-      const dy = y - curve10_top;
-      const dist = Math.sqrt(dx * dx + dy * dy);
-      
-      if (dist > 35 && dist < 150) {
-        const angle = Math.atan2(dy, dx);
-        return { 
-          onRoad: true, 
-          direction: { x: -Math.sin(angle), y: Math.cos(angle) }
-        };
-      }
-    }
-    
-    // 14. ROAD-VERTICAL-2
-    const v2_top = 420 - 60 + OFFSET;
-    if (x > 100 - TOL && x < 160 + TOL && y > v2_top - TOL && y < v2_top + 140 + TOL) {
-      return { onRoad: true, direction: { x: 0, y: -1 }, centerX: 130 };
-    }
-    
-    // 15. TILE-1 with rotation
-    const tile1_top = 225 - 60 + 70 + OFFSET;
-    const tile1_left = 25;
-    const tile1_centerX = tile1_left + 57.5;
-    
-    if (x > tile1_left - TOL && x < tile1_left + 140 + TOL && 
-        y > tile1_top - TOL && y < tile1_top + 115 + TOL) {
-      
-      if (tile1Angle === 0 || tile1Angle === 180) {
-        // Vertical pattern
-        return { onRoad: true, direction: { x: 0, y: -1 }, centerX: tile1_centerX };
-      } else {
-        // Curve pattern
-        const tile1_centerY = tile1_top + 57.5;
-        const dx = x - tile1_centerX;
-        const dy = y - tile1_centerY;
-        const dist = Math.sqrt(dx * dx + dy * dy);
-        
-        if (dist < 65) {
-          const angle = Math.atan2(dy, dx);
-          return { 
-            onRoad: true, 
-            direction: { x: -Math.sin(angle), y: Math.cos(angle) }
-          };
-        }
-      }
-    }
-    
-    // 16. ROAD-VERTICAL-7
-    const v7_top = 200 - 60 + OFFSET;
-    if (x > 100 - TOL && x < 160 + TOL && y > v7_top - TOL && y < v7_top + 130 + TOL) {
-      return { onRoad: true, direction: { x: 0, y: -1 }, centerX: 130 };
-    }
-    
-    // 17. ROAD-CURVE-12
-    const curve12_top = 100 - 60 + OFFSET;
-    if (x > 101 - TOL && x < 203 + TOL && y > curve12_top - TOL && y < curve12_top + 102 + TOL) {
-      const dx = x - 101;
-      const dy = y - curve12_top;
-      const dist = Math.sqrt(dx * dx + dy * dy);
-      
-      if (dist > 25 && dist < 130) {
-        const angle = Math.atan2(dy, dx);
-        return { 
-          onRoad: true, 
-          direction: { x: -Math.sin(angle), y: Math.cos(angle) }
-        };
-      }
-    }
-    
-    // 18. ROAD-HORIZONTAL-6 - FINISH
-    const h6_bottom = window.innerHeight - 330 + OFFSET;
-    const h6_top = h6_bottom - 60;
-    if (y > h6_top - TOL && y < h6_bottom + TOL && x > 200 - TOL && x < 440 + TOL) {
-      return { onRoad: true, direction: { x: 1, y: 0 }, centerY: h6_top + 30 };
-    }
-    
-    return { onRoad: false, direction: { x: 0, y: 0 } };
-  };
-
-  // COMPLETELY REWRITTEN PHYSICS - MAINTAINS CONSTANT SPEED
-  useEffect(() => {
-    if (showGame && ball.isMoving) {
-      const animate = (currentTime) => {
-        const deltaTime = Math.min((currentTime - lastTimeRef.current) / 16.67, 2);
-        lastTimeRef.current = currentTime;
-        
-        setBall(prev => {
-          const { position, velocity } = prev;
-          
-          const roadCheck = isOnRoad(position.x, position.y);
-          
-          let newVelocity = { ...velocity };
-          let newPosition = { ...position };
-          
-          if (roadCheck.onRoad) {
-            // ON ROAD - smooth transition to road direction
-            const { direction, centerX, centerY } = roadCheck;
-            const targetVelX = direction.x * BALL_SPEED;
-            const targetVelY = direction.y * BALL_SPEED;
-            
-            // Smoothly interpolate velocity
-            newVelocity.x += (targetVelX - newVelocity.x) * TRANSITION_SMOOTHNESS;
-            newVelocity.y += (targetVelY - newVelocity.y) * TRANSITION_SMOOTHNESS;
-            
-            // Apply movement
-            newPosition.x = position.x + newVelocity.x * deltaTime;
-            newPosition.y = position.y + newVelocity.y * deltaTime;
-            
-            // Apply stronger centering force for curves (when both centerX and centerY are defined)
-            const centeringStrength = (centerX !== undefined && centerY !== undefined) ? 0.08 : 0.04;
-            
-            if (centerX !== undefined) {
-              const pullX = (centerX - newPosition.x) * centeringStrength;
-              newPosition.x += pullX * deltaTime;
-            }
-            
-            if (centerY !== undefined) {
-              const pullY = (centerY - newPosition.y) * centeringStrength;
-              newPosition.y += pullY * deltaTime;
-            }
-            
-          } else {
-            // OFF ROAD - maintain current direction and speed
-            newPosition.x = position.x + newVelocity.x * deltaTime;
-            newPosition.y = position.y + newVelocity.y * deltaTime;
-          }
-          
-          // ALWAYS maintain constant speed (most important!)
-          const currentSpeed = Math.sqrt(newVelocity.x * newVelocity.x + newVelocity.y * newVelocity.y);
-          if (currentSpeed > 0.1) {
-            const speedRatio = BALL_SPEED / currentSpeed;
-            newVelocity.x *= speedRatio;
-            newVelocity.y *= speedRatio;
-          } else {
-            // If somehow stopped, push in default direction
-            newVelocity.x = -BALL_SPEED;
-            newVelocity.y = 0;
-          }
-          
-          // Check finish
-          const finalRoadTop = window.innerHeight - 330 + CANVAS_OFFSET_Y - 60;
-          const finalRoadBottom = window.innerHeight - 330 + CANVAS_OFFSET_Y;
-          
-          if (newPosition.x > 430 && newPosition.y > finalRoadTop && newPosition.y < finalRoadBottom) {
-            return {
-              ...prev,
-              isMoving: false,
-              visible: false,
-              velocity: { x: 0, y: 0 }
-            };
-          }
-          
-          // Boundary check
-          if (newPosition.x < -50 || newPosition.x > window.innerWidth + 50 ||
-              newPosition.y < -50 || newPosition.y > window.innerHeight + 50) {
-            return {
-              ...prev,
-              position: { x: 1370, y: window.innerHeight - 150 + CANVAS_OFFSET_Y },
-              velocity: { x: -BALL_SPEED, y: 0 }
-            };
-          }
-          
-          // Rotation for visual effect
-          const rotation = prev.rotation + BALL_SPEED * 10 * deltaTime;
-          
-          return {
-            ...prev,
-            position: newPosition,
-            velocity: newVelocity,
-            rotation: rotation
-          };
-        });
-        
-        animationFrameRef.current = requestAnimationFrame(animate);
-      };
-      
-      lastTimeRef.current = Date.now();
-      animationFrameRef.current = requestAnimationFrame(animate);
-      
-      return () => {
-        if (animationFrameRef.current) {
-          cancelAnimationFrame(animationFrameRef.current);
-        }
-      };
-    }
-  }, [showGame, ball.isMoving, tile1Rotation, tile2Rotation, tile3Rotation]);
-
-  useEffect(() => {
-    if (showCountdown && countdown > 0) {
-      countdownRef.current = setInterval(() => {
-        setCountdown((prev) => prev - 1);
-      }, 1000);
-    } else if (countdown === 0) {
-      clearInterval(countdownRef.current);
-      setTimeout(() => {
-        setShowCountdown(false);
-        setShowGame(true);
-        setIsRunning(true);
-      }, 500);
-    }
-
-    return () => {
-      if (countdownRef.current) clearInterval(countdownRef.current);
-    };
-  }, [showCountdown, countdown]);
-
-  useEffect(() => {
-    if (isRunning && timeLeft > 0 && showGame) {
-      timerRef.current = setInterval(() => {
-        setTimeLeft((prev) => {
-          if (prev <= 1) {
-            setIsRunning(false);
-            setGameOver(true);
-            if (animationFrameRef.current) {
-              cancelAnimationFrame(animationFrameRef.current);
-            }
-            return 0;
-          }
-          return prev - 1;
-        });
-      }, 1000);
-    }
-
-    return () => {
-      if (timerRef.current) clearInterval(timerRef.current);
-    };
-  }, [isRunning, timeLeft, showGame]);
-
-  const timePercentage = (timeLeft / 60) * 100;
-
-  const getCountdownText = () => {
-    switch(countdown) {
-      case 3: return "READY";
-      case 2: return "SET";
-      case 1: return "GO!";
-      default: return "";
-    }
-  };
-
-  const handleRestartGame = () => {
-    setTimeLeft(60);
-    setGameOver(false);
-    setIsRunning(true);
-    
-    setBall({
-      color: 'red',
-      position: { x: 1370, y: window.innerHeight - 150 + CANVAS_OFFSET_Y },
-      velocity: { x: -BALL_SPEED, y: 0 },
-      isMoving: true,
-      visible: true,
-      rotation: 0
+    // Draw teal gate blocks
+    pieces.forEach(piece => {
+      drawGateBlock(ctx, piece.x, piece.y);
     });
+
+    // Draw target circles (level nodes)
+    targets.forEach(target => {
+      drawLevelNode(ctx, target.x, target.y, target.color, target.darkColor, target.glowColor);
+    });
+
+    // Draw small red player marker
+    drawPlayerMarker(ctx, playerMarker.x, playerMarker.y);
+
+    // Draw end point (blue target-style circle)
+    drawEndPoint(ctx);
+  };
+
+  const drawParticles = (ctx) => {
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+    // Randomly scatter small white dots
+    for (let i = 0; i < 80; i++) {
+      const x = Math.random() * 1500;
+      const y = Math.random() * 750;
+      ctx.beginPath();
+      ctx.arc(x, y, 2, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  };
+
+  const drawPathTube = (ctx) => {
+    const pathColor = '#e9e9e9';
+    const tubeWidth = 50;
+    const lastSegmentMargin = 130;
+    const rightVerticalTail = 300;
+    const rightVerticalGap = 20;
+    const rightVerticalX = 900;
+    const rightVerticalYOffset = -100;
+    const rightVerticalStartY =
+      450 + lastSegmentMargin + rightVerticalGap + rightVerticalYOffset;
+    const rightVerticalEndY = rightVerticalStartY - rightVerticalTail;
+    const rightVerticalArcRadius = 55;
+    const rightVerticalArcLength = 50;
+    const curvedVerticalStartX = 960;
+    const curvedVerticalStartY = 199.9;
+    const curvedVerticalRadius = 70;
+    const curvedVerticalHeight = 210;
+    const curvedSecondArcRadius = 70;
+    const curvedSecondHorizontalLength = 150;
+    const detachedVerticalX = 1030;
+    const detachedVerticalStartY = 70;
+    const detachedVerticalHeight = 200;
+    const detachedTurnRadius = 70;
+    const detachedHorizontalLength = 300;
+
+    ctx.save();
     
-    lastTimeRef.current = Date.now();
+    // Draw outer shadow first
+    ctx.shadowColor = 'rgba(0, 0, 0, 0.18)';
+    ctx.shadowBlur = 25;
+    ctx.shadowOffsetY = 12;
+
+    ctx.strokeStyle = pathColor;
+    ctx.lineWidth = tubeWidth;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+
+    ctx.beginPath();
     
-    if (animationFrameRef.current) {
-      cancelAnimationFrame(animationFrameRef.current);
+    
+    
+    
+    
+    
+    // Curve down
+    ctx.arcTo(150, 450, 150, 550, 80);
+    ctx.lineTo(150, 600);
+    
+    // Curve right
+    ctx.arcTo(150, 670, 250, 670, 80);
+    ctx.lineTo(800, 670);
+    
+    // Continue with straight segments (no left arc)
+    ctx.lineTo(900, 670);
+    ctx.lineTo(900, 550);
+    
+    // Curve right again
+    ctx.arcTo(900, 450 + lastSegmentMargin, 1000, 450 + lastSegmentMargin, 80);
+    ctx.lineTo(1400, 450 + lastSegmentMargin);
+    // Separate vertical segment with top arc
+    ctx.moveTo(rightVerticalX, rightVerticalStartY);
+    ctx.lineTo(rightVerticalX, rightVerticalEndY + rightVerticalArcRadius);
+    ctx.arcTo(
+      rightVerticalX,
+      rightVerticalEndY,
+      rightVerticalX + rightVerticalArcLength,
+      rightVerticalEndY,
+      rightVerticalArcRadius
+    );
+    ctx.lineTo(rightVerticalX + rightVerticalArcLength, rightVerticalEndY);
+    // Separate segment: curve first, then vertical
+    ctx.moveTo(curvedVerticalStartX, curvedVerticalStartY);
+    ctx.arcTo(
+      curvedVerticalStartX + curvedVerticalRadius,
+      curvedVerticalStartY,
+      curvedVerticalStartX + curvedVerticalRadius,
+      curvedVerticalStartY + curvedVerticalRadius,
+      curvedVerticalRadius
+    );
+    ctx.lineTo(
+      curvedVerticalStartX + curvedVerticalRadius,
+      curvedVerticalStartY + curvedVerticalHeight
+    );
+    ctx.arcTo(
+      curvedVerticalStartX + curvedVerticalRadius,
+      curvedVerticalStartY + curvedVerticalHeight + curvedSecondArcRadius,
+      curvedVerticalStartX + curvedVerticalRadius + curvedSecondArcRadius,
+      curvedVerticalStartY + curvedVerticalHeight + curvedSecondArcRadius,
+      curvedSecondArcRadius
+    );
+    ctx.lineTo(
+      curvedVerticalStartX + curvedVerticalRadius + curvedSecondArcRadius + curvedSecondHorizontalLength,
+      curvedVerticalStartY + curvedVerticalHeight + curvedSecondArcRadius
+    );
+    // Separate segment: vertical, then arc right, then horizontal
+    ctx.moveTo(detachedVerticalX, detachedVerticalStartY + detachedVerticalHeight);
+    ctx.lineTo(detachedVerticalX, detachedVerticalStartY + detachedTurnRadius);
+    ctx.arcTo(
+      detachedVerticalX,
+      detachedVerticalStartY,
+      detachedVerticalX + detachedTurnRadius,
+      detachedVerticalStartY,
+      detachedTurnRadius
+    );
+    ctx.lineTo(
+      detachedVerticalX + detachedTurnRadius + detachedHorizontalLength,
+      detachedVerticalStartY
+    );
+    
+    ctx.stroke();
+
+    // Draw highlight on top of tube for 3D effect
+    ctx.shadowColor = 'transparent';
+    ctx.shadowBlur = 0;
+    
+    // Create gradient for highlight
+    const gradient = ctx.createLinearGradient(0, 0, 0, tubeWidth);
+    gradient.addColorStop(0, 'rgba(255, 255, 255, 0.7)');
+    gradient.addColorStop(0.5, 'rgba(255, 255, 255, 0)');
+    
+    ctx.strokeStyle = gradient;
+    ctx.lineWidth = tubeWidth * 0.3;
+    
+    ctx.beginPath();
+    ctx.moveTo(100, 200);
+    ctx.lineTo(400, 200);
+    ctx.arcTo(500, 200, 500, 300, 80);
+    ctx.lineTo(500, 350);
+    ctx.arcTo(500, 450, 400, 450, 80);
+    ctx.lineTo(250, 450);
+    ctx.arcTo(150, 450, 150, 550, 80);
+    ctx.lineTo(150, 600);
+    ctx.arcTo(150, 670, 250, 670, 80);
+    ctx.lineTo(800, 670);
+    ctx.lineTo(900, 670);
+    ctx.lineTo(900, 550);
+    ctx.arcTo(900, 450 + lastSegmentMargin, 1000, 450 + lastSegmentMargin, 80);
+    ctx.lineTo(1400, 450 + lastSegmentMargin);
+    ctx.moveTo(rightVerticalX, rightVerticalStartY);
+    ctx.lineTo(rightVerticalX, rightVerticalEndY + rightVerticalArcRadius);
+    ctx.arcTo(
+      rightVerticalX,
+      rightVerticalEndY,
+      rightVerticalX + rightVerticalArcLength,
+      rightVerticalEndY,
+      rightVerticalArcRadius
+    );
+    ctx.lineTo(rightVerticalX + rightVerticalArcLength, rightVerticalEndY);
+    ctx.moveTo(curvedVerticalStartX, curvedVerticalStartY);
+    ctx.arcTo(
+      curvedVerticalStartX + curvedVerticalRadius,
+      curvedVerticalStartY,
+      curvedVerticalStartX + curvedVerticalRadius,
+      curvedVerticalStartY + curvedVerticalRadius,
+      curvedVerticalRadius
+    );
+    ctx.lineTo(
+      curvedVerticalStartX + curvedVerticalRadius,
+      curvedVerticalStartY + curvedVerticalHeight
+    );
+    ctx.arcTo(
+      curvedVerticalStartX + curvedVerticalRadius,
+      curvedVerticalStartY + curvedVerticalHeight + curvedSecondArcRadius,
+      curvedVerticalStartX + curvedVerticalRadius + curvedSecondArcRadius,
+      curvedVerticalStartY + curvedVerticalHeight + curvedSecondArcRadius,
+      curvedSecondArcRadius
+    );
+    ctx.lineTo(
+      curvedVerticalStartX + curvedVerticalRadius + curvedSecondArcRadius + curvedSecondHorizontalLength,
+      curvedVerticalStartY + curvedVerticalHeight + curvedSecondArcRadius
+    );
+    ctx.moveTo(detachedVerticalX, detachedVerticalStartY + detachedVerticalHeight);
+    ctx.lineTo(detachedVerticalX, detachedVerticalStartY + detachedTurnRadius);
+    ctx.arcTo(
+      detachedVerticalX,
+      detachedVerticalStartY,
+      detachedVerticalX + detachedTurnRadius,
+      detachedVerticalStartY,
+      detachedTurnRadius
+    );
+    ctx.lineTo(
+      detachedVerticalX + detachedTurnRadius + detachedHorizontalLength,
+      detachedVerticalStartY
+    );
+    ctx.stroke();
+
+    ctx.restore();
+  };
+
+  const drawLevelNode = (ctx, x, y, color, darkColor, glowColor) => {
+    ctx.save();
+
+    // Draw glow
+    ctx.shadowColor = glowColor;
+    ctx.shadowBlur = 20;
+
+    // Outer circle
+    ctx.beginPath();
+    ctx.arc(x, y, 35, 0, Math.PI * 2);
+    ctx.fillStyle = color;
+    ctx.fill();
+
+    // Remove shadow for inner circle
+    ctx.shadowColor = 'transparent';
+    ctx.shadowBlur = 0;
+
+    // Inner circle
+    ctx.beginPath();
+    ctx.arc(x, y, 22, 0, Math.PI * 2);
+    ctx.fillStyle = darkColor;
+    ctx.fill();
+
+    ctx.restore();
+  };
+
+  const drawGateBlock = (ctx, x, y) => {
+    ctx.save();
+
+    // Teal gate block
+    ctx.shadowColor = 'rgba(0, 0, 0, 0.3)';
+    ctx.shadowBlur = 15;
+    ctx.shadowOffsetY = 8;
+
+    ctx.fillStyle = '#2fb6a8';
+    ctx.beginPath();
+    ctx.roundRect(x - 35, y - 50, 70, 100, 18);
+    ctx.fill();
+
+    ctx.restore();
+  };
+
+  const drawPlayerMarker = (ctx, x, y) => {
+    ctx.save();
+    
+    // Small red ball
+    ctx.shadowColor = 'rgba(0, 0, 0, 0.3)';
+    ctx.shadowBlur = 8;
+    ctx.shadowOffsetY = 4;
+
+    ctx.beginPath();
+    ctx.arc(x, y, 20, 0, Math.PI * 2);
+    ctx.fillStyle = '#ff3333';
+    ctx.fill();
+
+    // Highlight
+    ctx.shadowColor = 'transparent';
+    ctx.beginPath();
+    ctx.arc(x - 5, y - 5, 8, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
+    ctx.fill();
+
+    ctx.restore();
+  };
+
+  const drawEndPoint = (ctx) => {
+    ctx.save();
+
+    // Outer circle
+    ctx.shadowColor = 'rgba(61, 139, 217, 0.4)';
+    ctx.shadowBlur = 20;
+
+    ctx.beginPath();
+    ctx.arc(endPoint.x, endPoint.y - 80, 50, 0, Math.PI * 2);
+    ctx.fillStyle = endPoint.color;
+    ctx.fill();
+
+    // Inner circle
+    ctx.shadowColor = 'transparent';
+    ctx.shadowBlur = 0;
+    ctx.beginPath();
+    ctx.arc(endPoint.x, endPoint.y - 80, 32, 0, Math.PI * 2);
+    ctx.fillStyle = '#2563a8'; 
+    ctx.fill();
+
+    ctx.restore();
+  };
+
+  const handleCanvasClick = (e) => {
+    const canvas = canvasRef.current;
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+    
+    const x = (e.clientX - rect.left) * scaleX;
+    const y = (e.clientY - rect.top) * scaleY;
+
+    // Check if clicked on a gate block
+    const clickedPiece = pieces.find(piece => {
+      const dx = x - piece.x;
+      const dy = y - piece.y;
+      return Math.abs(dx) < 35 && Math.abs(dy) < 50;
+    });
+
+    if (clickedPiece) {
+      setSelectedPiece(clickedPiece.id);
+      setTimeout(() => setSelectedPiece(null), 200);
+      // Could add rotation or interaction here
     }
   };
 
   return (
     <div className="game-container">
-      <div className="stars-bg-path" />
       <Header />
-      
-      {showMeditation && (
-        <div className="video-screen meditation-screen">
-          <div className="video-overlay">
-            <button className="skip-btn" onClick={skipMeditation}>
-              Skip
-            </button>
-            <div className="video-controls">
-              <button className="mute-btn" onClick={toggleMute}>
-                {isMuted ? '🔇' : '🔊'}
-              </button>
-            </div>
-          </div>
-          <video
-            ref={meditationVideoRef}
-            className="fullscreen-video"
-            autoPlay
-            muted={isMuted}
-            onEnded={handleMeditationEnd}
-          >
-            <source src={meditationVideo} type="video/mp4" />
-            Your browser does not support the video tag.
-          </video>
-        </div>
-      )}
-      
-      {showCountdown && (
-        <div className="video-screen countdown-screen">
-          <div className="countdown-overlay">
-            <div className="countdown-circle">
-              <div className="countdown-number">{countdown > 0 ? countdown : ""}</div>
-              <div className="countdown-text">{getCountdownText()}</div>
-            </div>
-            <div className="countdown-subtitle">Get ready to connect the paths!</div>
-          </div>
-        </div>
-      )}
-      
-      {showGame && (
-        <>
-          <div className="simple-progress-container">
-            <div 
-              className="simple-progress-bar" 
-              style={{ 
-                width: `${timePercentage}%`,
-                transition: timeLeft <= 10 ? 'width 1s linear' : 'width 0.5s linear'
-              }}
-            />
-          </div>
-          
-          <div className="puzzle-area">
-            <div 
-              className="bowling-ball"
-              style={{
-                position: 'absolute',
-                left: `${ball.position.x}px`,
-                top: `${ball.position.y}px`,
-                width: '30px',
-                height: '30px',
-                borderRadius: '50%',
-                background: `
-                  radial-gradient(
-                    circle at 35% 35%,
-                    #FF4444 0%,
-                    #CC0000 60%,
-                    #990000 100%
-                  )
-                `,
-                transform: `translate(-50%, -50%) rotate(${ball.rotation}deg)`,
-                zIndex: 1000,
-                boxShadow: `
-                  0 2px 8px rgba(0, 0, 0, 0.3),
-                  inset 0 1px 3px rgba(255, 255, 255, 0.3)
-                `,
-                border: '2px solid rgba(0, 0, 0, 0.1)'
-              }}
-            />
-            
-            <div className="road-segment road-horizontal-1"></div>
-            <div className="road-segment road-curve-1"></div>
-            <div className="road-segment road-vertical-3"></div>
-            <div className="road-segment road-vertical-5"></div>
-            <div className="road-segment road-curve-5"></div>
-            <div className="road-segment road-vertical-6"></div>
-            <div className="road-segment road-curve-7"></div>
-            <div className="road-segment road-horizontal-2"></div>
-            <div className="road-segment road-vertical-1"></div>
-            <div className="road-segment road-vertical-2"></div>
-            <div className="road-segment road-vertical-7"></div>
-            <div className="road-segment road-curve-10"></div>
-            <div className="road-segment road-vertical-4"></div>
-            <div className="road-segment road-curve-4"></div>
-            <div className="road-segment road-curve-8"></div>
-            <div className="road-segment road-curve-9"></div>
-            <div className="road-segment road-curve-11"></div>
-            <div className="road-segment road-curve-12"></div>
-            <div className="road-segment road-horizontal-3"></div>
-            <div className="road-segment road-horizontal-4"></div>
-            <div className="road-segment road-horizontal-5"></div>
-            <div className="road-segment road-horizontal-6"></div>
 
-            <div className="node node-red" style={{ top: '80px', left: '100px' }}>
-              <div className="node-inner"></div>
-            </div>
-            <div className="node node-yellow" style={{ top: '80px', right: '80px' }}>
-              <div className="node-inner"></div>
-            </div>
-            <div className="node node-green" style={{ top: '320px', left: '230px' }}>
-              <div className="node-inner"></div>
-            </div>
-            <div className="node node-purple" style={{ bottom: '310px', right: '50px' }}>
-              <div className="node-inner"></div>
-            </div>
+      {/* Progress bar */}
+      <div className="progress-bar">
+        <div className="progress-fill" />
+        <div className="progress-end" />
+      </div>
 
-            <div className="destination-block"></div>
+      {/* Game Canvas */}
+      <div className="canvas-wrapper">
+        <canvas
+          ref={canvasRef}
+          onClick={handleCanvasClick}
+          className="game-canvas"
+        />
+      </div>
 
-            <div 
-              className="tile tile-1"
-              onClick={() => rotateTile(1)}
-              style={{ 
-                top: '225px', 
-                left: '25px',
-                transform: `rotate(${tile1Rotation}deg)`
-              }}
-            >
-              {(tile1Rotation % 360 === 90 || tile1Rotation % 360 === 270) && (
-                <div className="tile-curve-11-pattern"></div>
-              )}
-              {(tile1Rotation % 360 === 0 || tile1Rotation % 360 === 180) && (
-                <div className="tile-vertical-4-pattern">
-                  <div className="road-marking"></div>
-                </div>
-              )}
-            </div>
-
-            <div 
-              className="tile tile-2"
-              onClick={() => rotateTile(2)}
-              style={{ 
-                top: '410px', 
-                right: '115px',
-                transform: `rotate(${tile2Rotation}deg)`
-              }}
-            >
-              {(tile2Rotation % 360 === 90 || tile2Rotation % 360 === 270) && (
-                <div className="tile-vertical-3-pattern"></div>
-              )}
-              {(tile2Rotation % 360 === 0 || tile2Rotation % 360 === 180) && (
-                <div className="tile-curve-6-2-pattern"></div>
-              )}
-            </div>
-
-            <div 
-              className="tile tile-3"
-              onClick={() => rotateTile(3)}
-              style={{ 
-                top: '560px', 
-                left: '105px',
-                transform: `rotate(${tile3Rotation}deg)`
-              }}
-            >
-              {(tile3Rotation % 360 === 0 || tile3Rotation % 360 === 180) && (
-                <div className="tile-curve-6-pattern"></div>
-              )}
-              {(tile3Rotation % 360 === 90 || tile3Rotation % 360 === 270) && (
-                <div className="tile-vertical-6-pattern"></div>
-              )}
-            </div>
-          </div>
-        </>
-      )}
-
-      {gameOver && (
-        <div className="game-over-overlay">
-          <div className="game-over-message">
-            <h2>Time's Up!</h2>
-            <p>The bowling ball completed its roll!</p>
-            <button className="restart-btn" onClick={handleRestartGame}>
-              Roll Again
-            </button>
-          </div>
-        </div>
-      )}
+      {/* Instructions */}
+      <div className="instructions">
+        Click on teal blocks to interact with the path
+      </div>
     </div>
   );
 }
-
-export default PathChangeGame;

@@ -1,0 +1,333 @@
+/* ========================================
+   SHARED READING STYLES - YELLOW HIGHLIGHTER THEME
+   ======================================== */
+
+/* Word container */
+.reading-word {
+  display: inline-block;
+  transition: all 0.2s ease;
+  color: #2c3e50;  /* Dark blue-gray for good contrast */
+  padding: 2px 4px;
+  border-radius: 4px;
+  font-weight: 400;
+  line-height: 1.8;
+  margin-right: 5px;
+}
+
+/* Words that have been read - yellow highlighter */
+.reading-word.word-read {
+  background-color: #fff9c4;  /* Light yellow highlighter */
+  box-shadow: 0 2px 0 #fbc02d;  /* Yellow underline */
+  transition: background-color 0.3s ease;
+  color: #2c3e50;  /* Keep text dark for readability */
+}
+
+/* Current word to read - brighter yellow with animation */
+.reading-word.word-current {
+  background-color: #ffeb3b;  /* Bright yellow */
+  box-shadow: 0 3px 0 #f57c00;  /* Orange underline for emphasis */
+  font-weight: 500;
+  animation: gentlePulse 1.5s infinite;
+  color: #2c3e50;  /* Keep text dark */
+}
+
+/* Pending words - no highlight */
+.reading-word.word-pending {
+  color: #666;  /* Gray for pending words */
+  background-color: transparent;
+  box-shadow: none;
+}
+
+/* For backward compatibility - map old classes to new */
+.reading-word.word-correct {
+  background-color: #fff9c4;
+  box-shadow: 0 2px 0 #fbc02d;
+  color: #2c3e50;
+}
+
+.reading-word.word-incorrect {
+  color: #dc3545;
+  text-decoration: line-through wavy #dc3545;
+  background-color: rgba(220, 53, 69, 0.1);
+  border-radius: 4px;
+  padding: 0 2px;
+}
+
+/* Pulse animation for current word */
+@keyframes gentlePulse {
+  0% { 
+    opacity: 1; 
+    background-color: #ffeb3b;
+    box-shadow: 0 3px 0 #f57c00;
+  }
+  50% { 
+    opacity: 0.9; 
+    background-color: #fff176;  /* Lighter yellow */
+    box-shadow: 0 3px 0 #ff9800;
+  }
+  100% { 
+    opacity: 1; 
+    background-color: #ffeb3b;
+    box-shadow: 0 3px 0 #f57c00;
+  }
+}
+
+/* Listening indicator for text box */
+.story-text-box.listening {
+  box-shadow: 0 0 0 3px rgba(255, 107, 107, 0.3), 0 10px 30px rgba(0,0,0,0.15);
+}
+
+/* Live transcript mini */
+.live-transcript-mini {
+  margin-top: 12px;
+  padding: 8px 16px;
+  background: #e3f2fd;
+  border-radius: 30px;
+  font-size: 16px;
+  color: #1976d2;
+  text-align: center;
+  border: 1px solid #90caf9;
+  font-style: italic;
+  box-shadow: 0 2px 8px rgba(25, 118, 210, 0.1);
+}
+
+/* Error message */
+.error-mini {
+  margin-top: 12px;
+  padding: 10px 16px;
+  background: #ffebee;
+  border-radius: 30px;
+  font-size: 15px;
+  color: #c62828;
+  text-align: center;
+  border: 1px solid #ef9a9a;
+  font-weight: 500;
+  box-shadow: 0 2px 8px rgba(198, 40, 40, 0.1);
+}
+
+/* Progress indicator */
+.progress-indicator {
+  margin-top: 12px;
+  font-size: 16px;
+  color: #555;
+  text-align: center;
+  font-weight: 500;
+  background: rgba(255, 255, 255, 0.7);
+  padding: 6px 12px;
+  border-radius: 30px;
+  display: inline-block;
+  width: auto;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+
+
+.reading-progress .progress-bar {
+  width: 100%;
+  height: 8px;
+  background: #e0e0e0;
+  border-radius: 4px;
+  overflow: hidden;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.reading-progress .progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #4caf50, #8bc34a);
+  transition: width 0.3s ease;
+  border-radius: 4px;
+  box-shadow: 0 1px 3px rgba(76, 175, 80, 0.3);
+}
+
+/* Reading statistics */
+.reading-stats {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  margin-top: 15px;
+  padding: 12px 20px;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 40px;
+  font-size: 16px;
+  font-weight: bold;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.stat-correct {
+  color: #28a745;
+  font-weight: bold;
+  background: rgba(40, 167, 69, 0.1);
+  padding: 4px 12px;
+  border-radius: 20px;
+}
+
+.stat-incorrect {
+  color: #dc3545;
+  font-weight: bold;
+  background: rgba(220, 53, 69, 0.1);
+  padding: 4px 12px;
+  border-radius: 20px;
+}
+
+.stat-pending {
+  color: #666;
+  font-weight: bold;
+  background: rgba(102, 102, 102, 0.1);
+  padding: 4px 12px;
+  border-radius: 20px;
+}
+
+/* Completion message */
+.completion-message {
+  margin-top: 20px;
+  padding: 15px 20px;
+  background: linear-gradient(135deg, #4caf50, #45a049);
+  color: white;
+  border-radius: 40px;
+  text-align: center;
+  font-weight: bold;
+  font-size: 20px;
+  animation: bounce 1s ease;
+  box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+@keyframes bounce {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+/* Encouragement message */
+.encouragement-message {
+  margin-top: 10px;
+  padding: 10px;
+  background: #fff3cd;
+  color: #856404;
+  border-radius: 30px;
+  text-align: center;
+  font-size: 16px;
+  font-weight: 500;
+  animation: fadeInOut 2s ease;
+  border: 1px solid #ffeeba;
+}
+
+@keyframes fadeInOut {
+  0% { opacity: 0; transform: translateY(-10px); }
+  20% { opacity: 1; transform: translateY(0); }
+  80% { opacity: 1; transform: translateY(0); }
+  100% { opacity: 0; transform: translateY(-10px); }
+}
+
+/* Retry button */
+.retry-btn {
+  margin-top: 15px;
+  padding: 12px 24px;
+  background: #ff9800;
+  color: white;
+  border: none;
+  border-radius: 40px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  width: 100%;
+  max-width: 300px;
+  margin-left: auto;
+  margin-right: auto;
+  display: block;
+  box-shadow: 0 4px 12px rgba(255, 152, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.retry-btn:hover {
+  background: #f57c00;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(255, 152, 0, 0.4);
+}
+
+.retry-btn:active {
+  transform: translateY(0);
+}
+
+/* Practice note */
+.practice-note {
+  margin-top: 15px;
+  padding: 12px;
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 30px;
+  font-size: 15px;
+  color: white;
+  text-align: center;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(5px);
+}
+
+/* Heard feedback */
+.heard-feedback {
+  margin-top: 15px;
+  padding: 12px 16px;
+  background: #e8f4fd;
+  border-radius: 12px;
+  border-left: 4px solid #2196f3;
+  box-shadow: 0 2px 8px rgba(33, 150, 243, 0.1);
+}
+
+.heard-label {
+  font-size: 12px;
+  color: #666;
+  margin-bottom: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 600;
+}
+
+.heard-text {
+  font-size: 18px;
+  color: #1976d2;
+  font-style: italic;
+  font-weight: 500;
+  word-break: break-word;
+}
+
+/* Word count badge */
+.word-count-badge {
+  display: inline-block;
+  background: #ff6b6b;
+  color: white;
+  border-radius: 30px;
+  padding: 4px 12px;
+  font-size: 14px;
+  font-weight: 600;
+  margin-left: 10px;
+  vertical-align: middle;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .reading-word {
+    font-size: 18px;
+    line-height: 2;
+  }
+  
+  .story-text-box {
+    padding: 20px;
+    font-size: 20px;
+  }
+  
+  .reading-stats {
+    font-size: 14px;
+    padding: 8px 16px;
+  }
+  
+  .completion-message {
+    font-size: 18px;
+    padding: 12px 16px;
+  }
+  
+  .retry-btn {
+    font-size: 14px;
+    padding: 10px 20px;
+  }
+}

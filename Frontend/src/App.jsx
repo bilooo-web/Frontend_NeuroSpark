@@ -10,6 +10,8 @@ import SignUp from "./components/auth/SignUp/SignUp";
 import PathChangeGame from "./games/PathChange/PathChangeGame";
 import Customization from "./pages/Customization";
 import Reading from "./pages/ReadingPage";
+import GameSwitcher from "./games/GameSwitcher";
+import StoryBook from "./pages/StoryBook";
 
 
 

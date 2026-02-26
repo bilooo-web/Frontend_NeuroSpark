@@ -44,6 +44,15 @@
   z-index: 4;
 }
 
+.grass {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: auto;
+  z-index: 1;
+}
+
 .animals {
   position: absolute;
   bottom: 4%;

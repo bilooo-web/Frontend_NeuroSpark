@@ -6,9 +6,9 @@ import micOff from "../../../../assets/no-mic.png";
 import useSpeechRecognition from "../../../../hooks/useSpeechRecognition";
 import { prepareSentence, getReadingProgress } from "../../../../utils/textProcessor";
 
-// Use public URLs for images
-const giraffe = "../../../../assets/stories/ginger/giraffe-big.png";
-const grass = "/images/ginger/grass.png";
+// Import images directly - let Vite handle the paths
+import giraffeImg from "../../../../assets/stories/ginger/giraffe-big.png";
+import grassImg from "../../../../assets/stories/ginger/grass.png";
 
 const GingerIntroSlide = ({
   text,
@@ -118,8 +118,8 @@ const GingerIntroSlide = ({
     <div className="ginger-scene">
       <div className="stars-bg" />
       
-      <img src={grass} className="grass" alt="grass" />
-      <img src={giraffe} className="giraffe" alt="giraffe" />
+      <img src={grassImg} className="grass" alt="grass" />
+      <img src={giraffeImg} className="giraffe-big" alt="giraffe" />
       
       <div className="story-text-container">
         <div className={`story-text-box ${isListening ? 'listening' : ''}`}>

@@ -10,7 +10,6 @@ import SignUp from "./components/auth/SignUp/SignUp";
 import PathChangeGame from "./games/PathChange/PathChangeGame";
 import Customization from "./pages/Customization";
 import Reading from "./pages/ReadingPage";
-import StoryBook from "./pages/StoryBook";
 
 
 
@@ -79,7 +78,12 @@ function App() {
         <Route path="/home" element={<Home />} />
         <Route path="/challenges" element={<Challenges />} />
         <Route path="/challenges/:id" element={<ChallengeDetails />} />
-        <Route path="/challenges/:id/play" element={<PathChangeGame />} />
+        <Route 
+          path="/challenges/:id/play" 
+          element={
+            <GameSwitcher />
+          } 
+        />
         <Route path="/about" element={<AboutUs2 />} />
         <Route path="/customization" element={<Customization />} />
         <Route path="/ReadingPage" element={<Reading />} />

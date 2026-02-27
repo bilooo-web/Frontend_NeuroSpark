@@ -12,6 +12,8 @@ import Customization from "./pages/Customization";
 import Reading from "./pages/ReadingPage";
 import GameSwitcher from "./games/GameSwitcher";
 import StoryBook from "./pages/StoryBook";
+import ChatbotButton from "./components/Chatbot/ChatbotButton";
+
 
 
 
@@ -91,8 +93,9 @@ function App() {
         <Route path="/ReadingPage" element={<Reading />} />
         <Route path="/story/:id" element={<StoryBook />} />
       </Routes>
-
+      <ChatbotButton />
     </BrowserRouter>
+
   );
 }
 

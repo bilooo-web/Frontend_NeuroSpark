@@ -5,8 +5,7 @@ import AboutUs2 from "./pages/AboutUs2";
 import Home from "./pages/Home";
 import Challenges from "./pages/Challenges";
 import ChallengeDetails from "./pages/ChallengeDetails";
-import SignInModal from "./components/auth/SignInModal/SignInModal";
-import SignUp from "./components/auth/SignUp/SignUp";
+import AuthModal from "./components/auth/AuthModal";
 import PathChangeGame from "./games/PathChange/PathChangeGame";
 import Customization from "./pages/Customization";
 import Reading from "./pages/ReadingPage";
@@ -15,17 +14,24 @@ import StoryBook from "./pages/StoryBook";
 import ChatbotButton from "./components/Chatbot/ChatbotButton";
 
 
-
-
 function App() {
-  const [showSignIn, setShowSignIn] = useState(false);
-  const [showSignUp, setShowSignUp] = useState(false);
+  const [showAuth, setShowAuth] = useState(false);
+  const [authMode, setAuthMode] = useState('signin');
   const autoPopupFired = useRef(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  // Check authentication status on mount
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    const user = localStorage.getItem('user');
+    setIsAuthenticated(!!(token && user));
+  }, []);
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      if (!showSignIn && !showSignUp && !autoPopupFired.current) {
-        setShowSignIn(true);
+      if (!showAuth && !autoPopupFired.current && !isAuthenticated) {
+        setShowAuth(true);
+        setAuthMode('signin');
         autoPopupFired.current = true;
       }
     }, 5000);
@@ -33,48 +39,37 @@ function App() {
     const handleOpenAuth = (e) => {
       clearTimeout(timer);
       autoPopupFired.current = true;
-      if (e.detail === 'signup') {
-        setShowSignIn(false);
-        setShowSignUp(true);
-      } else {
-        setShowSignUp(false);
-        setShowSignIn(true);
-      }
+      setAuthMode(e.detail || 'signin');
+      setShowAuth(true);
     };
 
     const handleCloseAuth = () => {
-      setShowSignIn(false);
-      setShowSignUp(false);
+      setShowAuth(false);
+    };
+
+     const handleLoginSuccess = () => {
+      setIsAuthenticated(true);
+      setShowAuth(false);
     };
 
     window.addEventListener('open-auth', handleOpenAuth);
     window.addEventListener('close-auth', handleCloseAuth);
+    window.addEventListener('login-success', handleLoginSuccess);
 
     return () => {
       clearTimeout(timer);
       window.removeEventListener('open-auth', handleOpenAuth);
       window.removeEventListener('close-auth', handleCloseAuth);
+      window.removeEventListener('login-success', handleLoginSuccess);
     };
-  }, [showSignIn, showSignUp]);
+  }, [showAuth , isAuthenticated]);
 
   return (
     <BrowserRouter>
-      {showSignIn && (
-        <SignInModal 
-          onClose={() => setShowSignIn(false)} 
-          onSwitch={() => {
-            setShowSignIn(false);
-            setShowSignUp(true);
-          }}
-        />
-      )}
-      {showSignUp && (
-        <SignUp 
-          onClose={() => setShowSignUp(false)} 
-          onSwitch={() => {
-            setShowSignUp(false);
-            setShowSignIn(true);
-          }}
+      {showAuth && (
+        <AuthModal 
+          onClose={() => setShowAuth(false)} 
+          initialMode={authMode}
         />
       )}
       <Routes>

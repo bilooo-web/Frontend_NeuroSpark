@@ -1,20 +1,50 @@
 import './Header.css';
 import logo_s from '../../../assets/logo_s.png'; 
 import profileImage from '../../../assets/profile_h.png';
-import { Link } from "react-router-dom";
-import { useState } from "react";
-
-import SignInModal from "../../auth/SignInModal/SignInModal";
-import SignUp from "../../auth/SignUp/SignUp";
-import Home from '../../../pages/Home';
+import { Link, useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
 
 function Header() {
+  const [user, setUser] = useState(null);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const checkAuth = () => {
+      const userData = localStorage.getItem('user');
+      if (userData) {
+        setUser(JSON.parse(userData));
+      } else {
+        setUser(null);
+      }
+    };
+
+    checkAuth();
+    window.addEventListener('login-success', checkAuth);
+    window.addEventListener('storage', checkAuth);
+
+    return () => {
+      window.removeEventListener('login-success', checkAuth);
+      window.removeEventListener('storage', checkAuth);
+    };
+  }, []);
+
   const openSignIn = () => {
     window.dispatchEvent(new CustomEvent('open-auth', { detail: 'signin' }));
   };
 
-  const openSignUp = () => {
-    window.dispatchEvent(new CustomEvent('open-auth', { detail: 'signup' }));
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    setUser(null);
+    navigate('/');
+  };
+
+  const goToDashboard = () => {
+    if (user?.role === 'admin') {
+      navigate('/admin/dashboard');
+    } else if (user?.role === 'guardian') {
+      navigate('/guardian/dashboard');
+    }
   };
 
   return (
@@ -35,16 +65,23 @@ function Header() {
         </nav>
 
         <div className="header-right">
-          <button className="header-btn">🪙 0</button>
-
-          <div className="profile-container">
-            <img
-              src={profileImage}
-              alt="Profile"
-              className="profile-img"
-              style={{ cursor: "pointer" }}
-            />
-          </div>
+          {user ? (
+            <>
+              <button className="header-btn">🪙 0</button>
+              <div className="profile-container" onClick={goToDashboard}>
+                <img
+                  src={profileImage}
+                  alt="Profile"
+                  className="profile-img"
+                  style={{ cursor: "pointer" }}
+                />
+                <span className="profile-name">{user.full_name}</span>
+              </div>
+              <button className="logout-btn-small" onClick={handleLogout}>Logout</button>
+            </>
+          ) : (
+            <button className="header-btn signin" onClick={openSignIn}>Sign In</button>
+          )}
         </div>
 
       </div>

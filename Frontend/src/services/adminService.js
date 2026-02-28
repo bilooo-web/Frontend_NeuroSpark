@@ -107,5 +107,18 @@ const adminService = {
   resendInvitation(id) {
     return api.post(`/admin/invitations/${id}/resend`);
   },
+  // ==================== NOTIFICATIONS ====================
+  // Send notification to a specific user
+  sendNotification(userId, data) {
+    return api.post(`/admin/notifications/send/${userId}`, data);
+  },
+  // Broadcast notification to a group of users
+  broadcastNotification(data) {
+    return api.post('/admin/notifications/broadcast', data);
+  },
+  // Get all sent notifications
+  getNotifications(params = {}) {
+    return api.get('/admin/notifications', params);
+  },
 };
 export default adminService;

@@ -41,7 +41,7 @@ function Header() {
 
   const goToDashboard = () => {
     if (user?.role === 'admin') {
-      navigate('/admin/dashboard');
+      navigate('/admin');
     } else if (user?.role === 'guardian') {
       navigate('/guardian/dashboard');
     }

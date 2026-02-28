@@ -735,7 +735,7 @@ const AuthModal = ({ onClose, initialMode = 'signin' }) => {
       
       setTimeout(() => {
         if (data.user.role === 'admin') {
-          navigate('/admin/dashboard');
+          navigate('/admin');
         } else if (data.user.role === 'guardian') {
           navigate('/guardian/dashboard');
         } else if (data.user.role === 'child') {

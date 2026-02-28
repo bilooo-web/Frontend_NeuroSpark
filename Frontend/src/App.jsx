@@ -1,5 +1,14 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route , useNavigate } from "react-router-dom";
 import { useState, useEffect, useRef } from "react";
+import { toast } from 'react-toastify'; // Add this import
+
+import AdminLayout from "./components/admin/AdminLayout";
+import AdminDashboard from "./pages/AdminDashboard";
+import AdminUsers from "./pages/AdminUsers";
+import AdminGames from "./pages/AdminGames";
+import AdminVoiceInstructions from "./pages/AdminVoiceInstructions";
+import AdminReports from "./pages/AdminReports";
+import AdminNotifications from "./pages/AdminNotifications";
 
 import AboutUs2 from "./pages/AboutUs2";
 import Home from "./pages/Home";
@@ -11,6 +20,41 @@ import Customization from "./pages/Customization";
 import Reading from "./pages/ReadingPage";
 import GameSwitcher from "./games/GameSwitcher";
 import StoryBook from "./pages/StoryBook";
+import ProtectedRoute from "./components/ProtectedRoute";
+
+
+const AdminRoute = ({ children }) => {
+      const navigate = useNavigate();
+      const [isAdmin, setIsAdmin] = useState(false);
+      const [loading, setLoading] = useState(true);
+
+      useEffect(() => {
+        const checkAdmin = async () => {
+          const user = JSON.parse(localStorage.getItem('user') || '{}');
+          const token = localStorage.getItem('token');
+          
+          if (!token || user.role !== 'admin') {
+            navigate('/');
+            toast.error('Admin access required');
+          } else {
+            setIsAdmin(true);
+          }
+          setLoading(false);
+        };
+
+        checkAdmin();
+      }, [navigate]);
+
+      if (loading) {
+        return (
+          <div className="page-center">
+            <div className="loading-spinner"></div>
+          </div>
+        );
+      }
+
+      return isAdmin ? children : null;
+    };
 
 function App() {
   const [showAuth, setShowAuth] = useState(false);
@@ -71,6 +115,8 @@ function App() {
         />
       )}
       <Routes>
+
+         {/* Public Routes */}
         <Route path="/" element={<Home />} />
         <Route path="/home" element={<Home />} />
         <Route path="/challenges" element={<Challenges />} />
@@ -85,6 +131,22 @@ function App() {
         <Route path="/customization" element={<Customization />} />
         <Route path="/ReadingPage" element={<Reading />} />
         <Route path="/story/:id" element={<StoryBook />} />
+
+
+        {/* Admin Routes */}
+        <Route path="/admin" element={
+            <AdminRoute>
+              <AdminLayout />
+            </AdminRoute>
+          }>
+          <Route index element={<AdminDashboard />} />
+          <Route path="users" element={<AdminUsers />} />
+          <Route path="games" element={<AdminGames />} />
+          <Route path="voice-instructions" element={<AdminVoiceInstructions />} />
+          <Route path="reports" element={<AdminReports />} />
+          <Route path="notifications" element={<AdminNotifications />} />
+        </Route>
+
       </Routes>
 
     </BrowserRouter>

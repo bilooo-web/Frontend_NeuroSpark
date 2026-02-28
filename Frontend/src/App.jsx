@@ -55,6 +55,9 @@ const AdminRoute = ({ children }) => {
 
       return isAdmin ? children : null;
     };
+import Chatbot from "./components/Chatbot/Chatbot";
+
+
 
 function App() {
   const [showAuth, setShowAuth] = useState(false);
@@ -148,8 +151,10 @@ function App() {
         </Route>
 
       </Routes>
+      <Chatbot />
 
     </BrowserRouter>
+
   );
 }
 

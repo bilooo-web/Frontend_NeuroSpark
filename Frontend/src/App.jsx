@@ -21,6 +21,7 @@ import Reading from "./pages/ReadingPage";
 import GameSwitcher from "./games/GameSwitcher";
 import StoryBook from "./pages/StoryBook";
 import ProtectedRoute from "./components/ProtectedRoute";
+import Chatbot from "./components/Chatbot/Chatbot";
 
 
 const AdminRoute = ({ children }) => {
@@ -55,7 +56,7 @@ const AdminRoute = ({ children }) => {
 
       return isAdmin ? children : null;
     };
-import Chatbot from "./components/Chatbot/Chatbot";
+
 
 
 

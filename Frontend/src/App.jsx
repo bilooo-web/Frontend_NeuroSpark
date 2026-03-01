@@ -57,9 +57,6 @@ const AdminRoute = ({ children }) => {
       return isAdmin ? children : null;
     };
 
-
-
-
 function App() {
   const [showAuth, setShowAuth] = useState(false);
   const [authMode, setAuthMode] = useState('signin');

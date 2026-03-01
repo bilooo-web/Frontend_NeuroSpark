@@ -1,5 +1,5 @@
-import { useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { challengesData } from "../data/challengesData";
 
 import Header from "../components/common/Header/Header";
@@ -9,17 +9,52 @@ import "./ChallengeDetails.css";
 
 const ChallengeDetails = () => {
   const { id } = useParams();
+  const location = useLocation();
   const challenge = challengesData[id];
   const navigate = useNavigate();
+  
+  const [lastScore, setLastScore] = useState(challenge?.lastScore || 0);
+  const [bestScore, setBestScore] = useState(challenge?.bestScore || 0);
+  
+  const [totalCoins, setTotalCoins] = useState(() => {
+    const savedCoins = localStorage.getItem('totalCoins');
+    return savedCoins ? parseInt(savedCoins) : 0;
+  });
 
   useEffect(() => {
     window.scrollTo(0, 0);
-  }, []);
+    
+    if (challenge) {
+      const savedBest = localStorage.getItem(`${challenge.id}-best`);
+      if (savedBest) {
+        setBestScore(parseInt(savedBest));
+      }
+    }
+  }, [challenge]);
+
+  useEffect(() => {
+    if (location.state?.gameResults) {
+      const { lastScore: newLastScore, bestScore: newBestScore } = location.state.gameResults;
+      
+      setLastScore(newLastScore);
+      
+      if (newBestScore > bestScore) {
+        setBestScore(newBestScore);
+        if (challenge) {
+          localStorage.setItem(`${challenge.id}-best`, newBestScore.toString());
+        }
+      }
+
+      if (location.state.earnedCoins > 0) {
+        console.log(`Earned ${location.state.earnedCoins} coins!`);
+      }
+    }
+  }, [location.state, challenge, bestScore]);
 
   if (!challenge) {
     return (
       <>
-        <Header />
+        <Header totalCoins={totalCoins} />
         <h2 style={{ textAlign: "center", margin: "100px 0" }}>
           Challenge not found
         </h2>
@@ -44,14 +79,16 @@ const ChallengeDetails = () => {
 
               <div className="scores-section">
                 <div className="score-box">
-                  <span className="score">{challenge.lastScore}</span>
+                  <span className="score">{lastScore}</span>
                   <span className="label">Last score</span>
                 </div>
                 <div className="score-box">
-                  <span className="score">{challenge.bestScore}</span>
+                  <span className="score">{bestScore}</span>
                   <span className="label">Best score</span>
                 </div>
               </div>
+
+              
 
               <div className="section instructions-section">
                 <h3 className="section-title">Instructions</h3>

@@ -50,14 +50,14 @@ export const challengesData = {
     benefits: ["Reasoning", "Memory", "Attention"],
     characterImage: padlocksCharacter, 
   },
-  "puzzles":{
-    id: "puzzles",
-    title: "Puzzles",
-    category: "Logic",
+  "pair-of-cards":{
+    id: "pair-of-cards",
+    title: "Pair of Cards",
+    category: "Memory",
     lastScore: 0,
     bestScore: 0,
-    instructions: "Complete the puzzles as fast as you can",
-    benefits: ["Spatial reasoning", "Problem solving", "Attention to detail"],
+    instructions: "Memorize cards and select matching cards",
+    benefits: ["Working memory", "Visual perception", "Concentration"],
     characterImage: puzzlesCharacter,
   },
   "painting": {

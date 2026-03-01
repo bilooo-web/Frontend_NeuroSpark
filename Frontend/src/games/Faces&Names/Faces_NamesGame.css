@@ -1,0 +1,648 @@
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Fredoka+One&display=swap');
+
+
+:root {
+  --fn-yellow: #F5B731;
+  --fn-yellow-dark: #D9A020;
+  --fn-bg: #E8F0F7;
+  --fn-card-bg: #FFFFFF;
+  --fn-text-dark: black;
+  --fn-text-mid: black;
+  --fn-green: #4CAF82;
+  --fn-red: #E05C6A;
+  --fn-blue: #4E9BF5;
+  --fn-shadow: 0 4px 20px rgba(0,0,0,0.10);
+}
+
+.fn-game-wrapper {
+  position: relative;
+}
+
+.fn-game-content {
+  min-height: 100vh;
+  padding-bottom: 120px;
+  font-family: 'Nunito', sans-serif;
+  background: #8BE3D8;
+}
+
+.fn-game-content * {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+.fn-game-wrapper .fn-motivation-img {
+  position: fixed;
+  top: 210px;
+  right: 20px;
+  width: 300px;
+  height: auto;
+  opacity: 0.8;
+  animation: fn-float 3s ease-in-out infinite;
+  z-index: 10;
+  pointer-events: none;
+}
+
+.fn-game-wrapper .fn-session-timer-wrap { 
+  height: 8px; 
+  background: #dce8f4; 
+}
+
+.fn-game-wrapper .fn-session-timer-fill {
+  height: 100%;
+  border-radius: 0 4px 4px 0;
+  transition: width 0.5s linear, background 0.4s ease;
+}
+
+.fn-game-wrapper .fn-phase-label {
+  text-align: center;
+  font-family: 'Fredoka One', cursive;
+  font-size: 30px; 
+  margin-top: 40px;
+  margin-bottom: -40px;
+  color: var(--fn-text-mid);
+  letter-spacing: 1px; 
+  padding: 16px 0 2px; 
+  opacity: 0.7;
+}
+
+.fn-game-wrapper .fn-countdown {
+  text-align: center;
+  font-family: 'Nunito', sans-serif;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: fixed;
+  bottom: 70px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 20;
+  background: transparent;
+  pointer-events: none;
+}
+
+.fn-game-wrapper .fn-countdown-circle {
+  position: relative;
+  width: 100px;
+  height: 100px;
+}
+
+.fn-game-wrapper .fn-countdown-circle svg {
+  width: 100px;
+  height: 100px;
+  transform: rotate(-90deg);
+}
+
+.fn-game-wrapper .fn-countdown-circle-bg {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.2);
+  stroke-width: 3;
+}
+
+.fn-game-wrapper .fn-countdown-circle-progress {
+  fill: none;
+  stroke: white;
+  stroke-width: 3;
+  stroke-linecap: round;
+  filter: drop-shadow(0 0 5px rgba(255,255,255,0.5));
+  transition: stroke-dasharray 0.3s ease;
+}
+
+.fn-game-wrapper .fn-countdown-number {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 32px;
+  font-weight: 700;
+  color: white;
+  text-shadow: 0 0 10px rgba(255,255,255,0.5);
+  width: 60px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 50%;
+  backdrop-filter: blur(2px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.fn-game-wrapper .fn-countdown-number small {
+  font-size: 14px;
+  margin-left: 2px;
+  opacity: 0.7;
+}
+
+.fn-game-wrapper .fn-faces-grid {
+  display: flex; 
+  flex-wrap: wrap;
+  justify-content: center; 
+  margin-top: 80px;
+  margin-bottom: 20px;
+  gap: 70px;
+  padding: 8px 20px 20px;
+}
+
+.fn-game-wrapper .fn-face-card {
+  background: var(--fn-card-bg);
+  border-radius: 24px;
+  box-shadow: var(--fn-shadow);
+  display: flex; 
+  flex-direction: column; 
+  align-items: center;
+  overflow: hidden;
+  transition: transform 0.2s, box-shadow 0.2s;
+  width: 220px;
+}
+
+.fn-game-wrapper .fn-faces-grid.fn-compact .fn-face-card { 
+  width: 180px; 
+}
+
+.fn-game-wrapper .fn-faces-grid.fn-compact .fn-face-img-wrap { 
+  height: 160px; 
+  font-size: 85px; 
+}
+
+.fn-game-wrapper .fn-faces-grid.fn-compact .fn-name-shown { 
+  font-size: 16px; 
+  padding: 10px 16px; 
+}
+.fn-drop-zone{
+    margin-left: 14px;
+}
+.fn-game-wrapper .fn-faces-grid.fn-compact .fn-drop-zone { 
+  width: 150px; 
+  font-size: 14px; 
+  height: 45px; 
+}
+
+.fn-game-wrapper .fn-face-card.fn-correct { 
+  box-shadow: 0 0 0 3px var(--fn-green), var(--fn-shadow); 
+  animation: fn-correctPop 0.4s ease; 
+}
+
+.fn-game-wrapper .fn-face-card.fn-wrong { 
+  box-shadow: 0 0 0 3px var(--fn-red), var(--fn-shadow); 
+  animation: fn-shake 0.4s ease; 
+}
+
+@keyframes fn-correctPop {
+  0%   { transform: scale(1); }
+  50%  { transform: scale(1.07); }
+  100% { transform: scale(1); }
+}
+
+@keyframes fn-shake {
+  0%,100% { transform: translateX(0); }
+  25%     { transform: translateX(-6px); }
+  75%     { transform: translateX(6px); }
+}
+
+.fn-game-wrapper .fn-face-img-wrap {
+  width: 100%; 
+  height: 200px;
+  background: #f5f9ff;
+  display: flex; 
+  align-items: center; 
+  justify-content: center;
+  font-size: 110px; 
+  line-height: 1; 
+  padding: 10px 0 5px;
+}
+
+.fn-game-wrapper .fn-name-badge { 
+  width: 100%; 
+  padding: 15px 10px; 
+  text-align: center; 
+}
+
+.fn-game-wrapper .fn-name-shown {
+  background: var(--fn-yellow); 
+  color: var(--fn-text-dark);
+  font-weight: 800; 
+  font-size: 22px; 
+  padding: 12px 24px;
+  border-radius: 40px; 
+  display: inline-block; 
+  min-width: 140px;
+}
+
+.fn-game-wrapper .fn-drop-zone {
+  background: #dce8f4; 
+  border: 3px dashed #aac4df;
+  border-radius: 40px; 
+  height: 55px; 
+  width: 170px;
+  display: flex; 
+  align-items: center; 
+  justify-content: center;
+  font-size: 18px; 
+  color: var(--fn-text-mid); 
+  font-weight: 700;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.fn-game-wrapper .fn-drop-zone.fn-drag-over { 
+  background: #c8dcf0; 
+  border-color: var(--fn-blue); 
+}
+
+.fn-game-wrapper .fn-drop-zone.fn-filled {
+  background: transparent;
+  border: none;
+  height: auto;
+  width: auto;
+  padding: 0;
+}
+
+.fn-game-wrapper .fn-drop-zone.fn-filled {
+  background: var(--fn-yellow);
+  color: var(--fn-text-dark);
+  font-weight: 800;
+  font-size: 20px;
+  padding: 14px 28px;
+  border-radius: 45px;
+  box-shadow: 0 6px 15px rgba(245,183,49,0.5);
+  height: auto;
+  width: auto;
+  border: none;
+  display: inline-block;
+}
+
+.fn-game-wrapper .fn-drop-zone.fn-filled-correct {
+  background: var(--fn-green) !important;
+  color: #fff;
+  box-shadow: 0 6px 15px rgba(76, 175, 130, 0.5);
+}
+
+.fn-game-wrapper .fn-drop-zone.fn-filled-wrong {
+  background: var(--fn-red) !important;
+  color: #fff;
+  box-shadow: 0 6px 15px rgba(224, 92, 106, 0.5);
+}
+
+.fn-game-wrapper .fn-drop-zone.fn-filled,
+.fn-game-wrapper .fn-drop-zone.fn-filled-correct,
+.fn-game-wrapper .fn-drop-zone.fn-filled-wrong {
+  border: none;
+}
+
+.fn-game-wrapper .fn-names-pool {
+  display: flex; 
+  flex-wrap: wrap;
+  justify-content: center; 
+  gap: 18px;
+  padding: 15px 20px 30px;
+  min-height: 80px;
+}
+
+.fn-game-wrapper .fn-name-chip {
+  background: var(--fn-yellow); 
+  color: var(--fn-text-dark);
+  font-weight: 800; 
+  font-size: 20px; 
+  padding: 14px 28px;
+  border-radius: 45px; 
+  cursor: grab; 
+  user-select: none;
+  box-shadow: 0 6px 15px rgba(245,183,49,0.5);
+  transition: transform 0.15s, box-shadow 0.15s, opacity 0.2s;
+  border: none;
+  display: inline-block;
+}
+
+.fn-game-wrapper .fn-name-chip:active { 
+  cursor: grabbing; 
+  transform: scale(1.1) rotate(-2deg); 
+}
+
+.fn-game-wrapper .fn-name-chip.fn-dragging { 
+  opacity: 0.45; 
+}
+
+.fn-game-wrapper .fn-name-chip.fn-used { 
+  opacity: 0; 
+  pointer-events: none; 
+}
+
+.fn-game-wrapper .fn-round-flash {
+  position: fixed; 
+  inset: 0;
+  background: rgba(240,246,252,0.97);
+  display: flex; 
+  flex-direction: column;
+  align-items: center; 
+  justify-content: center; 
+  gap: 10px;
+  z-index: 30;
+  animation: fn-fadeInOut 1.6s ease forwards;
+  pointer-events: none;
+}
+
+@keyframes fn-fadeInOut {
+  0%   { opacity: 0; }
+  15%  { opacity: 1; }
+  70%  { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+.fn-game-wrapper .fn-flash-emoji { 
+  font-size: 64px; 
+}
+
+.fn-game-wrapper .fn-flash-text { 
+  font-family: 'Fredoka One', cursive; 
+  font-size: 28px; 
+  color: var(--fn-text-dark); 
+}
+
+.fn-game-wrapper .fn-flash-sub { 
+  font-size: 15px; 
+  font-weight: 700; 
+  color: var(--fn-text-mid); 
+}
+
+.fn-game-wrapper .fn-gameover-screen {
+  display: flex; 
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  padding: 20px 10px;
+  text-align: center;
+  min-height: 100vh;
+  position: relative;
+  overflow: hidden;
+  margin-top: -50px;
+  margin-bottom: -400px;
+}
+
+.fn-game-wrapper .fn-gameover-screen::before {
+  content: '';
+  position: absolute;
+  width: 200%;
+  height: 100%;
+  background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 50%);
+  animation: fn-rotate 20s linear infinite;
+  z-index: 0;
+}
+
+@keyframes fn-rotate {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.fn-game-wrapper .fn-go-emoji { 
+  font-size: 100px; 
+  animation: fn-bounceIn 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  filter: drop-shadow(0 10px 20px rgba(0,0,0,0.2));
+  position: relative;
+  z-index: 1;
+  transform-origin: center;
+}
+
+.fn-game-wrapper .fn-go-emoji:hover {
+  animation: fn-wiggle 0.5s ease-in-out;
+}
+
+@keyframes fn-wiggle {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(-10deg); }
+  75% { transform: rotate(10deg); }
+}
+
+.fn-game-wrapper .fn-go-title { 
+  font-family: 'Fredoka One', cursive; 
+  font-size: 48px; 
+  color: white;
+  text-shadow: 3px 3px 0 rgba(0,0,0,0.1), 5px 5px 0 rgba(0,0,0,0.05);
+  position: relative;
+  z-index: 1;
+  letter-spacing: 2px;
+  margin-bottom: 10px;
+  animation: fn-slideUp 0.5s ease-out 0.2s both;
+}
+
+.fn-game-wrapper .fn-go-sub { 
+  font-size: 20px; 
+  color: rgba(255,255,255,0.9); 
+  font-weight: 700;
+  position: relative;
+  z-index: 1;
+  background: rgba(255,255,255,0.15);
+  padding: 10px 30px;
+  border-radius: 50px;
+  backdrop-filter: blur(5px);
+  border: 1px solid rgba(255,255,255,0.3);
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+  animation: fn-slideUp 0.5s ease-out 0.3s both;
+}
+
+.fn-game-wrapper .fn-stats-row { 
+  display: flex; 
+  gap: 25px; 
+  margin: 20px 0 10px;
+  position: relative;
+  z-index: 1;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.fn-game-wrapper .fn-stat-box {
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 24px;
+  padding: 25px 35px;
+  box-shadow: 0 15px 35px rgba(0,0,0,0.2), 0 0 0 2px rgba(255,255,255,0.5) inset;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  min-width: 140px;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  animation: fn-slideUp 0.5s ease-out;
+}
+
+.fn-game-wrapper .fn-stat-box:nth-child(1) { animation-delay: 0.4s; }
+.fn-game-wrapper .fn-stat-box:nth-child(2) { animation-delay: 0.5s; }
+.fn-game-wrapper .fn-stat-box:nth-child(3) { animation-delay: 0.6s; }
+
+.fn-game-wrapper .fn-stat-box:hover {
+  transform: translateY(-8px) scale(1.02);
+  box-shadow: 0 25px 45px rgba(0,0,0,0.25), 0 0 0 3px rgba(255,255,255,0.8) inset;
+}
+
+.fn-game-wrapper .fn-stat-box::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(
+    45deg,
+    transparent,
+    rgba(255,255,255,0.3),
+    transparent
+  );
+  transform: rotate(45deg);
+  animation: fn-shine 3s infinite;
+}
+
+@keyframes fn-shine {
+  0% { transform: translateX(-100%) rotate(45deg); }
+  20%, 100% { transform: translateX(100%) rotate(45deg); }
+}
+
+.fn-game-wrapper .fn-stat-box .fn-stat-num { 
+  font-family: 'Fredoka One', cursive; 
+  font-size: 48px; 
+  color: var(--fn-yellow-dark);
+  line-height: 1;
+  text-shadow: 2px 2px 0 rgba(0,0,0,0.05);
+  position: relative;
+}
+
+.fn-game-wrapper .fn-stat-box .fn-stat-lbl { 
+  font-size: 16px; 
+  font-weight: 800; 
+  color: var(--fn-text-mid);
+  text-transform: uppercase; 
+  letter-spacing: 1.5px;
+  background: rgba(245, 183, 49, 0.1);
+  padding: 5px 15px;
+  border-radius: 30px;
+}
+
+.fn-game-wrapper .fn-coin-reward-box {
+  background: linear-gradient(135deg, #FFD700, #FFA500);
+  padding: 15px 40px;
+  border-radius: 50px;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin: 10px 0;
+  box-shadow: 0 10px 25px rgba(255, 215, 0, 0.4);
+  border: 3px solid white;
+  animation: fn-slideUp 0.5s ease-out 0.8s both;
+  position: relative;
+  z-index: 1;
+}
+
+.fn-game-wrapper .fn-coin-reward-box .fn-coin-icon {
+  font-size: 32px;
+}
+
+.fn-game-wrapper .fn-coin-reward-box .fn-coin-value {
+  font-size: 36px;
+  font-weight: 900;
+  color: white;
+  text-shadow: 2px 2px 0 rgba(0,0,0,0.2);
+  font-family: 'Fredoka One', cursive;
+}
+
+.fn-game-wrapper .fn-coin-reward-box .fn-coin-label {
+  font-size: 18px;
+  font-weight: 700;
+  color: rgba(255,255,255,0.9);
+  background: rgba(0,0,0,0.1);
+  padding: 5px 15px;
+  border-radius: 30px;
+}
+
+.fn-game-wrapper .fn-redirect-message {
+  margin-top: 20px;
+  color: #666;
+  font-size: 16px;
+  font-weight: bold;
+  animation: fn-fadeInOut 2s ease-in-out infinite;
+}
+
+.fn-game-wrapper .fn-coin-reward-animation {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: linear-gradient(135deg, #FFD700, #FFA500);
+  padding: 20px 40px;
+  border-radius: 60px;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  z-index: 100;
+  animation: fn-coinFloat 3s ease-out forwards;
+  box-shadow: 0 10px 30px rgba(255, 215, 0, 0.5);
+  border: 3px solid white;
+}
+
+.fn-game-wrapper .fn-coin-reward-animation .fn-coin-emoji {
+  font-size: 48px;
+  animation: fn-coinSpin 1s ease-in-out;
+}
+
+.fn-game-wrapper .fn-coin-reward-animation .fn-coin-amount {
+  font-size: 48px;
+  font-weight: 900;
+  color: white;
+  text-shadow: 2px 2px 0 rgba(0,0,0,0.2);
+  font-family: 'Fredoka One', cursive;
+}
+
+@keyframes fn-coinFloat {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.5);
+  }
+  20% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1.2);
+  }
+  40% {
+    transform: translate(-50%, -50%) scale(1);
+  }
+  80% {
+    opacity: 1;
+    transform: translate(-50%, -100%) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -150%) scale(0.8);
+  }
+}
+
+@keyframes fn-coinSpin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes fn-slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fn-bounceIn {
+  0% { transform: scale(0.3); opacity: 0; }
+  50% { transform: scale(1.2); }
+  70% { transform: scale(0.9); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.fn-game-wrapper .fn-stars-bg {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 0;
+}

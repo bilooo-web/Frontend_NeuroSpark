@@ -2,6 +2,8 @@ import React from 'react';
 import { useParams } from 'react-router-dom';
 import PathChangeGame from './PathChange/PathChangeGame';
 import MemoryPadlocksGame from './MemoryPadlocks/MemoryPadlocksGame';
+import Faces_Names from './Faces&Names/Faces_NamesGame';
+import PairOfCards from './PairOfCards/PairOfCards';
 
 const GameSwitcher = () => {
     const { id } = useParams();
@@ -11,6 +13,10 @@ const GameSwitcher = () => {
             return <PathChangeGame />;
         case 'padlocks':
             return <MemoryPadlocksGame />;
+        case 'faces-and-names':
+            return <Faces_Names />;
+        case 'pair-of-cards':
+            return <PairOfCards />
         default:
             return (
                 <div style={{ 

@@ -39,8 +39,8 @@ const allChallenges = [
     titleStyle: { marginTop: "35px" }
   },
   {
-    slug: "puzzles",
-    title: "Puzzles",
+    slug: "pair-of-cards",
+    title: "Pair of Cards",
     gameImage: game4,
     note: "This game helps you think smarter  are you ready?",
     titleStyle: { marginTop: "35px" }

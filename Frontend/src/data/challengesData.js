@@ -60,6 +60,18 @@ export const challengesData = {
     benefits: ["Working memory", "Visual perception", "Concentration"],
     characterImage: puzzlesCharacter,
   },
+
+  "puzzles":{
+      id: "puzzles",
+      title: "Puzzles",
+      category: "Logic",
+      lastScore: 0,
+      bestScore: 0,
+      instructions: "Complete the puzzles as fast as you can",
+      benefits: ["Spatial reasoning", "Problem solving", "Attention to detail"],
+      characterImage: puzzlesCharacter,
+    },
+    
   "painting": {
     id: "painting",
     title: "Painting",

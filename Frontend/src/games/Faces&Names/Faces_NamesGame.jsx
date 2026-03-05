@@ -4,631 +4,704 @@ import "./Faces_NamesGame.css";
 import Header from "../../components/common/Header/Header";
 
 const MALE_FACES = [
-  { id: 2,  emoji: "🧔", gender: "male" },    
-  { id: 4,  emoji: "👨‍🦱", gender: "male" }, 
-  { id: 6,  emoji: "👨‍🦲", gender: "male" }, 
-  { id: 8,  emoji: "👴", gender: "male" },  
-  { id: 10, emoji: "🧑", gender: "male" },  
-  { id: 12, emoji: "👨‍🦳", gender: "male" }, 
+  { id:2, emoji:"🧔", gender:"male" }, { id:4, emoji:"👨‍🦱", gender:"male" },
+  { id:6, emoji:"👨‍🦲", gender:"male" }, { id:8, emoji:"👴", gender:"male" },
+  { id:10, emoji:"🧑", gender:"male" }, { id:12, emoji:"👨‍🦳", gender:"male" },
 ];
-
 const FEMALE_FACES = [
-  { id: 1,  emoji: "👵", gender: "female" },   
-  { id: 3,  emoji: "👩", gender: "female" },  
-  { id: 5,  emoji: "👩‍🦳", gender: "female" }, 
-  { id: 7,  emoji: "🧕", gender: "female" },   
-  { id: 9,  emoji: "👱‍♀️", gender: "female" }, 
-  { id: 11, emoji: "👩‍🦰", gender: "female" }, 
-  { id: 13, emoji: "👩‍🦱", gender: "female" }, 
+  { id:1, emoji:"👵", gender:"female" }, { id:3, emoji:"👩", gender:"female" },
+  { id:5, emoji:"👩‍🦳", gender:"female" }, { id:7, emoji:"🧕", gender:"female" },
+  { id:9, emoji:"👱‍♀️", gender:"female" }, { id:11, emoji:"👩‍🦰", gender:"female" },
+  { id:13, emoji:"👩‍🦱", gender:"female" },
 ];
-
-const MALE_NAMES = [
-  "James", "Carlos", "Marcus", "Derek", "Ethan", "Leo"
-];
-
-const FEMALE_NAMES = [
-  "Ashley", "Sophie", "Linda", "Priya", "Mia", "Yara", "Nina"
-];
-
-const ALL_FACES = [...MALE_FACES, ...FEMALE_FACES];
+const MALE_NAMES = ["James","Carlos","Marcus","Derek","Ethan","Leo"];
+const FEMALE_NAMES = ["Ashley","Sophie","Linda","Priya","Mia","Yara","Nina"];
 const ALL_NAMES = [...MALE_NAMES, ...FEMALE_NAMES];
+const SESSION_DURATION = 70;
 
-function getRoundConfig(roundIndex) {
-  const facesCount   = Math.min(2 + roundIndex, ALL_FACES.length);
-  const memorizeTime = Math.max(4 - roundIndex * 0.2, 2);
-  return { facesCount, memorizeTime: parseFloat(memorizeTime.toFixed(1)) };
+const CELEBRATION_MSGS = [
+  { emoji: '🧠', text: 'You got it!', sub: 'Your memory is amazing!' },
+  { emoji: '🌟', text: 'Correct!', sub: 'You remembered the name!' },
+  { emoji: '🎉', text: 'Brilliant!', sub: 'Your brain is so powerful!' },
+  { emoji: '✨', text: 'Fantastic!', sub: 'What an incredible memory!' },
+];
+const MOTIVATION_MSGS = [
+  { emoji: '💪', text: 'Almost!', sub: 'You are getting closer!' },
+  { emoji: '🌈', text: 'Keep trying!', sub: 'Mistakes help you learn!' },
+  { emoji: '⭐', text: 'Good try!', sub: 'Your brain is growing!' },
+  { emoji: '🔥', text: 'Not quite!', sub: 'You will get it next time!' },
+];
+
+function getRoundConfig(r) { 
+  return { 
+    facesCount: Math.min(2 + r, 13), 
+    memorizeTime: parseFloat(Math.max(4 - r * 0.2, 2).toFixed(1)) 
+  }; 
 }
 
-const SESSION_DURATION = 70; 
-
-function shuffle(arr) {
-  const a = [...arr];
-  for (let i = a.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [a[i], a[j]] = [a[j], a[i]];
-  }
-  return a;
+function shuffle(a) { 
+  const b=[...a]; 
+  for(let i=b.length-1;i>0;i--){
+    const j=Math.floor(Math.random()*(i+1));
+    [b[i],b[j]]=[b[j],b[i]];
+  } 
+  return b; 
 }
 
 function createRandomFaces(count) {
-  const maleCount = Math.floor(count / 2);
-  const femaleCount = count - maleCount;
+  const mc = Math.floor(count / 2), fc = count - mc;
   
-  const shuffledMales = shuffle(MALE_FACES).slice(0, maleCount);
+  // Shuffle and take unique males
+  const shuffledMales = shuffle(MALE_FACES);
+  const males = [];
+  const usedMaleNames = new Set();
   
-  const shuffledFemales = shuffle(FEMALE_FACES).slice(0, femaleCount);
+  for (let i = 0; i < mc && i < shuffledMales.length; i++) {
+    // Get unique name for each male
+    const availableNames = MALE_NAMES.filter(name => !usedMaleNames.has(name));
+    if (availableNames.length === 0) break;
+    
+    const name = shuffle(availableNames)[0];
+    usedMaleNames.add(name);
+    males.push({ ...shuffledMales[i], name });
+  }
   
-  const shuffledMaleNames = shuffle(MALE_NAMES).slice(0, maleCount);
+  // Shuffle and take unique females
+  const shuffledFemales = shuffle(FEMALE_FACES);
+  const females = [];
+  const usedFemaleNames = new Set();
   
-  const shuffledFemaleNames = shuffle(FEMALE_NAMES).slice(0, femaleCount);
+  for (let i = 0; i < fc && i < shuffledFemales.length; i++) {
+    // Get unique name for each female
+    const availableNames = FEMALE_NAMES.filter(name => !usedFemaleNames.has(name));
+    if (availableNames.length === 0) break;
+    
+    const name = shuffle(availableNames)[0];
+    usedFemaleNames.add(name);
+    females.push({ ...shuffledFemales[i], name });
+  }
   
-  const malePairs = shuffledMales.map((face, index) => ({
-    id: face.id,
-    emoji: face.emoji,
-    gender: face.gender,
-    name: shuffledMaleNames[index]
-  }));
-  
-  const femalePairs = shuffledFemales.map((face, index) => ({
-    id: face.id,
-    emoji: face.emoji,
-    gender: face.gender,
-    name: shuffledFemaleNames[index]
-  }));
-  
-  const allPairs = shuffle([...malePairs, ...femalePairs]);
-  
-  return allPairs;
+  return shuffle([...males, ...females]);
 }
 
-function createNamePool(faces, extraCount = 1) {
-  const correctNames = faces.map(f => f.name);
-  
-  const otherNames = ALL_NAMES.filter(name => !correctNames.includes(name));
-  
-  const distractors = shuffle(otherNames).slice(0, extraCount);
-  
-  const allNames = shuffle([...correctNames, ...distractors]);
-  
-  return allNames;
+function createNamePool(faces, extra=1) {
+  const correct=faces.map(f=>f.name);
+  return shuffle([...correct, ...shuffle(ALL_NAMES.filter(n=>!correct.includes(n))).slice(0,extra)]);
 }
 
-function calculateCoins(totalCorrect, totalFaces, roundsCompleted) {
-  if (totalFaces === 0) return 0;
-  
-  const accuracy = (totalCorrect / totalFaces) * 100;
-  let coins = 0;
-  
-  coins += totalCorrect * 15;
-  
-  if (accuracy >= 90) coins += 75;
-  else if (accuracy >= 75) coins += 45;
-  else if (accuracy >= 50) coins += 25;
-  
-  if (roundsCompleted >= 5) coins += 60;
-  else if (roundsCompleted >= 3) coins += 30;
-  
-  if (totalCorrect === totalFaces && totalFaces > 0) coins += 150;
-  
-  return coins;
-}
-
-export default function FacesNamesGame() {
+export default function FacesNamesGame({ 
+  onGameComplete, 
+  startNewSession, 
+  abandonSession, 
+  navigateBack, 
+  gameInfo,
+  totalCoins: initialTotalCoins = 0 
+}) {
   const navigate = useNavigate();
-  
-  const [screen,       setScreen]       = useState("memorize");
-  const [roundIndex,   setRoundIndex]   = useState(0);
-  const [faces,        setFaces]        = useState([]);
-  const [namePool,     setNamePool]     = useState([]);
-  const [assignments,  setAssignments]  = useState({});
-  const [feedback,     setFeedback]     = useState({});
-  const [memTime,      setMemTime]      = useState(4);
-  const [sessionLeft,  setSessionLeft]  = useState(SESSION_DURATION);
+  const [screen, setScreen] = useState("memorize");
+  const [roundIndex, setRoundIndex] = useState(0);
+  const [faces, setFaces] = useState([]);
+  const [namePool, setNamePool] = useState([]);
+  const [assignments, setAssignments] = useState({});
+  const [feedback, setFeedback] = useState({});
+  const [memTime, setMemTime] = useState(4);
+  const [sessionLeft, setSessionLeft] = useState(SESSION_DURATION);
   const [totalCorrect, setTotalCorrect] = useState(0);
-  const [totalFaces,   setTotalFaces]   = useState(0);
-  const [roundScore,   setRoundScore]   = useState({ correct: 0, total: 0 });
-  const [dragging,     setDragging]     = useState(null);
-  const [dragOver,     setDragOver]     = useState(null);
-  const [totalCoins,   setTotalCoins]   = useState(() => {
-    const savedCoins = localStorage.getItem('totalCoins');
-    return savedCoins ? parseInt(savedCoins) : 0;
-  });
+  const [totalFaces, setTotalFaces] = useState(0);
+  const [roundScore, setRoundScore] = useState({ correct:0, total:0 });
+  const [dragging, setDragging] = useState(null);
+  const [dragOver, setDragOver] = useState(null);
   const [showCoinReward, setShowCoinReward] = useState(false);
   const [earnedCoins, setEarnedCoins] = useState(0);
-  const [isTimerPaused, setIsTimerPaused] = useState(true); 
+  const [isTimerPaused, setIsTimerPaused] = useState(true);
+  const [paused, setPaused] = useState(false);
 
-  const memTimerRef     = useRef(null);
+  const [celebration, setCelebration] = useState(null);
+  const [motivation, setMotivation] = useState(null);
+  const [headerTotalCoins, setHeaderTotalCoins] = useState(initialTotalCoins);
+
+  // Analytics refs
+  const gameStartTime = useRef(Date.now());
+  const totalPausedTime = useRef(0);
+  const pauseStartTime = useRef(null);
+  const responseTimes = useRef([]);
+  const lastActionTime = useRef(Date.now());
+  const lastActivityTime = useRef(Date.now());
+  const inactivityCount = useRef(0);
+  const inactivityInterval = useRef(null);
+  
+  const gameFinished = useRef(false);
+  const memTimerRef = useRef(null);
   const sessionTimerRef = useRef(null);
-  const flashTimeout    = useRef(null);
-  const navigateTimeout = useRef(null);
-  const roundIndexRef   = useRef(0);
-  const audioContextRef = useRef(null);
+  const flashTimeout = useRef(null);
+  const roundIndexRef = useRef(0);
+  const audioCtxRef = useRef(null);
+  const totalCorrectRef = useRef(0);
+  const totalFacesRef = useRef(0);
+  const incorrectAttemptsRef = useRef(0);
+  const totalAttemptsRef = useRef(0);
 
-  const ensureAudioReady = useCallback(async () => {
-    const AudioCtx = window.AudioContext || window.webkitAudioContext;
-    if (!AudioCtx) return null;
+  useEffect(()=>{
+    totalCorrectRef.current=totalCorrect;
+    totalFacesRef.current=totalFaces;
+  },[totalCorrect, totalFaces]);
 
-    if (!audioContextRef.current || audioContextRef.current.state === 'closed') {
-      audioContextRef.current = new AudioCtx();
-    }
-
-    if (audioContextRef.current.state === 'suspended') {
-      try {
-        await audioContextRef.current.resume();
-      } catch (error) {
-        console.log('Failed to resume AudioContext:', error);
-      }
-    }
-
-    return audioContextRef.current;
-  }, []);
-
+  // Listen for coin updates from parent
   useEffect(() => {
-    localStorage.setItem('totalCoins', totalCoins.toString());
-  }, [totalCoins]);
-
-  useEffect(() => {
-    const handleUserInteraction = () => {
-      ensureAudioReady();
-    };
-
-    window.addEventListener('click', handleUserInteraction);
-    window.addEventListener('touchstart', handleUserInteraction);
-    window.addEventListener('keydown', handleUserInteraction);
-
-    ensureAudioReady();
-
-    return () => {
-      window.removeEventListener('click', handleUserInteraction);
-      window.removeEventListener('touchstart', handleUserInteraction);
-      window.removeEventListener('keydown', handleUserInteraction);
-      if (audioContextRef.current) {
-        audioContextRef.current.close();
-        audioContextRef.current = null;
+    const handleCoinsUpdated = (e) => {
+      if (e.detail?.totalCoins != null) {
+        setHeaderTotalCoins(e.detail.totalCoins);
       }
     };
-  }, [ensureAudioReady]);
-
-  useEffect(() => {
-    return () => {
-      if (navigateTimeout.current) {
-        clearTimeout(navigateTimeout.current);
-      }
-    };
-  }, []);
-
-  const playCorrectSound = async () => {
-    const ctx = await ensureAudioReady();
-    if (!ctx) return;
     
-    try {
-      const now = ctx.currentTime;
-      const notes = [523.25, 659.25, 783.99, 1046.50];
-      
-      notes.forEach((freq, index) => {
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        
-        if (index % 2 === 0) {
-          osc.type = 'sine';
-        } else {
-          osc.type = 'triangle';
-        }
-        
-        osc.frequency.value = freq;
-        
-        gain.gain.setValueAtTime(0, now + index * 0.08);
-        gain.gain.linearRampToValueAtTime(0.15, now + index * 0.08 + 0.05);
-        gain.gain.linearRampToValueAtTime(0.1, now + index * 0.08 + 0.2);
-        gain.gain.linearRampToValueAtTime(0, now + index * 0.08 + 0.4);
-        
-        osc.connect(gain);
-        gain.connect(ctx.destination);
-        
-        osc.start(now + index * 0.08);
-        osc.stop(now + index * 0.08 + 0.4);
-      });
-      
-      const shimmerOsc = ctx.createOscillator();
-      const shimmerGain = ctx.createGain();
-      shimmerOsc.type = 'sine';
-      shimmerOsc.frequency.value = 1568.00;
-      shimmerGain.gain.setValueAtTime(0, now + 0.3);
-      shimmerGain.gain.linearRampToValueAtTime(0.08, now + 0.4);
-      shimmerGain.gain.linearRampToValueAtTime(0, now + 0.7);
-      shimmerOsc.connect(shimmerGain);
-      shimmerGain.connect(ctx.destination);
-      shimmerOsc.start(now + 0.3);
-      shimmerOsc.stop(now + 0.7);
-      
-    } catch (error) {
-      console.log('Correct sound play failed:', error);
+    window.addEventListener('coins-updated', handleCoinsUpdated);
+    return () => window.removeEventListener('coins-updated', handleCoinsUpdated);
+  }, []);
+
+  const showCelebration = () => { 
+    const msg=CELEBRATION_MSGS[Math.floor(Math.random()*CELEBRATION_MSGS.length)]; 
+    setCelebration(msg); 
+    setTimeout(()=>setCelebration(null),1800); 
+  };
+  
+  const showMotivation = () => { 
+    const msg=MOTIVATION_MSGS[Math.floor(Math.random()*MOTIVATION_MSGS.length)]; 
+    setMotivation(msg); 
+    setTimeout(()=>setMotivation(null),1800); 
+  };
+
+  useEffect(() => {
+    inactivityInterval.current = setInterval(() => {
+      if (paused || screen === "gameover" || screen === "memorize") return;
+      if (Date.now() - lastActivityTime.current > 10000) { 
+        inactivityCount.current++; 
+        lastActivityTime.current = Date.now(); 
+      }
+    }, 5000);
+    return () => clearInterval(inactivityInterval.current);
+  }, [paused, screen]);
+
+  const togglePause = () => {
+    if (screen === 'gameover') return;
+    if (paused) {
+      if (pauseStartTime.current) { 
+        totalPausedTime.current += Date.now()-pauseStartTime.current; 
+        pauseStartTime.current=null; 
+      }
+      lastActivityTime.current=Date.now(); 
+      lastActionTime.current=Date.now();
+      setPaused(false);
+      if (screen==="recall") setIsTimerPaused(false);
+    } else {
+      pauseStartTime.current=Date.now(); 
+      setPaused(true); 
+      setIsTimerPaused(true);
     }
   };
 
+
+  const ensureAudio = useCallback(async () => {
+    const Ctx = window.AudioContext||window.webkitAudioContext; 
+    if(!Ctx) return null;
+    if (!audioCtxRef.current||audioCtxRef.current.state==='closed') audioCtxRef.current=new Ctx();
+    if (audioCtxRef.current.state==='suspended') try{await audioCtxRef.current.resume();}catch(e){}
+    return audioCtxRef.current;
+  }, []);
+
+  useEffect(() => {
+    const h=()=>ensureAudio();
+    window.addEventListener('click',h); 
+    window.addEventListener('touchstart',h); 
+    ensureAudio();
+    return () => { 
+      window.removeEventListener('click',h); 
+      window.removeEventListener('touchstart',h); 
+      if(audioCtxRef.current){audioCtxRef.current.close();audioCtxRef.current=null;} 
+    };
+  }, [ensureAudio]);
+
+  const playCorrectSound = async () => {
+    const ctx=await ensureAudio(); 
+    if(!ctx) return;
+    try { 
+      const now=ctx.currentTime;
+      [523.25,659.25,783.99,1046.50].forEach((f,i) => {
+        const o=ctx.createOscillator(), g=ctx.createGain();
+        o.type=i%2===0?'sine':'triangle'; 
+        o.frequency.value=f;
+        g.gain.setValueAtTime(0,now+i*0.08); 
+        g.gain.linearRampToValueAtTime(0.15,now+i*0.08+0.05); 
+        g.gain.linearRampToValueAtTime(0,now+i*0.08+0.4);
+        o.connect(g); 
+        g.connect(ctx.destination); 
+        o.start(now+i*0.08); 
+        o.stop(now+i*0.08+0.4);
+      });
+    } catch(e){}
+  };
+  
   const playWrongSound = async () => {
-    const ctx = await ensureAudioReady();
-    if (!ctx) return;
-    
-    try {
-      const now = ctx.currentTime;
-      
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      
-      osc.type = 'sine';
-      osc.frequency.setValueAtTime(392.00, now);
-      osc.frequency.exponentialRampToValueAtTime(196.00, now + 0.4);
-      
-      gain.gain.setValueAtTime(0.1, now);
-      gain.gain.linearRampToValueAtTime(0.05, now + 0.2);
-      gain.gain.linearRampToValueAtTime(0, now + 0.5);
-      
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-      
-      osc.start(now);
-      osc.stop(now + 0.5);
-      
-      const popOsc = ctx.createOscillator();
-      const popGain = ctx.createGain();
-      popOsc.type = 'triangle';
-      popOsc.frequency.value = 110.00;
-      popGain.gain.setValueAtTime(0, now + 0.45);
-      popGain.gain.linearRampToValueAtTime(0.05, now + 0.5);
-      popGain.gain.linearRampToValueAtTime(0, now + 0.55);
-      popOsc.connect(popGain);
-      popGain.connect(ctx.destination);
-      popOsc.start(now + 0.45);
-      popOsc.stop(now + 0.55);
-      
-    } catch (error) {
-      console.log('Wrong sound play failed:', error);
-    }
+    const ctx=await ensureAudio(); 
+    if(!ctx) return;
+    try { 
+      const now=ctx.currentTime; 
+      const o=ctx.createOscillator(), g=ctx.createGain();
+      o.type='sine'; 
+      o.frequency.setValueAtTime(392,now); 
+      o.frequency.exponentialRampToValueAtTime(196,now+0.4);
+      g.gain.setValueAtTime(0.1,now); 
+      g.gain.linearRampToValueAtTime(0,now+0.5);
+      o.connect(g); 
+      g.connect(ctx.destination); 
+      o.start(now); 
+      o.stop(now+0.5);
+    } catch(e){}
   };
 
   const buildRound = useCallback((idx) => {
     const { facesCount, memorizeTime } = getRoundConfig(idx);
-    
     const chosen = createRandomFaces(facesCount);
-
-    const extraCount = facesCount % 2 === 0 ? 1 : 0;
-    const names = createNamePool(chosen, extraCount);
-    
-    setFaces(chosen);
-    setNamePool(names);
-    setAssignments({});
-    setFeedback({});
+    setFaces(chosen); 
+    setNamePool(createNamePool(chosen, facesCount%2===0?1:0));
+    setAssignments({}); 
+    setFeedback({}); 
     setMemTime(Math.ceil(memorizeTime));
-    setScreen("memorize");
+    setScreen("memorize"); 
     setIsTimerPaused(true); 
-    roundIndexRef.current = idx;
+    roundIndexRef.current = idx; 
+    lastActionTime.current = Date.now();
+    lastActivityTime.current = Date.now();
   }, []);
 
-  useEffect(() => {
-    buildRound(0);
-  }, []);
+  useEffect(() => { buildRound(0); }, []);
 
   useEffect(() => {
-    if (isTimerPaused || screen === "gameover") {
-      return;
-    }
-    
+    if (isTimerPaused || screen==="gameover" || paused) return;
     sessionTimerRef.current = setInterval(() => {
-      setSessionLeft(t => {
-        if (t <= 1) {
+      setSessionLeft(t => { 
+        if(t<=1){
           clearInterval(sessionTimerRef.current);
           clearInterval(memTimerRef.current);
           clearTimeout(flashTimeout.current);
-          
-          const coinsEarned = calculateCoins(totalCorrect, totalFaces, roundIndex);
-          setEarnedCoins(coinsEarned);
-          
-          setTotalCoins(prev => prev + coinsEarned);
-          setShowCoinReward(true);
-          
-          setScreen("gameover");
-          setIsTimerPaused(false);
-          
-          navigateTimeout.current = setTimeout(() => {
-            const bestScore = Math.max(totalCorrect, parseInt(localStorage.getItem('faces-and-names-best') || '0'));
-            localStorage.setItem('faces-and-names-best', bestScore.toString());
-            
-            navigate('/challenges/faces-and-names', { 
-              state: { 
-                gameResults: {
-                  lastScore: totalCorrect,
-                  bestScore: bestScore
-                },
-                earnedCoins: coinsEarned
-              } 
-            });
-          }, 3000);
-          
+          endGame();
           return 0;
-        }
-        return t - 1;
+        } 
+        return t-1; 
       });
     }, 1000);
-    
     return () => clearInterval(sessionTimerRef.current);
-  }, [isTimerPaused, screen, totalCorrect, totalFaces, roundIndex, navigate]);
+  }, [isTimerPaused, screen, paused]);
 
-  useEffect(() => {
-    if (screen !== "memorize") return;
+  const endGame = async () => {
+    if (gameFinished.current) return;
+    gameFinished.current = true;
+    clearInterval(inactivityInterval.current);
+    setScreen("gameover");
+    setIsTimerPaused(false);
+
+    const dur = Math.round((Date.now()-gameStartTime.current-totalPausedTime.current)/1000);
+    const tc = totalCorrectRef.current, tf = totalFacesRef.current;
     
-    clearInterval(memTimerRef.current);
-    const { memorizeTime } = getRoundConfig(roundIndexRef.current);
-    const totalMs  = memorizeTime * 1000;
-    const start    = Date.now();
+    // accuracy = (correct faces / total faces shown) × 100
+    const accuracy = tf>0 ? Math.round((tc/tf)*100) : 0;
     
-    memTimerRef.current = setInterval(() => {
-      const elapsed = Date.now() - start;
-      const remaining = Math.ceil((totalMs - elapsed) / 1000);
-      
-      if (remaining <= 0) {
-        clearInterval(memTimerRef.current);
-        setScreen("recall");
-        setIsTimerPaused(false); 
-      } else {
-        setMemTime(remaining);
-      }
-    }, 250);
+    // score = accuracy (0-100)
+    const score = accuracy;
     
-    return () => clearInterval(memTimerRef.current);
-  }, [screen]);
-
-  const onDragStart = (name) => {
-    ensureAudioReady();
-    setDragging(name);
-  };
-  const onDragEnd   = () => { setDragging(null); setDragOver(null); };
-  const onDragOver  = (e, faceId) => { e.preventDefault(); setDragOver(faceId); };
-  const onDragLeave = () => setDragOver(null);
-
-  const onDrop = (e, faceId) => {
-    e.preventDefault();
-    ensureAudioReady();
-    if (!dragging) return;
-    if (feedback[faceId] === "correct") return;
-
-    const prevFaceId = Object.keys(assignments).find(k => assignments[k] === dragging);
-    if (prevFaceId) {
-      setAssignments(prev => { const n = { ...prev }; delete n[prevFaceId]; return n; });
-      setFeedback(prev   => { const n = { ...prev }; delete n[prevFaceId]; return n; });
+    // Calculate average response time (between consecutive name drops)
+    const rts = responseTimes.current;
+    const avgRT = rts.length>0 ? Math.round(rts.reduce((a,b)=>a+b,0)/rts.length) : 0;
+    
+    // Calculate response time variability (standard deviation)
+    let rtVar = 0;
+    if (rts.length > 1) { 
+      const mean = rts.reduce((a,b)=>a+b,0)/rts.length;
+      const sq = rts.map(v => Math.pow(v - mean, 2)); 
+      rtVar = Math.round(Math.sqrt(sq.reduce((a,b)=>a+b,0)/rts.length)); 
     }
 
-    setAssignments(prev => ({ ...prev, [faceId]: dragging }));
-    setFeedback(prev   => { const n = { ...prev }; delete n[faceId]; return n; });
+    // total_attempts = every drag-drop name assignment
+    const totalAttempts = totalAttemptsRef.current;
+    // incorrect_attempts = total attempts - correct faces
+    const incorrectAttempts = Math.max(totalAttempts - tc, 0);
+
+    if (onGameComplete) {
+      const result = await onGameComplete({
+        score: score,
+        duration: Math.max(dur,1), 
+        accuracy: accuracy,
+        incorrectAttempts: incorrectAttempts,
+        totalAttempts: Math.max(totalAttempts, 1),
+        avgResponseTime: avgRT,
+        responseTimeVariability: rtVar,
+        inactivityEvents: inactivityCount.current,
+      });
+      
+      if (result?.coinsEarned) { 
+        setEarnedCoins(result.coinsEarned); 
+        setShowCoinReward(true);
+        
+        // Update header coins via event
+        if (result.totalCoins) {
+          setHeaderTotalCoins(result.totalCoins);
+        }
+      }
+    }
+  };
+
+  useEffect(() => {
+    if (screen!=="memorize" || paused) return;
+    clearInterval(memTimerRef.current);
+    const { memorizeTime } = getRoundConfig(roundIndexRef.current);
+    const totalMs=memorizeTime*1000, start=Date.now();
+    memTimerRef.current = setInterval(() => {
+      const rem=Math.ceil((totalMs-(Date.now()-start))/1000);
+      if(rem<=0){
+        clearInterval(memTimerRef.current);
+        setScreen("recall");
+        setIsTimerPaused(false);
+        lastActionTime.current=Date.now();
+        lastActivityTime.current=Date.now();
+      }
+      else setMemTime(rem);
+    }, 250);
+    return () => clearInterval(memTimerRef.current);
+  }, [screen, paused]);
+
+  const onDragStart=(n)=>{
+    ensureAudio();
+    setDragging(n);
+    lastActivityTime.current = Date.now();
+  };
+  
+  const onDragEnd=()=>{
+    setDragging(null);
+    setDragOver(null);
+  };
+  
+  const onDragOverFn=(e,fid)=>{
+    e.preventDefault();
+    setDragOver(fid);
+  };
+  
+  const onDragLeave=()=>setDragOver(null);
+  
+  const onDrop=(e,fid)=>{
+    e.preventDefault(); 
+    ensureAudio();
+    if(!dragging||paused) return; 
+    if(feedback[fid]==="correct") return;
+    
+    lastActivityTime.current=Date.now();
+    
+    // Record response time (time between consecutive name drops)
+    const now = Date.now();
+    const rt = now - lastActionTime.current;
+    // Only record meaningful response times (ignore if < 100ms or > 60s)
+    if (rt >= 100 && rt <= 60000) {
+      responseTimes.current.push(rt);
+    }
+    lastActionTime.current = now;
+    
+    // Track total attempts (every name assignment is one attempt)
+    totalAttemptsRef.current++;
+    
+    const prev=Object.keys(assignments).find(k=>assignments[k]===dragging);
+    if(prev){
+      setAssignments(p=>{const n={...p};delete n[prev];return n;});
+      setFeedback(p=>{const n={...p};delete n[prev];return n;});
+    }
+    setAssignments(p=>({...p,[fid]:dragging}));
+    setFeedback(p=>{const n={...p};delete n[fid];return n;});
     setDragging(null);
     setDragOver(null);
   };
 
   useEffect(() => {
-    if (screen !== "recall" || faces.length === 0) return;
-    const allDone = faces.every(f => assignments[f.id]);
-    if (!allDone) return;
-
-    const fb = {};
-    let correct = 0;
+    if (screen!=="recall"||faces.length===0||paused) return;
+    if (!faces.every(f=>assignments[f.id])) return;
     
-    faces.forEach(f => {
-      const isCorrect = assignments[f.id] === f.name;
-      fb[f.id] = isCorrect ? "correct" : "wrong";
-      if (isCorrect) {
+    const fb={}; 
+    let correct=0;
+    
+    faces.forEach(f=>{
+      const ok=assignments[f.id]===f.name;
+      fb[f.id]=ok?"correct":"wrong";
+      if(ok){
         correct++;
         playCorrectSound();
+        showCelebration();
       } else {
+        // Count incorrect attempts
+        incorrectAttemptsRef.current++;
         playWrongSound();
+        showMotivation();
       }
     });
     
-    setFeedback(fb);
-    setRoundScore({ correct, total: faces.length });
-    setTotalCorrect(c => c + correct);
-    setTotalFaces(t => t + faces.length);
-
-    setTimeout(() => {
+    setFeedback(fb); 
+    setRoundScore({correct,total:faces.length});
+    setTotalCorrect(c=>c+correct); 
+    setTotalFaces(t=>t+faces.length);
+    
+    setTimeout(()=>{
       setScreen("flash");
-      setIsTimerPaused(true); 
-      flashTimeout.current = setTimeout(() => {
-        const nextIdx = roundIndexRef.current + 1;
-        setRoundIndex(nextIdx);
-        buildRound(nextIdx);
-      }, 1600);
-    }, 600);
-  }, [assignments, screen, faces, buildRound]);
+      setIsTimerPaused(true);
+      flashTimeout.current=setTimeout(()=>{
+        const ni=roundIndexRef.current+1;
+        setRoundIndex(ni);
+        buildRound(ni);
+      },1600);
+    },600);
+  },[assignments,screen,faces,paused,buildRound]);
 
-  const sessionPct   = (sessionLeft / SESSION_DURATION) * 100;
-  const timerColor   = sessionLeft > 30 ? "#4CAF82" : sessionLeft > 15 ? "#F5B731" : sessionLeft > 5 ? "#FF8C42" : "#E05C6A";
-  const isCompact    = faces.length > 4;
-  const usedNamesSet = new Set(
-    Object.entries(assignments)
-      .filter(([fid]) => feedback[fid] === "correct")
-      .map(([, name]) => name)
-  );
+  const resetGame = async () => {
+    gameFinished.current=false;
+    if(startNewSession) await startNewSession();
+    gameStartTime.current=Date.now(); 
+    totalPausedTime.current=0; 
+    pauseStartTime.current=null;
+    responseTimes.current=[]; 
+    inactivityCount.current=0; 
+    incorrectAttemptsRef.current = 0;
+    totalAttemptsRef.current = 0;
+    lastActivityTime.current=Date.now(); 
+    lastActionTime.current=Date.now();
+    setTotalCorrect(0);
+    setTotalFaces(0);
+    setRoundIndex(0);
+    setSessionLeft(SESSION_DURATION);
+    setEarnedCoins(0);
+    setPaused(false);
+    setCelebration(null);
+    setMotivation(null);
+    buildRound(0);
+  };
 
-  const accuracy = totalFaces > 0 ? Math.round((totalCorrect / totalFaces) * 100) : 0;
-  const goEmoji  = accuracy >= 80 ? "🏆" : accuracy >= 50 ? "😊" : "😅";
-  const goTitle  = accuracy >= 80 ? "Amazing memory!" : accuracy >= 50 ? "Good job!" : "Keep practicing!";
+  const goBack = () => {
+    const accuracy = totalFaces>0 ? Math.round((totalCorrect/totalFaces)*100) : 0;
+    navigateBack?.({ score: accuracy }, earnedCoins);
+  };
 
-  useEffect(() => {
-    if (showCoinReward) {
-      const timer = setTimeout(() => setShowCoinReward(false), 2000);
-      return () => clearTimeout(timer);
+  const sessionPct = (sessionLeft/SESSION_DURATION)*100;
+  const timerColor = sessionLeft>30?"#4CAF82":sessionLeft>15?"#F5B731":sessionLeft>5?"#FF8C42":"#E05C6A";
+  const isCompact = faces.length>4;
+  const usedNamesSet = new Set(Object.entries(assignments).filter(([fid])=>feedback[fid]==="correct").map(([,n])=>n));
+  const accuracy = totalFaces>0?Math.round((totalCorrect/totalFaces)*100):0;
+  const goEmoji = accuracy>=80?"🏆":accuracy>=50?"😊":"😅";
+  const goTitle = accuracy>=80?"Amazing memory!":accuracy>=50?"Good job!":"Keep practicing!";
+
+  useEffect(()=>{
+    if(showCoinReward){
+      const t=setTimeout(()=>setShowCoinReward(false),2000);
+      return()=>clearTimeout(t);
     }
   }, [showCoinReward]);
 
+  const renderPause = () => (
+    <div style={{ position:'fixed', inset:0, zIndex:9998, display:'flex', alignItems:'center', justifyContent:'center', background:'rgba(10,10,30,0.92)', backdropFilter:'blur(16px)' }}>
+      <div style={{ background:'rgba(255,255,255,0.06)', border:'1px solid rgba(255,255,255,0.12)', borderRadius:28, padding:'48px 44px', textAlign:'center', maxWidth:380, width:'90%', boxShadow:'0 24px 80px rgba(0,0,0,0.5)' }}>
+        <div style={{ fontSize:56, marginBottom:8 }}>⏸️</div>
+        <h2 style={{ color:'#fff', fontSize:26, fontWeight:700, margin:'0 0 6px' }}>Paused</h2>
+        <p style={{ color:'rgba(255,255,255,0.5)', fontSize:14, margin:'0 0 28px' }}>No rush — take your time!</p>
+        <div style={{ display:'flex', gap:16, justifyContent:'center', marginBottom:24 }}>
+          <div style={{ background:'rgba(255,255,255,0.08)', borderRadius:14, padding:'14px 20px', minWidth:75 }}>
+            <div style={{ color:'#00e5bf', fontSize:22, fontWeight:700 }}>{totalCorrect}</div>
+            <div style={{ color:'rgba(255,255,255,0.5)', fontSize:11, marginTop:4 }}>Correct</div>
+          </div>
+          <div style={{ background:'rgba(255,255,255,0.08)', borderRadius:14, padding:'14px 20px', minWidth:75 }}>
+            <div style={{ color:'#f5b731', fontSize:22, fontWeight:700 }}>R{roundIndex+1}</div>
+            <div style={{ color:'rgba(255,255,255,0.5)', fontSize:11, marginTop:4 }}>Round</div>
+          </div>
+        </div>
+        <button onClick={togglePause} style={{ width:'100%', padding:16, borderRadius:16, border:'none', background:'linear-gradient(135deg,#00a896,#00d4aa)', color:'#fff', fontSize:18, fontWeight:700, cursor:'pointer', marginBottom:12 }}>▶ Resume</button>
+        <button onClick={async () => { if (abandonSession) await abandonSession(); navigate('/challenges'); }} style={{ width:'100%', padding:14, borderRadius:16, border:'1px solid rgba(255,255,255,0.15)', background:'transparent', color:'rgba(255,255,255,0.6)', fontSize:14, cursor:'pointer' }}>Quit to Challenges</button>
+      </div>
+    </div>
+  );
+
   return (
     <div className="fn-game-wrapper">
-        <Header totalCoins={totalCoins} />
-        <div className="fn-game-content">
+      <Header totalCoins={headerTotalCoins} />
+      <div className="fn-game-content">
         <div className="stars-bg"></div>
-
-      {showCoinReward && (
-        <div className="fn-coin-reward-animation">
-          <span className="fn-coin-emoji">🪙</span>
-          <span className="fn-coin-amount">+{earnedCoins}</span>
-        </div>
-      )}
-
-      {screen !== "gameover" && (
-        <div className="fn-session-timer-wrap">
-          <div
-            className="fn-session-timer-fill"
-            style={{ 
-              width: `${sessionPct}%`, 
-              background: timerColor,
-              transition: isTimerPaused ? 'none' : 'width 0.5s linear'
-            }}
-          />
-        </div>
-      )}
-
-      {(screen === "memorize" || screen === "flash") && (
-        <>
-          <div className="fn-phase-label">Memorize</div>
-          <div className={`fn-faces-grid${isCompact ? " fn-compact" : ""}`}>
-            {faces.map(face => (
-              <div className="fn-face-card" key={face.id}>
-                <div className="fn-face-img-wrap">{face.emoji}</div>
-                <div className="fn-name-badge">
-                  <span className="fn-name-shown">{face.name}</span>
-                </div>
-              </div>
-            ))}
-          </div>
-          
-          {screen === "memorize" && (
-            <div className="fn-countdown">
-              <div className="fn-countdown-circle">
-                <svg viewBox="0 0 100 100">
-                  <circle
-                    className="fn-countdown-circle-bg"
-                    cx="50"
-                    cy="50"
-                    r="45"
-                  />
-                  <circle
-                    className="fn-countdown-circle-progress"
-                    cx="50"
-                    cy="50"
-                    r="45"
-                    style={{
-                      strokeDasharray: `${2 * Math.PI * 45}`,
-                      strokeDashoffset: `${2 * Math.PI * 45 * (1 - memTime / 4)}`
-                    }}
-                  />
-                </svg>
-                <div className="fn-countdown-number">
-                  {memTime}<small>s</small>
-                </div>
-              </div>
+        {paused && renderPause()}
+        {celebration && (
+          <div style={{ position:'fixed', top:'15%', left:'50%', transform:'translateX(-50%)', zIndex:10000, pointerEvents:'none' }}>
+            <style>{`@keyframes fn-toastAnim{0%{opacity:0;transform:translateX(-50%) scale(0.5)}15%{opacity:1;transform:translateX(-50%) scale(1.1)}25%{transform:translateX(-50%) scale(1)}80%{opacity:1}100%{opacity:0;transform:translateX(-50%) translateY(-30px)}}`}</style>
+            <div style={{ animation:'fn-toastAnim 1.8s ease forwards', background:'linear-gradient(135deg,#FFD700,#FFA500)', padding:'16px 32px', borderRadius:24, display:'flex', alignItems:'center', gap:12, boxShadow:'0 8px 30px rgba(255,215,0,0.5)', border:'2px solid rgba(255,255,255,0.5)' }}>
+              <span style={{ fontSize:36 }}>{celebration.emoji}</span>
+              <div><div style={{ fontFamily:"'Fredoka One', cursive", fontSize:20, color:'#fff' }}>{celebration.text}</div><div style={{ fontSize:12, color:'rgba(255,255,255,0.85)', fontWeight:600 }}>{celebration.sub}</div></div>
             </div>
-          )}
-        </>
-      )}
+          </div>
+        )}
+        {motivation && (
+          <div style={{ position:'fixed', top:'15%', left:'50%', transform:'translateX(-50%)', zIndex:10000, pointerEvents:'none' }}>
+            <style>{`@keyframes fn-motAnim{0%{opacity:0;transform:translateX(-50%) scale(0.5)}15%{opacity:1;transform:translateX(-50%) scale(1.1)}25%{transform:translateX(-50%) scale(1)}80%{opacity:1}100%{opacity:0;transform:translateX(-50%) translateY(-30px)}}`}</style>
+            <div style={{ animation:'fn-motAnim 1.8s ease forwards', background:'linear-gradient(135deg,#667eea,#764ba2)', padding:'16px 32px', borderRadius:24, display:'flex', alignItems:'center', gap:12, boxShadow:'0 8px 30px rgba(118,75,162,0.5)', border:'2px solid rgba(255,255,255,0.5)' }}>
+              <span style={{ fontSize:36 }}>{motivation.emoji}</span>
+              <div><div style={{ fontFamily:"'Fredoka One', cursive", fontSize:20, color:'#fff' }}>{motivation.text}</div><div style={{ fontSize:12, color:'rgba(255,255,255,0.85)', fontWeight:600 }}>{motivation.sub}</div></div>
+            </div>
+          </div>
+        )}
+        {showCoinReward && (
+          <div className="fn-coin-reward-animation">
+            <span className="fn-coin-emoji">🪙</span>
+            <span className="fn-coin-amount">+{earnedCoins}</span>
+          </div>
+        )}
 
-      {screen === "recall" && (
-        <>
-          <div className="fn-phase-label">Who is who?</div>
-          <div className={`fn-faces-grid${isCompact ? " fn-compact" : ""}`}>
-            {faces.map(face => {
-              const assigned = assignments[face.id];
-              const fb       = feedback[face.id];
-              let dropClass  = "fn-drop-zone";
-              if (dragOver === face.id) dropClass += " fn-drag-over";
-              if (assigned && !fb)      dropClass += " fn-filled";
-              if (fb === "correct")     dropClass += " fn-filled fn-filled-correct";
-              if (fb === "wrong")       dropClass += " fn-filled fn-filled-wrong";
+        {screen !== "gameover" && (
+          <div style={{ position:'fixed', top:76, right:16, zIndex:100, display:'flex', gap:10 }}>
+            <button onClick={togglePause} style={{ width:44, height:44, borderRadius:'50%', border:'2px solid rgba(255,255,255,0.25)', background:'rgba(0,0,0,0.4)', color:'#fff', fontSize:20, cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center' }}>⏸</button>
+          </div>
+        )}
 
-              let cardClass = "fn-face-card";
-              if (fb === "correct") cardClass += " fn-correct";
-              if (fb === "wrong")   cardClass += " fn-wrong";
+        {screen !== "gameover" && (
+          <div className="fn-session-timer-wrap">
+            <div className="fn-session-timer-fill" style={{ width:`${sessionPct}%`, background:timerColor, transition:isTimerPaused?'none':'width 0.5s linear' }} />
+          </div>
+        )}
 
-              return (
-                <div
-                  key={face.id}
-                  className={cardClass}
-                  onDragOver={e => onDragOver(e, face.id)}
-                  onDragLeave={onDragLeave}
-                  onDrop={e => onDrop(e, face.id)}
-                >
+        {(screen === "memorize" || screen === "flash") && (
+          <>
+            <div className="fn-phase-label">Memorize</div>
+            <div className={`fn-faces-grid${isCompact?" fn-compact":""}`}>
+              {faces.map(face => (
+                <div className="fn-face-card" key={face.id}>
                   <div className="fn-face-img-wrap">{face.emoji}</div>
-                  <div className="fn-name-badge">
-                    <div className={dropClass}>
-                      {assigned
-                        ? (fb === "correct" ? "✓ " : fb === "wrong" ? "✗ " : "") + assigned
-                        : "drop here"}
+                  <div className="fn-name-badge"><span className="fn-name-shown">{face.name}</span></div>
+                </div>
+              ))}
+            </div>
+            {screen === "memorize" && (
+              <div className="fn-countdown">
+                <div className="fn-countdown-circle">
+                  <svg viewBox="0 0 100 100">
+                    <circle className="fn-countdown-circle-bg" cx="50" cy="50" r="45" />
+                    <circle className="fn-countdown-circle-progress" cx="50" cy="50" r="45" style={{ strokeDasharray:`${2*Math.PI*45}`, strokeDashoffset:`${2*Math.PI*45*(1-memTime/4)}` }} />
+                  </svg>
+                  <div className="fn-countdown-number">👀</div>
+                </div>
+              </div>
+            )}
+          </>
+        )}
+
+        {screen === "recall" && (
+          <>
+            <div className="fn-phase-label">Who is who?</div>
+            <div className={`fn-faces-grid${isCompact?" fn-compact":""}`}>
+              {faces.map(face => {
+                const assigned=assignments[face.id]; 
+                const fb=feedback[face.id];
+                let dropClass="fn-drop-zone";
+                if(dragOver===face.id) dropClass+=" fn-drag-over";
+                if(assigned&&!fb) dropClass+=" fn-filled";
+                if(fb==="correct") dropClass+=" fn-filled fn-filled-correct";
+                if(fb==="wrong") dropClass+=" fn-filled fn-filled-wrong";
+                let cardClass="fn-face-card";
+                if(fb==="correct") cardClass+=" fn-correct";
+                if(fb==="wrong") cardClass+=" fn-wrong";
+                return (
+                  <div key={face.id} className={cardClass} onDragOver={e=>onDragOverFn(e,face.id)} onDragLeave={onDragLeave} onDrop={e=>onDrop(e,face.id)}>
+                    <div className="fn-face-img-wrap">{face.emoji}</div>
+                    <div className="fn-name-badge">
+                      <div className={dropClass}>
+                        {assigned ? (
+                          (fb==="correct" ? "✓ " : fb==="wrong" ? "✗ " : "") + assigned
+                        ) :
+                          "drop here"
+                        }
+                      </div>
                     </div>
                   </div>
-                </div>
-              );
-            })}
-          </div>
+                );
+              })}
+            </div>
+            <div className="fn-names-pool">
+              {namePool.map(name => (
+                <div key={name} className={`fn-name-chip${usedNamesSet.has(name)?" fn-used":""}${dragging===name?" fn-dragging":""}`}
+                  draggable={!usedNamesSet.has(name)} onDragStart={()=>onDragStart(name)} onDragEnd={onDragEnd}
+                >{name}</div>
+              ))}
+            </div>
+          </>
+        )}
 
-          <div className="fn-names-pool">
-            {namePool.map(name => (
-              <div
-                key={name}
-                className={`fn-name-chip${usedNamesSet.has(name) ? " fn-used" : ""}${dragging === name ? " fn-dragging" : ""}`}
-                draggable={!usedNamesSet.has(name)}
-                onDragStart={() => onDragStart(name)}
-                onDragEnd={onDragEnd}
-              >
-                {name}
+        {screen === "flash" && (
+          <div className="fn-round-flash">
+            <div className="fn-flash-emoji">{roundScore.correct===roundScore.total?"⭐":roundScore.correct>0?"👍":"😬"}</div>
+            <div className="fn-flash-text">{roundScore.correct===roundScore.total?"Perfect round!":`${roundScore.correct}/${roundScore.total} correct`}</div>
+            <div className="fn-flash-sub">Get ready for the next one…</div>
+          </div>
+        )}
+
+        {screen === "gameover" && (() => {
+          const rounds = roundIndex + 1;
+          const goEm = accuracy>=80?"🧠":accuracy>=50?"🏆":accuracy>=30?"⭐":"💪";
+          const goTi = accuracy>=80?"Brilliant Memory!":accuracy>=50?"Great Recall!":accuracy>=30?"Nice Effort!":"Great Effort!";
+          const goSu = accuracy>=80?"You are a memory superstar!":accuracy>=50?"Your brain is getting stronger!":accuracy>=30?"Every round makes you better!":"You showed up and tried — that takes courage!";
+          const bgGrad = accuracy>=60?'linear-gradient(135deg,#0f0c29,#302b63,#24243e)':'linear-gradient(135deg,#1a1a2e,#16213e,#0f3460)';
+          
+          return (
+            <div style={{ position:'fixed', inset:0, zIndex:9999, display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', background:bgGrad, overflow:'hidden' }}>
+              <style>{`
+                @keyframes fn-trophy{0%{transform:scale(0) rotate(-20deg)}50%{transform:scale(1.3) rotate(10deg)}100%{transform:scale(1) rotate(0deg)}}
+                @keyframes fn-slideUp{from{opacity:0;transform:translateY(40px)}to{opacity:1;transform:translateY(0)}}
+                @keyframes fn-glow{0%,100%{box-shadow:0 0 20px rgba(255,215,0,0.3)}50%{box-shadow:0 0 40px rgba(255,215,0,0.6)}}
+                @keyframes fn-conf{0%{transform:translateY(-100vh) rotate(0deg);opacity:1}100%{transform:translateY(100vh) rotate(720deg);opacity:0}}
+                .fn-cf{position:absolute;border-radius:2px;animation:fn-conf linear forwards;pointer-events:none}
+              `}</style>
+              {totalCorrect >= 2 && Array.from({length:25}).map((_,i) => (
+                <div key={i} className="fn-cf" style={{ left:`${Math.random()*100}%`, top:`-${Math.random()*20}%`, background:['#FFD700','#FF6B6B','#4ECDC4','#A78BFA','#F5B731','#00E5BF'][i%6], width:Math.random()*12+5, height:Math.random()*12+5, animationDuration:`${Math.random()*3+2}s`, animationDelay:`${Math.random()*2}s`, borderRadius:Math.random()>0.5?'50%':'2px' }} />
+              ))}
+              <div style={{ fontSize:100, animation:'fn-trophy 0.8s cubic-bezier(0.34,1.56,0.64,1) forwards', filter:'drop-shadow(0 10px 30px rgba(0,0,0,0.3))' }}>{goEm}</div>
+              <h1 style={{ fontFamily:"'Fredoka One', cursive", fontSize:42, color:'#fff', textShadow:'0 4px 15px rgba(0,0,0,0.3)', margin:'16px 0 8px', animation:'fn-slideUp 0.6s ease-out 0.3s both' }}>{goTi}</h1>
+              <p style={{ fontSize:16, color:'rgba(255,255,255,0.7)', fontWeight:600, animation:'fn-slideUp 0.6s ease-out 0.4s both', maxWidth:400, textAlign:'center', lineHeight:1.5 }}>{goSu}</p>
+              
+              {/* Enhanced stats display */}
+              <div style={{ display:'flex', gap:16, margin:'28px 0 20px', flexWrap:'wrap', justifyContent:'center', animation:'fn-slideUp 0.6s ease-out 0.5s both' }}>
+                {[
+                  { value: totalCorrect, label: 'Correct', color: '#00E5BF', icon: '✔️' },
+                  { value: rounds, label: 'Rounds', color: '#F5B731', icon: '🔄' },
+                  { value: `${accuracy}%`, label: 'Accuracy', color: '#A78BFA', icon: '🎯' },
+                  { value: Math.round(responseTimes.current.reduce((a,b)=>a+b,0)/Math.max(1,responseTimes.current.length)) + 'ms', label: 'Avg Time', color: '#FF6B6B', icon: '⏱️' }
+                ].map((s,i) => (
+                  <div key={i} style={{ background:'rgba(255,255,255,0.08)', borderRadius:20, padding:'18px 24px', minWidth:110, textAlign:'center', border:'1px solid rgba(255,255,255,0.1)', backdropFilter:'blur(10px)' }}>
+                    <div style={{ fontSize:24 }}>{s.icon}</div>
+                    <div style={{ fontFamily:"'Fredoka One', cursive", fontSize:28, color:s.color }}>{s.value}</div>
+                    <div style={{ fontSize:10, color:'rgba(255,255,255,0.5)', marginTop:4, fontWeight:700, textTransform:'uppercase', letterSpacing:1 }}>{s.label}</div>
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
-        </>
-      )}
-
-      {screen === "flash" && (
-        <div className="fn-round-flash">
-          <div className="fn-flash-emoji">
-            {roundScore.correct === roundScore.total ? "⭐" : roundScore.correct > 0 ? "👍" : "😬"}
-          </div>
-          <div className="fn-flash-text">
-            {roundScore.correct === roundScore.total ? "Perfect round!" : `${roundScore.correct}/${roundScore.total} correct`}
-          </div>
-          <div className="fn-flash-sub">Get ready for the next one…</div>
-        </div>
-      )}
-
-      {screen === "gameover" && (
-        <div className="fn-gameover-screen">
-          <div className="fn-go-emoji">{goEmoji}</div>
-          <div className="fn-go-title">{goTitle}</div>
-          <div className="fn-go-sub">Time's up! Here's how you did:</div>
-
-          <div className="fn-stats-row">
-            <div className="fn-stat-box">
-              <div className="fn-stat-num">{totalCorrect}</div>
-              <div className="fn-stat-lbl">Correct</div>
+              
+              {/* Coin reward display - SHOW HOW MUCH THEY GAINED */}
+              <div style={{ 
+                background: earnedCoins > 0 ? 'linear-gradient(135deg,#FFD700,#FFA500)' : 'rgba(255,255,255,0.08)', 
+                borderRadius:50, 
+                padding:'14px 36px', 
+                display:'flex', 
+                alignItems:'center', 
+                gap:14, 
+                boxShadow: earnedCoins > 0 ? '0 8px 30px rgba(255,215,0,0.35)' : 'none', 
+                border: earnedCoins > 0 ? '3px solid rgba(255,255,255,0.4)' : '1px solid rgba(255,255,255,0.15)', 
+                animation:'fn-slideUp 0.6s ease-out 0.7s both' 
+              }}>
+                <span style={{ fontSize:32 }}>🪙</span>
+                <span style={{ fontFamily:"'Fredoka One', cursive", fontSize:30, color:'#fff', textShadow:'2px 2px 0 rgba(0,0,0,0.2)' }}>+{earnedCoins}</span>
+                <span style={{ fontSize:14, fontWeight:700, color:'rgba(255,255,255,0.85)', background:'rgba(0,0,0,0.15)', padding:'4px 12px', borderRadius:20 }}>
+                  {earnedCoins > 0 ? 'Coins Earned!' : 'Keep going!'}
+                </span>
+              </div>
+              
+              <div style={{ display:'flex', gap:14, marginTop:28, animation:'fn-slideUp 0.6s ease-out 0.9s both' }}>
+                <button onClick={resetGame} onMouseEnter={e=>e.target.style.transform='translateY(-3px)'} onMouseLeave={e=>e.target.style.transform='translateY(0)'} style={{ padding:'16px 40px', borderRadius:50, border:'none', background:'linear-gradient(135deg,#00a896,#00d4aa)', color:'#fff', fontSize:18, fontWeight:700, cursor:'pointer', boxShadow:'0 8px 25px rgba(0,168,150,0.4)', transition:'transform 0.2s' }}>🔄 Play Again</button>
+                <button onClick={goBack} onMouseEnter={e=>e.target.style.background='rgba(255,255,255,0.12)'} onMouseLeave={e=>e.target.style.background='rgba(255,255,255,0.06)'} style={{ padding:'16px 40px', borderRadius:50, border:'2px solid rgba(255,255,255,0.25)', background:'rgba(255,255,255,0.06)', color:'rgba(255,255,255,0.8)', fontSize:18, fontWeight:600, cursor:'pointer', transition:'all 0.2s' }}>← Back</button>
+              </div>
             </div>
-            <div className="fn-stat-box">
-              <div className="fn-stat-num">{roundIndex + 1}</div>
-              <div className="fn-stat-lbl">Rounds</div>
-            </div>
-            <div className="fn-stat-box">
-              <div className="fn-stat-num">{accuracy}%</div>
-              <div className="fn-stat-lbl">Accuracy</div>
-            </div>
-          </div>
-          
-          {earnedCoins > 0 && (
-            <div className="fn-coin-reward-box">
-              <span className="fn-coin-icon">🪙</span>
-              <span className="fn-coin-value">+{earnedCoins}</span>
-              <span className="fn-coin-label">Coins Earned!</span>
-            </div>
-          )}
-          
-          <div className="fn-redirect-message">
-            Returning to challenge in 3 seconds...
-          </div>
-        </div>
-      )}
+          );
+        })()}
       </div>
     </div>
   );

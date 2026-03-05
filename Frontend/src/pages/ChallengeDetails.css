@@ -143,12 +143,14 @@
 }
 
 .section-title {
-  font-size: 18px;
-  font-weight: 600;
-  color: #1a1a1a;
-  margin: 0 0 12px 0;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+  font-family: sans-serif !important;
+  font-size: 18px !important;
+  font-weight: 600 !important;
+  color: #1a1a1a !important;
+  margin: 0 0 12px 0 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.5px !important;
+  text-align: left !important;
 }
 
 .section-content {

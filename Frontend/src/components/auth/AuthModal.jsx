@@ -742,7 +742,7 @@ const AuthModal = ({ onClose, initialMode = 'signin' }) => {
           navigate('/'); // Navigate to home page for children
         }
         onClose();
-      }, 2000);
+      }, 800);
     }
   } catch (err) {
     setError(err.message || 'Login failed. Please try again.');
@@ -871,7 +871,7 @@ const AuthModal = ({ onClose, initialMode = 'signin' }) => {
         setTimeout(() => {
           resetForm();
           handleModeSwitch('signin');
-        }, 3000);
+        }, 1200);
       }
     } catch (err) {
       setError(err.message);

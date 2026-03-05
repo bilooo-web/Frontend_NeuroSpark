@@ -907,11 +907,18 @@
   color: var(--muted-foreground);
 }
 
-.entity-card-actions {
+.entity-card-footer .entity-card-actions {
   display: flex;
   gap: 4px;
   opacity: 0;
   transition: opacity 0.2s;
+  cursor: pointer;
+  border: none;
+}
+
+.entity-card-footer button{
+  cursor: pointer;
+  border: none;
 }
 
 .entity-card:hover .entity-card-actions {

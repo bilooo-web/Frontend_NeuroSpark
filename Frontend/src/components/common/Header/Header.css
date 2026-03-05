@@ -211,3 +211,57 @@
         order: -1;
     }
 }
+
+/* Header.css - Add/modify these styles */
+
+.nav {
+    display: flex;
+    gap: 30px;
+    flex-wrap: wrap;
+}
+
+.nav a {
+    text-decoration: none;
+    color: #2D3748;
+    font-weight: 600;
+    font-size: 16px;
+    padding: 8px 0;
+    position: relative;
+    transition: color 0.3s ease;
+}
+
+.nav a:hover {
+    color: #38B2AC;
+}
+
+/* Active link styling */
+.nav a.active {
+    color: #38B2AC;
+}
+
+.nav a.active::after {
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 2px;
+    bottom: 0;
+    left: 0;
+    background-color: #38B2AC;
+    transition: width 0.3s ease;
+}
+
+/* Underline animation on hover */
+.nav a::after {
+    content: '';
+    position: absolute;
+    width: 0;
+    height: 2px;
+    bottom: 0;
+    left: 0;
+    background-color: #38B2AC;
+    transition: width 0.3s ease;
+}
+
+.nav a:hover::after {
+    width: 100%;
+}

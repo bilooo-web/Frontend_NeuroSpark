@@ -13,9 +13,11 @@ import {
   Power,
   BarChart3,
   Star,
+  Link2,
 } from "lucide-react";
 import Modal from "../components/admin/Modal";
 import adminService from "../services/adminService";
+import gameRegistry from "../data/gameRegistry";
 
 const difficultyBadge = {
   easy: "badge-success",
@@ -48,7 +50,6 @@ const AdminGames = () => {
   const [formErrors, setFormErrors] = useState({});
   const [formLoading, setFormLoading] = useState(false);
 
-  // Stats from metrics
   const [gameStats, setGameStats] = useState({ total: 0, active: 0, totalSessions: 0, avgScore: 0 });
 
   useEffect(() => {
@@ -80,19 +81,15 @@ const AdminGames = () => {
     try {
       const metrics = await adminService.getSystemMetrics();
       const perf = metrics?.performance_stats || {};
-      const allGames = games.length || perf.total_games || 0;
       setGameStats({
-        total: perf.total_games || allGames,
+        total: perf.total_games || 0,
         active: perf.active_games || 0,
         totalSessions: perf.total_game_sessions || 0,
         avgScore: perf.avg_game_score || 0,
       });
-    } catch {
-      // silent — stats are nice-to-have
-    }
+    } catch { /* silent */ }
   };
 
-  // Compute stats from loaded games as fallback
   const computedStats = {
     total: games.length || gameStats.total,
     active: games.filter((g) => g.is_active).length || gameStats.active,
@@ -108,6 +105,7 @@ const AdminGames = () => {
 
   const defaultFormData = () => ({
     name: "",
+    game_slug: "",
     difficulty_level: "easy",
     type: "cognitive",
     description: "",
@@ -146,6 +144,7 @@ const AdminGames = () => {
   const openEditModal = (game) => {
     setFormData({
       name: game.name || "",
+      game_slug: game.game_slug || "",
       difficulty_level: game.difficulty_level || "easy",
       type: game.type || "cognitive",
       description: game.description || "",
@@ -163,6 +162,7 @@ const AdminGames = () => {
     try {
       const payload = {
         name: formData.name,
+        game_slug: formData.game_slug,
         difficulty_level: formData.difficulty_level,
         type: formData.type,
         description: formData.description,
@@ -212,10 +212,36 @@ const AdminGames = () => {
     </div>
   );
 
+  // Game slug dropdown — reads from gameRegistry.js
+  const renderSlugField = () => (
+    <div className="form-group" style={{ marginBottom: 14 }}>
+      <label>Game Logic (Frontend Component)</label>
+      <select
+        className="form-select"
+        value={formData.game_slug || ""}
+        onChange={(e) => setFormData({ ...formData, game_slug: e.target.value })}
+      >
+        <option value="">— Select game logic —</option>
+        {gameRegistry.map((g) => (
+          <option key={g.slug} value={g.slug}>{g.label} ({g.slug})</option>
+        ))}
+      </select>
+      {formErrors.game_slug && (
+        <p style={{ color: "var(--destructive)", fontSize: 12, marginTop: 4 }}>
+          {Array.isArray(formErrors.game_slug) ? formErrors.game_slug[0] : formErrors.game_slug}
+        </p>
+      )}
+      <p className="text-muted" style={{ fontSize: 11, marginTop: 4 }}>
+        This links the admin game to the frontend game component. When a new game is coded, its slug appears here automatically.
+      </p>
+    </div>
+  );
+
   const gameFormFields = () => (
     <>
       {formErrors.general && <p style={{ color: "var(--destructive)", fontSize: 13, marginBottom: 12 }}>{formErrors.general}</p>}
       {renderField("Game Name", "name")}
+      {renderSlugField()}
       {renderField("Difficulty Level", "difficulty_level", "text", [
         { value: "easy", label: "Easy" }, { value: "medium", label: "Medium" }, { value: "hard", label: "Hard" }, { value: "expert", label: "Expert" },
       ])}
@@ -242,7 +268,7 @@ const AdminGames = () => {
         </button>
       </div>
 
-      {/* Summary Cards like screenshot */}
+      {/* Summary Cards */}
       <div className="admin-summary-cards">
         <div className="admin-summary-card">
           <div className="admin-summary-card-icon primary"><Gamepad2 style={{ height: 22, width: 22 }} /></div>
@@ -304,6 +330,12 @@ const AdminGames = () => {
                   <div className="entity-card-badges">
                     <span className={`badge ${difficultyBadge[game.difficulty_level] || "badge-muted"}`}>{game.difficulty_level}</span>
                     <span className={`badge ${typeBadge[game.type] || "badge-muted"}`}>{game.type}</span>
+                    {game.game_slug && (
+                      <span className="badge badge-info" style={{ display: "inline-flex", alignItems: "center", gap: 3, fontSize: 10 }}>
+                        <Link2 style={{ height: 10, width: 10 }} />
+                        {game.game_slug}
+                      </span>
+                    )}
                   </div>
                 </div>
                 <div className={`status-dot ${game.is_active ? "active" : "inactive"}`} />
@@ -341,12 +373,18 @@ const AdminGames = () => {
         </div>
       )}
 
+      {/* ADD MODAL */}
       <Modal open={addModal} onClose={() => setAddModal(false)} title="Add New Game" footer={<><button className="btn-cancel" onClick={() => setAddModal(false)}>Cancel</button><button className="btn btn-primary" onClick={handleAddGame} disabled={formLoading}>{formLoading ? "Creating..." : "Create Game"}</button></>}>{gameFormFields()}</Modal>
+
+      {/* EDIT MODAL */}
       <Modal open={editModal.open} onClose={() => setEditModal({ open: false, game: null })} title={`Edit Game — ${editModal.game?.name || ""}`} footer={<><button className="btn-cancel" onClick={() => setEditModal({ open: false, game: null })}>Cancel</button><button className="btn btn-primary" onClick={handleEditGame} disabled={formLoading}>{formLoading ? "Saving..." : "Save Changes"}</button></>}>{gameFormFields()}</Modal>
+
+      {/* VIEW MODAL */}
       <Modal open={viewModal.open} onClose={() => setViewModal({ open: false, game: null })} title="Game Details">
         {viewModal.game && (
           <div>
             <div className="modal-field"><div className="modal-field-label">Name</div><div className="modal-field-value">{viewModal.game.name}</div></div>
+            <div className="modal-field"><div className="modal-field-label">Game Logic (Slug)</div><div className="modal-field-value"><span className="badge badge-info">{viewModal.game.game_slug || "Not linked"}</span></div></div>
             <div className="modal-field"><div className="modal-field-label">Difficulty</div><div className="modal-field-value"><span className={`badge ${difficultyBadge[viewModal.game.difficulty_level]}`}>{viewModal.game.difficulty_level}</span></div></div>
             <div className="modal-field"><div className="modal-field-label">Type</div><div className="modal-field-value"><span className={`badge ${typeBadge[viewModal.game.type]}`}>{viewModal.game.type}</span></div></div>
             <div className="modal-field"><div className="modal-field-label">Description</div><div className="modal-field-value">{viewModal.game.description || "—"}</div></div>
@@ -356,6 +394,8 @@ const AdminGames = () => {
           </div>
         )}
       </Modal>
+
+      {/* DELETE MODAL */}
       <Modal open={deleteModal.open} onClose={() => setDeleteModal({ open: false, game: null })} title="Delete Game" footer={<><button className="btn-cancel" onClick={() => setDeleteModal({ open: false, game: null })}>Cancel</button><button className="btn-confirm-delete" onClick={handleDeleteGame} disabled={formLoading}>{formLoading ? "Deleting..." : "Delete Game"}</button></>}>
         <p style={{ fontSize: 14, color: "var(--foreground)" }}>Are you sure you want to delete <strong>{deleteModal.game?.name}</strong>? This action cannot be undone.</p>
       </Modal>

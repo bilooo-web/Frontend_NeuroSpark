@@ -5,7 +5,7 @@
  * API keys are securely stored on the server
  */
 
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import chatbotIcon from "../../assets/chatboticon.png";
 import logo_s from "../../assets/logo_s.png";
 import { toast } from 'react-toastify';
@@ -57,6 +57,35 @@ const LockIcon = () => (
   </svg>
 );
 
+const MenuIcon = () => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <line x1="3" y1="12" x2="21" y2="12"></line>
+    <line x1="3" y1="6" x2="21" y2="6"></line>
+    <line x1="3" y1="18" x2="21" y2="18"></line>
+  </svg>
+);
+
+const EditIcon = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+  </svg>
+);
+
+const TrashIcon = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="3 6 5 6 21 6"></polyline>
+    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+  </svg>
+);
+
+const SearchIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="11" cy="11" r="8"></circle>
+    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+  </svg>
+);
+
 /* ========== MODEL CONFIGURATIONS ========== */
 const MODELS = {
   openai: { 
@@ -83,24 +112,33 @@ const MODELS = {
 };
 
 /* ========== MAIN CHATBOT COMPONENT ========== */
-const Chatbot = () => {
+const Chatbot = ({ isAuthenticated: propIsAuthenticated }) => {
   const [open, setOpen] = useState(false);
   const [full, setFull] = useState(false);
-  const [msgs, setMsgs] = useState([
-    { 
-      role: 'assistant', 
-      content: "Hello! I'm your NeuroSpark Assistant 😊 How can I help you today?", 
-      time: 'Now' 
-    }
-  ]);
+  
+  const generateId = () => Date.now().toString(36) + Math.random().toString(36).substr(2);
+  const [chats, setChats] = useState([]);
+  const [currentChatId, setCurrentChatId] = useState(null);
+  const [showSidebar, setShowSidebar] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [editingChatId, setEditingChatId] = useState(null);
+  const [editTitle, setEditTitle] = useState('');
+
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [model, setModel] = useState('gemini');
   const [copiedIndex, setCopiedIndex] = useState(null);
   const [apiStatus, setApiStatus] = useState({});
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(propIsAuthenticated || false);
   const [authChecked, setAuthChecked] = useState(false);
   const endRef = useRef(null);
+
+  // Sync internal isAuthenticated with prop
+  useEffect(() => {
+    if (propIsAuthenticated !== undefined) {
+      setIsAuthenticated(propIsAuthenticated);
+    }
+  }, [propIsAuthenticated]);
 
   const API_BASE_URL = 'http://localhost:8000/api';
 
@@ -110,6 +148,78 @@ const Chatbot = () => {
     setIsAuthenticated(!!token);
     setAuthChecked(true);
   }, []);
+
+  const getChatsKey = useCallback(() => {
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    return `ns_chats_${user.id || 'guest'}`;
+  }, []);
+
+  const createNewChat = useCallback(() => {
+    const newChat = {
+      id: generateId(),
+      title: 'New Chat',
+      messages: [
+        { 
+          role: 'assistant', 
+          content: "Hello! I'm your NeuroSpark Assistant 😊 How can I help you today?", 
+          time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        }
+      ],
+      updatedAt: Date.now()
+    };
+    setChats(prev => [newChat, ...prev]);
+    setCurrentChatId(newChat.id);
+    if (window.innerWidth < 768) setShowSidebar(false);
+  }, []);
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      const savedChats = localStorage.getItem(getChatsKey());
+      if (savedChats) {
+        try {
+          const parsed = JSON.parse(savedChats);
+          setChats(parsed);
+          if (parsed.length > 0) {
+            setCurrentChatId(parsed[0].id);
+          } else {
+            createNewChat();
+          }
+        } catch (e) {
+          createNewChat();
+        }
+      } else {
+        createNewChat();
+      }
+    } else {
+      setChats([]);
+      setCurrentChatId(null);
+    }
+  }, [isAuthenticated, getChatsKey, createNewChat]);
+
+  useEffect(() => {
+    if (isAuthenticated && chats.length > 0) {
+      localStorage.setItem(getChatsKey(), JSON.stringify(chats));
+    }
+  }, [chats, isAuthenticated, getChatsKey]);
+
+  const currentChat = chats.find(c => c.id === currentChatId);
+  const msgs = currentChat ? currentChat.messages : [];
+
+  const updateCurrentChatMessages = (newMsgs) => {
+    setChats(prev => prev.map(chat => {
+      if (chat.id === currentChatId) {
+        let newTitle = chat.title;
+        if (chat.title === 'New Chat' && newMsgs.length > 1) {
+          const firstUserMsg = newMsgs.find(m => m.role === 'user');
+          if (firstUserMsg) {
+             newTitle = firstUserMsg.content.slice(0, 30) + (firstUserMsg.content.length > 30 ? '...' : '');
+          }
+        }
+        return { ...chat, messages: newMsgs, title: newTitle, updatedAt: Date.now() };
+      }
+      return chat;
+    }));
+  };
 
   // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
@@ -268,7 +378,7 @@ const Chatbot = () => {
     };
     
     const history = [...msgs, userMsg];
-    setMsgs(history);
+    updateCurrentChatMessages(history);
     setInput('');
     setLoading(true);
 
@@ -290,7 +400,7 @@ const Chatbot = () => {
       reply = "I'm having trouble connecting. Please try again! 😊";
     }
 
-    setMsgs(prev => [...prev, { 
+    updateCurrentChatMessages([...history, { 
       role: 'assistant', 
       content: reply, 
       time: timeStr(), 
@@ -307,7 +417,7 @@ const Chatbot = () => {
       return;
     }
     
-    setMsgs([{ 
+    updateCurrentChatMessages([{ 
       role: 'assistant', 
       content: "Conversation cleared! 😊 How can I help you now?", 
       time: timeStr() 
@@ -336,16 +446,14 @@ const Chatbot = () => {
           width: 65, 
           height: 65, 
           borderRadius: '50%',
-          backgroundColor: isAuthenticated ? '#8be3d8' : '#a0a0a0',
-          border: isAuthenticated ? 'none' : '2px solid #fff',
+          backgroundColor: '#8be3d8',
+          border: 'none',
           cursor: 'pointer', 
           zIndex: 9999,
           display: 'flex', 
           alignItems: 'center', 
           justifyContent: 'center',
-          boxShadow: isAuthenticated 
-            ? '0 4px 15px rgba(0,0,0,0.15)' 
-            : '0 4px 15px rgba(0,0,0,0.25)',
+          boxShadow: '0 4px 15px rgba(0,0,0,0.15)',
           transition: 'transform 0.3s, box-shadow 0.3s',
         }}
         onMouseEnter={e => { 
@@ -368,29 +476,10 @@ const Chatbot = () => {
             width: '68%', 
             height: '68%', 
             objectFit: 'contain',
-            opacity: isAuthenticated ? 1 : 0.7
+            opacity: 1
           }} 
         />
-        {!isAuthenticated && (
-          <div style={{
-            position: 'absolute',
-            top: -5,
-            right: -5,
-            background: '#ff4757',
-            borderRadius: '50%',
-            width: 20,
-            height: 20,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            color: 'white',
-            fontSize: 12,
-            fontWeight: 'bold',
-            border: '2px solid white'
-          }}>
-            !
-          </div>
-        )}
+        {/* Removed red "!" mark */}
       </button>
     );
   }
@@ -452,12 +541,204 @@ const Chatbot = () => {
           background: '#fff', 
           boxShadow: '0 20px 50px rgba(0,0,0,0.2)',
           display: 'flex', 
-          flexDirection: 'column', 
+          flexDirection: 'row', 
           overflow: 'hidden',
           animation: 'cbIn 0.28s cubic-bezier(0.34,1.56,0.64,1)', 
           transition: 'all 0.3s',
+          position: 'relative',
         }}
       >
+        {/* ===== SIDEBAR ===== */}
+        <div style={{
+          width: showSidebar ? 260 : 0,
+          background: '#1CC4AF',
+          color: '#fff',
+          zIndex: 20,
+          transition: 'width 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+          display: 'flex',
+          flexDirection: 'column',
+          boxShadow: showSidebar ? '4px 0 15px rgba(0,0,0,0.1)' : 'none',
+          flexShrink: 0,
+          overflow: 'hidden'
+        }}>
+          {/* Inner fixed-width container to prevent text wrapping during transition */}
+          <div style={{ width: 260, display: 'flex', flexDirection: 'column', height: '100%' }}>
+            <div style={{ padding: '16px', borderBottom: '1px solid rgba(255,255,255,0.2)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <span style={{ fontWeight: 'bold' }}>Chat History</span>
+            <button
+              onClick={() => setShowSidebar(false)}
+              style={{ background: 'none', border: 'none', color: '#fff', cursor: 'pointer', padding: 4 }}
+            >
+              <XIcon />
+            </button>
+          </div>
+          
+          <div style={{ padding: '16px 16px 8px 16px' }}>
+            <button
+              onClick={createNewChat}
+              style={{
+                width: '100%',
+                padding: '10px',
+                background: 'rgba(255,255,255,0.2)',
+                border: '1px solid rgba(255,255,255,0.4)',
+                borderRadius: 8,
+                color: '#fff',
+                fontFamily: 'inherit',
+                fontWeight: 'bold',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: 8,
+                transition: 'background 0.2s'
+              }}
+              onMouseEnter={e => e.target.style.background = 'rgba(255,255,255,0.3)'}
+              onMouseLeave={e => e.target.style.background = 'rgba(255,255,255,0.2)'}
+            >
+              + New Chat
+            </button>
+          </div>
+          
+          <div style={{ padding: '8px 16px' }}>
+            <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+              <div style={{ position: 'absolute', left: 10, color: 'rgba(255,255,255,0.7)', display: 'flex' }}>
+                <SearchIcon />
+              </div>
+              <style>{`.search-input::placeholder { color: rgba(255,255,255,0.7); }`}</style>
+              <input
+                className="search-input"
+                type="text"
+                placeholder="Search chats..."
+                value={searchQuery}
+                onChange={e => setSearchQuery(e.target.value)}
+                style={{
+                  width: '100%',
+                  padding: '8px 8px 8px 32px',
+                  borderRadius: 6,
+                  border: '1px solid rgba(255,255,255,0.3)',
+                  background: 'rgba(255,255,255,0.15)',
+                  color: '#ffffff',
+                  outline: 'none',
+                  fontSize: 13,
+                  boxSizing: 'border-box'
+                }}
+                onFocus={e => {
+                  e.target.style.background = 'rgba(255,255,255,0.25)';
+                  e.target.style.borderColor = 'rgba(255,255,255,0.6)';
+                }}
+                onBlur={e => {
+                  e.target.style.background = 'rgba(255,255,255,0.15)';
+                  e.target.style.borderColor = 'rgba(255,255,255,0.3)';
+                }}
+              />
+            </div>
+          </div>
+
+          <div style={{ flex: 1, overflowY: 'auto', padding: '10px' }}>
+            {chats.filter(c => c.title.toLowerCase().includes(searchQuery.toLowerCase())).sort((a,b) => b.updatedAt - a.updatedAt).map(c => (
+              <div
+                key={c.id}
+                onClick={() => {
+                  if (editingChatId !== c.id) {
+                    setCurrentChatId(c.id);
+                    if (window.innerWidth < 768) setShowSidebar(false);
+                  }
+                }}
+                style={{
+                  padding: '10px 12px',
+                  borderRadius: 8,
+                  marginBottom: 6,
+                  cursor: 'pointer',
+                  background: currentChatId === c.id ? 'rgba(255,255,255,0.25)' : 'transparent',
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  transition: 'background 0.2s',
+                }}
+                onMouseEnter={e => {
+                  if (currentChatId !== c.id) e.currentTarget.style.background = 'rgba(255,255,255,0.1)';
+                }}
+                onMouseLeave={e => {
+                  if (currentChatId !== c.id) e.currentTarget.style.background = 'transparent';
+                }}
+              >
+                {editingChatId === c.id ? (
+                  <input
+                    autoFocus
+                    value={editTitle}
+                    onChange={e => setEditTitle(e.target.value)}
+                    onBlur={() => {
+                      setChats(prev => prev.map(chat => chat.id === c.id ? { ...chat, title: editTitle || 'New Chat' } : chat));
+                      setEditingChatId(null);
+                    }}
+                    onKeyDown={e => {
+                      if (e.key === 'Enter') {
+                        setChats(prev => prev.map(chat => chat.id === c.id ? { ...chat, title: editTitle || 'New Chat' } : chat));
+                        setEditingChatId(null);
+                      }
+                    }}
+                    style={{
+                      width: '100%',
+                      background: 'rgba(255,255,255,0.9)',
+                      border: 'none',
+                      borderRadius: 4,
+                      padding: '4px 8px',
+                      color: '#333',
+                      outline: 'none',
+                      fontSize: 13
+                    }}
+                  />
+                ) : (
+                  <>
+                    <div title={c.title} style={{ 
+                      whiteSpace: 'nowrap', 
+                      overflow: 'hidden', 
+                      textOverflow: 'ellipsis',
+                      fontSize: 14,
+                      flex: 1,
+                      marginRight: 10
+                    }}>
+                      {c.title}
+                    </div>
+                    {currentChatId === c.id && (
+                      <div style={{ display: 'flex', gap: 6, opacity: 0.8 }}>
+                        <button
+                          title="Rename"
+                          onClick={e => {
+                            e.stopPropagation();
+                            setEditingChatId(c.id);
+                            setEditTitle(c.title);
+                          }}
+                          style={{ background: 'none', border: 'none', color: '#fff', cursor: 'pointer', padding: 2, display: 'flex' }}
+                        >
+                          <EditIcon />
+                        </button>
+                        <button
+                          title="Delete"
+                          onClick={e => {
+                            e.stopPropagation();
+                            const newChats = chats.filter(chat => chat.id !== c.id);
+                            setChats(newChats);
+                            if (newChats.length > 0) setCurrentChatId(newChats[0].id);
+                            else createNewChat();
+                          }}
+                          style={{ background: 'none', border: 'none', color: '#fff', cursor: 'pointer', padding: 2, display: 'flex' }}
+                        >
+                          <TrashIcon />
+                        </button>
+                      </div>
+                    )}
+                  </>
+                )}
+              </div>
+            ))}
+          </div>
+          </div>
+        </div>
+
+        {/* ===== MAIN CHAT AREA WRAPPER ===== */}
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+
         {/* ===== HEADER ===== */}
         <div style={{ 
           padding: '14px 18px', 
@@ -465,9 +746,34 @@ const Chatbot = () => {
           display: 'flex', 
           justifyContent: 'space-between', 
           alignItems: 'center',
-          background: 'linear-gradient(135deg, #f8fafc, #f1f5f9)'
+          background: 'linear-gradient(135deg, #f8fafc, #f1f5f9)',
+          position: 'relative'
         }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, flex: 1 }}>
+            <button 
+              onClick={() => setShowSidebar(prev => !prev)}
+              style={{
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+                color: '#555',
+                padding: 4,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                borderRadius: 4,
+                transition: 'background 0.2s'
+              }}
+              title="Toggle Sidebar"
+              onMouseEnter={e => e.currentTarget.style.background = '#e2e8f0'}
+              onMouseLeave={e => e.currentTarget.style.background = 'none'}
+            >
+              <MenuIcon />
+            </button>
+          </div>
+
+          {/* Centered Logo container */}
+          <div style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', display: 'flex', alignItems: 'center', gap: 8 }}>
             <img src={logo_s} alt="Logo" style={{ height: 32 }} />
             <div style={{ 
               width: 7, 
@@ -476,11 +782,9 @@ const Chatbot = () => {
               borderRadius: '50%', 
               boxShadow: '0 0 8px rgba(139,227,216,0.6)' 
             }} />
-            <span style={{ fontWeight: 700, fontSize: 14, color: '#2d3436' }}>
-              NeuroSpark AI
-            </span>
           </div>
-          <div style={{ display: 'flex', gap: 6 }}>
+
+          <div style={{ display: 'flex', gap: 6, flex: 1, justifyContent: 'flex-end' }}>
             <button 
               onClick={clearConversation}
               style={{ 
@@ -811,6 +1115,9 @@ const Chatbot = () => {
             )}
           </div>
         </div>
+        
+        </div> {/* CLOSE MAIN CHAT AREA WRAPPER */}
+
       </div>
     </div>
   );

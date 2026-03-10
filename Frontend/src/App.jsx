@@ -95,15 +95,21 @@ function App() {
       setShowAuth(false);
     };
 
+    const handleLogout = () => {
+      setIsAuthenticated(false);
+    };
+
     window.addEventListener('open-auth', handleOpenAuth);
     window.addEventListener('close-auth', handleCloseAuth);
     window.addEventListener('login-success', handleLoginSuccess);
+    window.addEventListener('logout', handleLogout);
 
     return () => {
       clearTimeout(timer);
       window.removeEventListener('open-auth', handleOpenAuth);
       window.removeEventListener('close-auth', handleCloseAuth);
       window.removeEventListener('login-success', handleLoginSuccess);
+      window.removeEventListener('logout', handleLogout);
     };
   }, [showAuth , isAuthenticated]);
 
@@ -149,7 +155,7 @@ function App() {
         </Route>
 
       </Routes>
-      <Chatbot />
+      <Chatbot isAuthenticated={isAuthenticated} />
 
     </BrowserRouter>
 

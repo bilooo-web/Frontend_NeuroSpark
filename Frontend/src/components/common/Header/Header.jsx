@@ -87,7 +87,7 @@ function Header({ totalCoins }) {
   useEffect(() => { const h = (e) => { if (notifRef.current && !notifRef.current.contains(e.target)) { setShowNotifPanel(false); setSelectedNotif(null); } }; document.addEventListener('mousedown', h); return () => document.removeEventListener('mousedown', h); }, []);
 
   const openSignIn = () => window.dispatchEvent(new CustomEvent('open-auth', { detail: 'signin' }));
-  const handleLogout = () => { const token = localStorage.getItem('token'); if (token) fetch(`${API}/logout`, { method:'POST', headers: { Authorization:`Bearer ${token}`, Accept:'application/json' } }).catch(() => {}); clearAll(); validated.current = false; navigate('/'); };
+  const handleLogout = () => { const token = localStorage.getItem('token'); if (token) fetch(`${API}/logout`, { method:'POST', headers: { Authorization:`Bearer ${token}`, Accept:'application/json' } }).catch(() => {}); clearAll(); validated.current = false; window.dispatchEvent(new CustomEvent('logout')); navigate('/'); };
   const goToDashboard = () => { if (user?.role === 'admin') navigate('/admin'); else if (user?.role === 'guardian') navigate('/guardian/dashboard'); };
   const isHomeActive = () => location.pathname === '/' || location.pathname === '/home';
 

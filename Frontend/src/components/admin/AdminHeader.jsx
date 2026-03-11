@@ -1,8 +1,13 @@
-import { Menu, Bell, Search } from "lucide-react";
+import { Menu, Bell, Search, X } from "lucide-react";
 import { useState } from "react";
 
 const AdminHeader = ({ onMenuClick }) => {
   const [searchFocused, setSearchFocused] = useState(false);
+  const [searchValue, setSearchValue] = useState('');
+
+  const handleClear = () => {
+    setSearchValue('');
+  };
 
   return (
     <header className="admin-header">
@@ -12,19 +17,26 @@ const AdminHeader = ({ onMenuClick }) => {
         </button>
 
         <div className={`header-search ${searchFocused ? "focused" : ""}`}>
-          <Search style={{ height: 16, width: 16, color: "var(--muted-foreground)" }} />
+          <Search size={18} />
           <input
             type="text"
-            placeholder="Search users, games..."
+            placeholder="Search..."
+            value={searchValue}
+            onChange={(e) => setSearchValue(e.target.value)}
             onFocus={() => setSearchFocused(true)}
             onBlur={() => setSearchFocused(false)}
           />
+          {searchValue && (
+            <button className="header-search-clear" onClick={handleClear}>
+              <X size={12} />
+            </button>
+          )}
         </div>
       </div>
 
       <div className="header-right">
         <button className="header-notif-btn">
-          <Bell style={{ height: 20, width: 20 }} />
+          <Bell size={20} />
           <span className="header-notif-dot" />
         </button>
         <span className="header-date">
@@ -41,3 +53,4 @@ const AdminHeader = ({ onMenuClick }) => {
 };
 
 export default AdminHeader;
+

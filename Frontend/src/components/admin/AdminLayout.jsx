@@ -8,7 +8,8 @@ const AdminLayout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
-    <div className="admin-layout">
+    <div className="admin-layout" style={{ backgroundColor: "#8BE3D8" }}>
+      <div className="stars-bg" />
       {sidebarOpen && (
         <div className="admin-overlay" onClick={() => setSidebarOpen(false)} />
       )}

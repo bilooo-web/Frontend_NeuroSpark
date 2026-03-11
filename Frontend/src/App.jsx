@@ -9,6 +9,8 @@ import AdminGames from "./pages/AdminGames";
 import AdminVoiceInstructions from "./pages/AdminVoiceInstructions";
 import AdminReports from "./pages/AdminReports";
 import AdminNotifications from "./pages/AdminNotifications";
+import FeedbackDashboard from './components/admin/FeedbackDashboard';
+
 
 import AboutUs2 from "./pages/AboutUs2";
 import Home from "./pages/Home";
@@ -146,6 +148,8 @@ function App() {
           <Route path="voice-instructions" element={<AdminVoiceInstructions />} />
           <Route path="reports" element={<AdminReports />} />
           <Route path="notifications" element={<AdminNotifications />} />
+          <Route path="/admin/feedback" element={<FeedbackDashboard />} />
+
         </Route>
 
       </Routes>

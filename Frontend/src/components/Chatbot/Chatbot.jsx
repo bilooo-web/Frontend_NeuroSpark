@@ -58,14 +58,17 @@ const LockIcon = () => (
 );
 
 /* ========== MODEL CONFIGURATIONS ========== */
+
 const MODELS = {
-  openai: { 
-    name: 'ChatGPT', 
+ github: { 
+    name: 'Chatgpt', 
     emoji: '🤖', 
     color: '#10A37F', 
-    hint: 'OpenAI GPT-3.5',
+    hint: 'OpenAI GPT-4 (via GitHub Models)',
     needsKey: true
   },
+
+
   gemini: { 
     name: 'Gemini', 
     emoji: '💎', 

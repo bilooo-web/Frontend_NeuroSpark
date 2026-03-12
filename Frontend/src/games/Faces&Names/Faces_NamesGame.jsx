@@ -2,6 +2,8 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import "./Faces_NamesGame.css";
 import Header from "../../components/common/Header/Header";
+import breathingexercise from "../../assets/breathing-video.mp4"; // Import the video
+import relaxGiraffe from "../../assets/relax-giraffe.png";
 
 const MALE_FACES = [
   { id:2, emoji:"🧔", gender:"male" }, { id:4, emoji:"👨‍🦱", gender:"male" },
@@ -17,7 +19,7 @@ const FEMALE_FACES = [
 const MALE_NAMES = ["James","Carlos","Marcus","Derek","Ethan","Leo"];
 const FEMALE_NAMES = ["Ashley","Sophie","Linda","Priya","Mia","Yara","Nina"];
 const ALL_NAMES = [...MALE_NAMES, ...FEMALE_NAMES];
-const SESSION_DURATION = 70;
+const SESSION_DURATION = 120; 
 
 const CELEBRATION_MSGS = [
   { emoji: '🧠', text: 'You got it!', sub: 'Your memory is amazing!' },
@@ -32,11 +34,35 @@ const MOTIVATION_MSGS = [
   { emoji: '🔥', text: 'Not quite!', sub: 'You will get it next time!' },
 ];
 
+// ADHD-friendly difficulty progression - SLOW and GENTLE
 function getRoundConfig(r) { 
-  return { 
-    facesCount: Math.min(2 + r, 13), 
-    memorizeTime: parseFloat(Math.max(4 - r * 0.2, 2).toFixed(1)) 
-  }; 
+  let facesCount;
+  let memorizeTime;
+  
+  if (r <= 1) {
+    facesCount = 2;
+    memorizeTime = 5.0;
+  } else if (r <= 3) {
+    facesCount = 3;
+    memorizeTime = 4.5;
+  } else if (r <= 5) {
+    facesCount = 4;
+    memorizeTime = 4.0;
+  } else if (r <= 7) {
+    facesCount = 5;
+    memorizeTime = 3.5;
+  } else if (r <= 9) {
+    facesCount = 6;
+    memorizeTime = 3.0;
+  } else if (r <= 12) {
+    facesCount = 7;
+    memorizeTime = 3.0;
+  } else {
+    facesCount = Math.min(8, 2 + Math.floor(r * 0.5));
+    memorizeTime = Math.max(2.5, 5.0 - r * 0.15);
+  }
+  
+  return { facesCount, memorizeTime }; 
 }
 
 function shuffle(a) { 
@@ -51,13 +77,11 @@ function shuffle(a) {
 function createRandomFaces(count) {
   const mc = Math.floor(count / 2), fc = count - mc;
   
-  // Shuffle and take unique males
   const shuffledMales = shuffle(MALE_FACES);
   const males = [];
   const usedMaleNames = new Set();
   
   for (let i = 0; i < mc && i < shuffledMales.length; i++) {
-    // Get unique name for each male
     const availableNames = MALE_NAMES.filter(name => !usedMaleNames.has(name));
     if (availableNames.length === 0) break;
     
@@ -66,13 +90,11 @@ function createRandomFaces(count) {
     males.push({ ...shuffledMales[i], name });
   }
   
-  // Shuffle and take unique females
   const shuffledFemales = shuffle(FEMALE_FACES);
   const females = [];
   const usedFemaleNames = new Set();
   
   for (let i = 0; i < fc && i < shuffledFemales.length; i++) {
-    // Get unique name for each female
     const availableNames = FEMALE_NAMES.filter(name => !usedFemaleNames.has(name));
     if (availableNames.length === 0) break;
     
@@ -98,7 +120,7 @@ export default function FacesNamesGame({
   totalCoins: initialTotalCoins = 0 
 }) {
   const navigate = useNavigate();
-  const [screen, setScreen] = useState("memorize");
+  const [screen, setScreen] = useState("intro");
   const [roundIndex, setRoundIndex] = useState(0);
   const [faces, setFaces] = useState([]);
   const [namePool, setNamePool] = useState([]);
@@ -115,10 +137,12 @@ export default function FacesNamesGame({
   const [earnedCoins, setEarnedCoins] = useState(0);
   const [isTimerPaused, setIsTimerPaused] = useState(true);
   const [paused, setPaused] = useState(false);
+  const [countdown, setCountdown] = useState(3);
 
   const [celebration, setCelebration] = useState(null);
   const [motivation, setMotivation] = useState(null);
   const [headerTotalCoins, setHeaderTotalCoins] = useState(initialTotalCoins);
+  const [breathingInstruction, setBreathingInstruction] = useState("Breathe in...");
 
   // Analytics refs
   const gameStartTime = useRef(Date.now());
@@ -134,12 +158,16 @@ export default function FacesNamesGame({
   const memTimerRef = useRef(null);
   const sessionTimerRef = useRef(null);
   const flashTimeout = useRef(null);
+  const countdownTimerRef = useRef(null);
   const roundIndexRef = useRef(0);
   const audioCtxRef = useRef(null);
   const totalCorrectRef = useRef(0);
   const totalFacesRef = useRef(0);
   const incorrectAttemptsRef = useRef(0);
   const totalAttemptsRef = useRef(0);
+  const videoRef = useRef(null);
+  const breathingIntervalRef = useRef(null);
+  const breathingAudioCtxRef = useRef(null);
 
   useEffect(()=>{
     totalCorrectRef.current=totalCorrect;
@@ -172,7 +200,7 @@ export default function FacesNamesGame({
 
   useEffect(() => {
     inactivityInterval.current = setInterval(() => {
-      if (paused || screen === "gameover" || screen === "memorize") return;
+      if (paused || screen === "gameover" || screen === "memorize" || screen === "intro") return;
       if (Date.now() - lastActivityTime.current > 10000) { 
         inactivityCount.current++; 
         lastActivityTime.current = Date.now(); 
@@ -182,7 +210,7 @@ export default function FacesNamesGame({
   }, [paused, screen]);
 
   const togglePause = () => {
-    if (screen === 'gameover') return;
+    if (screen === 'gameover' || screen === 'intro') return;
     if (paused) {
       if (pauseStartTime.current) { 
         totalPausedTime.current += Date.now()-pauseStartTime.current; 
@@ -198,7 +226,6 @@ export default function FacesNamesGame({
       setIsTimerPaused(true);
     }
   };
-
 
   const ensureAudio = useCallback(async () => {
     const Ctx = window.AudioContext||window.webkitAudioContext; 
@@ -266,23 +293,209 @@ export default function FacesNamesGame({
     setAssignments({}); 
     setFeedback({}); 
     setMemTime(Math.ceil(memorizeTime));
-    setScreen("memorize"); 
-    setIsTimerPaused(true); 
+    
+    setScreen("countdown");
+    setCountdown(3);
+    
+    let count = 3;
+    countdownTimerRef.current = setInterval(() => {
+      count -= 1;
+      if (count === 0) {
+        clearInterval(countdownTimerRef.current);
+        setScreen("memorize");
+        setIsTimerPaused(true);
+      } else {
+        setCountdown(count);
+      }
+    }, 1000);
+    
     roundIndexRef.current = idx; 
     lastActionTime.current = Date.now();
     lastActivityTime.current = Date.now();
   }, []);
 
-  useEffect(() => { buildRound(0); }, []);
+  useEffect(() => {
+    setScreen("intro");
+  }, []);
+
+  // Breathing instruction cycle on intro screen
+  useEffect(() => {
+    if (screen === "intro") {
+      
+      let index = 0;
+      
+      const speakInstruction = (text) => {
+        setBreathingInstruction(text);
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.rate = 0.9;
+        utterance.pitch = 1;
+        utterance.volume = 1;
+        window.speechSynthesis.speak(utterance);
+      };
+
+      const runBreathingCycle = () => {
+        if (index < instructions.length) {
+          speakInstruction(instructions[index].text);
+          breathingIntervalRef.current = setTimeout(() => {
+            index++;
+            runBreathingCycle();
+          }, instructions[index].duration);
+        }
+      };
+
+      setTimeout(runBreathingCycle, 1000);
+
+      return () => {
+        if (breathingIntervalRef.current) {
+          clearTimeout(breathingIntervalRef.current);
+        }
+        window.speechSynthesis.cancel();
+      };
+    }
+  }, [screen]);
+
+  // Breathing sounds using Web Audio API with brown noise
+  useEffect(() => {
+    if (screen === "intro") {
+      
+      const playBreathingSounds = async () => {
+        const Ctx = window.AudioContext || window.webkitAudioContext;
+        if (!Ctx) return;
+        
+        const audioCtx = new Ctx();
+        breathingAudioCtxRef.current = audioCtx;
+        
+        // Function to create breathing sound (inhale)
+        const createInhaleSound = (startTime) => {
+          const now = audioCtx.currentTime;
+          
+          // Brown noise for realistic breath
+          const bufferSize = 2 * audioCtx.sampleRate;
+          const noiseBuffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+          const output = noiseBuffer.getChannelData(0);
+          
+          // Brown noise (more realistic for breathing)
+          let lastOut = 0;
+          for (let i = 0; i < bufferSize; i++) {
+            const white = Math.random() * 2 - 1;
+            output[i] = (lastOut + (0.02 * white)) / 1.02;
+            lastOut = output[i];
+          }
+          
+          const noise = audioCtx.createBufferSource();
+          noise.buffer = noiseBuffer;
+          
+          const gainNode = audioCtx.createGain();
+          const filter = audioCtx.createBiquadFilter();
+          filter.type = 'lowpass';
+          filter.frequency.value = 800; // Lower frequency for deeper breath
+          
+          noise.connect(filter);
+          filter.connect(gainNode);
+          gainNode.connect(audioCtx.destination);
+          
+          // Inhale: volume rises then falls slightly
+          gainNode.gain.setValueAtTime(0, now + startTime);
+          gainNode.gain.linearRampToValueAtTime(0.15, now + startTime + 1.5);
+          gainNode.gain.linearRampToValueAtTime(0.08, now + startTime + 2.5);
+          gainNode.gain.linearRampToValueAtTime(0, now + startTime + 3.5);
+          
+          noise.start(now + startTime);
+          noise.stop(now + startTime + 3.5);
+        };
+        
+        // Function to create breathing sound (exhale)
+        const createExhaleSound = (startTime) => {
+          const now = audioCtx.currentTime;
+          
+          // Slightly different noise for exhale
+          const bufferSize = 2 * audioCtx.sampleRate;
+          const noiseBuffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+          const output = noiseBuffer.getChannelData(0);
+          
+          let lastOut = 0;
+          for (let i = 0; i < bufferSize; i++) {
+            const white = Math.random() * 2 - 1;
+            output[i] = (lastOut + (0.03 * white)) / 1.03;
+            lastOut = output[i];
+          }
+          
+          const noise = audioCtx.createBufferSource();
+          noise.buffer = noiseBuffer;
+          
+          const gainNode = audioCtx.createGain();
+          const filter = audioCtx.createBiquadFilter();
+          filter.type = 'lowpass';
+          filter.frequency.value = 600; // Lower for exhale
+          
+          noise.connect(filter);
+          filter.connect(gainNode);
+          gainNode.connect(audioCtx.destination);
+          
+          // Exhale: starts softer, peaks, then fades
+          gainNode.gain.setValueAtTime(0, now + startTime);
+          gainNode.gain.linearRampToValueAtTime(0.12, now + startTime + 1.8);
+          gainNode.gain.linearRampToValueAtTime(0.05, now + startTime + 2.8);
+          gainNode.gain.linearRampToValueAtTime(0, now + startTime + 4);
+          
+          noise.start(now + startTime);
+          noise.stop(now + startTime + 4);
+        };
+        
+        // Schedule a full breathing cycle (4 seconds inhale, 4 seconds exhale)
+        // Repeat 4 times (about 32 seconds)
+        for (let cycle = 0; cycle < 4; cycle++) {
+          const cycleStart = cycle * 8; // 8 seconds per cycle
+          
+          // Inhale (first 4 seconds of cycle)
+          createInhaleSound(cycleStart + 1); // Start after 1 sec
+          
+          // Exhale (next 4 seconds of cycle)
+          createExhaleSound(cycleStart + 5); // Start at 5 sec
+        }
+      };
+      
+      playBreathingSounds();
+      
+      return () => {
+        // Clean up audio when leaving intro screen
+        if (breathingAudioCtxRef.current) {
+          breathingAudioCtxRef.current.close();
+          breathingAudioCtxRef.current = null;
+        }
+      };
+    }
+  }, [screen]);
+
+  const startGameFromIntro = () => {
+    // Stop breathing audio and instructions
+    if (breathingIntervalRef.current) {
+      clearTimeout(breathingIntervalRef.current);
+    }
+    window.speechSynthesis.cancel();
+    
+    // Close breathing audio context
+    if (breathingAudioCtxRef.current) {
+      breathingAudioCtxRef.current.close();
+      breathingAudioCtxRef.current = null;
+    }
+    
+    // Pause video
+    if (videoRef.current) {
+      videoRef.current.pause();
+    }
+    buildRound(0);
+  };
 
   useEffect(() => {
-    if (isTimerPaused || screen==="gameover" || paused) return;
+    if (isTimerPaused || screen==="gameover" || paused || screen==="intro" || screen==="countdown") return;
     sessionTimerRef.current = setInterval(() => {
       setSessionLeft(t => { 
         if(t<=1){
           clearInterval(sessionTimerRef.current);
           clearInterval(memTimerRef.current);
           clearTimeout(flashTimeout.current);
+          clearInterval(countdownTimerRef.current);
           endGame();
           return 0;
         } 
@@ -302,17 +515,12 @@ export default function FacesNamesGame({
     const dur = Math.round((Date.now()-gameStartTime.current-totalPausedTime.current)/1000);
     const tc = totalCorrectRef.current, tf = totalFacesRef.current;
     
-    // accuracy = (correct faces / total faces shown) × 100
     const accuracy = tf>0 ? Math.round((tc/tf)*100) : 0;
-    
-    // score = accuracy (0-100)
     const score = accuracy;
     
-    // Calculate average response time (between consecutive name drops)
     const rts = responseTimes.current;
     const avgRT = rts.length>0 ? Math.round(rts.reduce((a,b)=>a+b,0)/rts.length) : 0;
     
-    // Calculate response time variability (standard deviation)
     let rtVar = 0;
     if (rts.length > 1) { 
       const mean = rts.reduce((a,b)=>a+b,0)/rts.length;
@@ -320,9 +528,7 @@ export default function FacesNamesGame({
       rtVar = Math.round(Math.sqrt(sq.reduce((a,b)=>a+b,0)/rts.length)); 
     }
 
-    // total_attempts = every drag-drop name assignment
     const totalAttempts = totalAttemptsRef.current;
-    // incorrect_attempts = total attempts - correct faces
     const incorrectAttempts = Math.max(totalAttempts - tc, 0);
 
     if (onGameComplete) {
@@ -341,7 +547,6 @@ export default function FacesNamesGame({
         setEarnedCoins(result.coinsEarned); 
         setShowCoinReward(true);
         
-        // Update header coins via event
         if (result.totalCoins) {
           setHeaderTotalCoins(result.totalCoins);
         }
@@ -394,16 +599,13 @@ export default function FacesNamesGame({
     
     lastActivityTime.current=Date.now();
     
-    // Record response time (time between consecutive name drops)
     const now = Date.now();
     const rt = now - lastActionTime.current;
-    // Only record meaningful response times (ignore if < 100ms or > 60s)
     if (rt >= 100 && rt <= 60000) {
       responseTimes.current.push(rt);
     }
     lastActionTime.current = now;
     
-    // Track total attempts (every name assignment is one attempt)
     totalAttemptsRef.current++;
     
     const prev=Object.keys(assignments).find(k=>assignments[k]===dragging);
@@ -432,7 +634,6 @@ export default function FacesNamesGame({
         playCorrectSound();
         showCelebration();
       } else {
-        // Count incorrect attempts
         incorrectAttemptsRef.current++;
         playWrongSound();
         showMotivation();
@@ -475,7 +676,8 @@ export default function FacesNamesGame({
     setPaused(false);
     setCelebration(null);
     setMotivation(null);
-    buildRound(0);
+    
+    setScreen("intro");
   };
 
   const goBack = () => {
@@ -484,12 +686,10 @@ export default function FacesNamesGame({
   };
 
   const sessionPct = (sessionLeft/SESSION_DURATION)*100;
-  const timerColor = sessionLeft>30?"#4CAF82":sessionLeft>15?"#F5B731":sessionLeft>5?"#FF8C42":"#E05C6A";
+  const timerColor = sessionLeft>60?"#4CAF82":sessionLeft>30?"#F5B731":sessionLeft>15?"#FF8C42":"#E05C6A";
   const isCompact = faces.length>4;
   const usedNamesSet = new Set(Object.entries(assignments).filter(([fid])=>feedback[fid]==="correct").map(([,n])=>n));
   const accuracy = totalFaces>0?Math.round((totalCorrect/totalFaces)*100):0;
-  const goEmoji = accuracy>=80?"🏆":accuracy>=50?"😊":"😅";
-  const goTitle = accuracy>=80?"Amazing memory!":accuracy>=50?"Good job!":"Keep practicing!";
 
   useEffect(()=>{
     if(showCoinReward){
@@ -499,23 +699,43 @@ export default function FacesNamesGame({
   }, [showCoinReward]);
 
   const renderPause = () => (
-    <div style={{ position:'fixed', inset:0, zIndex:9998, display:'flex', alignItems:'center', justifyContent:'center', background:'rgba(10,10,30,0.92)', backdropFilter:'blur(16px)' }}>
-      <div style={{ background:'rgba(255,255,255,0.06)', border:'1px solid rgba(255,255,255,0.12)', borderRadius:28, padding:'48px 44px', textAlign:'center', maxWidth:380, width:'90%', boxShadow:'0 24px 80px rgba(0,0,0,0.5)' }}>
-        <div style={{ fontSize:56, marginBottom:8 }}>⏸️</div>
-        <h2 style={{ color:'#fff', fontSize:26, fontWeight:700, margin:'0 0 6px' }}>Paused</h2>
-        <p style={{ color:'rgba(255,255,255,0.5)', fontSize:14, margin:'0 0 28px' }}>No rush — take your time!</p>
-        <div style={{ display:'flex', gap:16, justifyContent:'center', marginBottom:24 }}>
-          <div style={{ background:'rgba(255,255,255,0.08)', borderRadius:14, padding:'14px 20px', minWidth:75 }}>
-            <div style={{ color:'#00e5bf', fontSize:22, fontWeight:700 }}>{totalCorrect}</div>
-            <div style={{ color:'rgba(255,255,255,0.5)', fontSize:11, marginTop:4 }}>Correct</div>
+    <div className="fn-pause-overlay">
+      <div className="fn-pause-card">
+        <div className="fn-pause-icon">
+          <img 
+            src={relaxGiraffe} 
+            alt="Relaxing giraffe" 
+            style={{ width: '120px', height: '120px', objectFit: 'contain' }}
+          />
+        </div>
+        <h2>Game Paused</h2>
+        <p>Take a deep breath. You're doing great!</p>
+        
+        <div className="fn-pause-stats">
+          <div className="fn-pause-stat">
+            <span className="fn-pause-stat-value">{totalCorrect}</span>
+            <span className="fn-pause-stat-label">Correct</span>
           </div>
-          <div style={{ background:'rgba(255,255,255,0.08)', borderRadius:14, padding:'14px 20px', minWidth:75 }}>
-            <div style={{ color:'#f5b731', fontSize:22, fontWeight:700 }}>R{roundIndex+1}</div>
-            <div style={{ color:'rgba(255,255,255,0.5)', fontSize:11, marginTop:4 }}>Round</div>
+          <div className="fn-pause-stat">
+            <span className="fn-pause-stat-value">{roundIndex + 1}</span>
+            <span className="fn-pause-stat-label">Round</span>
+          </div>
+          <div className="fn-pause-stat">
+            <span className="fn-pause-stat-value">{Math.floor(sessionLeft / 60)}:{(sessionLeft % 60).toString().padStart(2, '0')}</span>
+            <span className="fn-pause-stat-label">Time Left</span>
           </div>
         </div>
-        <button onClick={togglePause} style={{ width:'100%', padding:16, borderRadius:16, border:'none', background:'linear-gradient(135deg,#00a896,#00d4aa)', color:'#fff', fontSize:18, fontWeight:700, cursor:'pointer', marginBottom:12 }}>▶ Resume</button>
-        <button onClick={async () => { if (abandonSession) await abandonSession(); navigate('/challenges'); }} style={{ width:'100%', padding:14, borderRadius:16, border:'1px solid rgba(255,255,255,0.15)', background:'transparent', color:'rgba(255,255,255,0.6)', fontSize:14, cursor:'pointer' }}>Quit to Challenges</button>
+        
+        <button className="fn-pause-resume-btn" onClick={togglePause}>
+          ▶ Resume Game
+        </button>
+        
+        <button className="fn-pause-quit-btn" onClick={async () => { 
+          if (abandonSession) await abandonSession(); 
+          navigate('/challenges'); 
+        }}>
+          Quit to Challenges
+        </button>
       </div>
     </div>
   );
@@ -523,27 +743,66 @@ export default function FacesNamesGame({
   return (
     <div className="fn-game-wrapper">
       <Header totalCoins={headerTotalCoins} />
-      <div className="fn-game-content">
+      
+      {/* Session Timer - visible after header, always visible during game */}
+      {screen !== "gameover" && screen !== "countdown" && (
+        <div className="fn-session-timer-wrap fn-timer-after-header">
+          <div className="fn-session-timer-fill" style={{ width:`${sessionPct}%`, background:timerColor, transition:isTimerPaused?'none':'width 0.5s linear' }} />
+        </div>
+      )}
+      
+      <div className="fn-game-content" style={{ paddingTop: 0, paddingBottom: 0 }}>
         <div className="stars-bg"></div>
         {paused && renderPause()}
+        
+        {/* Intro Breathing Video Screen with imported video */}
+        {screen === "intro" && (
+          <div className="fn-intro-screen">
+            <video 
+              ref={videoRef}
+              src={breathingexercise} 
+              autoPlay 
+              muted 
+              className="fn-breathing-video"
+              onEnded={startGameFromIntro}
+            />
+            {/* Breathing instruction that changes */}
+            
+          </div>
+        )}
+        
+        {/* Countdown Screen (3,2,1) */}
+        {screen === "countdown" && (
+          <div className="fn-countdown-screen">
+            <div className="fn-countdown-number-large">{countdown}</div>
+            <p>Get ready...</p>
+          </div>
+        )}
+        
         {celebration && (
-          <div style={{ position:'fixed', top:'15%', left:'50%', transform:'translateX(-50%)', zIndex:10000, pointerEvents:'none' }}>
-            <style>{`@keyframes fn-toastAnim{0%{opacity:0;transform:translateX(-50%) scale(0.5)}15%{opacity:1;transform:translateX(-50%) scale(1.1)}25%{transform:translateX(-50%) scale(1)}80%{opacity:1}100%{opacity:0;transform:translateX(-50%) translateY(-30px)}}`}</style>
-            <div style={{ animation:'fn-toastAnim 1.8s ease forwards', background:'linear-gradient(135deg,#FFD700,#FFA500)', padding:'16px 32px', borderRadius:24, display:'flex', alignItems:'center', gap:12, boxShadow:'0 8px 30px rgba(255,215,0,0.5)', border:'2px solid rgba(255,255,255,0.5)' }}>
-              <span style={{ fontSize:36 }}>{celebration.emoji}</span>
-              <div><div style={{ fontFamily:"'Fredoka One', cursive", fontSize:20, color:'#fff' }}>{celebration.text}</div><div style={{ fontSize:12, color:'rgba(255,255,255,0.85)', fontWeight:600 }}>{celebration.sub}</div></div>
+          <div className="fn-celebration-toast">
+            <div className="fn-celebration-content">
+              <span className="fn-celebration-emoji">{celebration.emoji}</span>
+              <div>
+                <div className="fn-celebration-text">{celebration.text}</div>
+                <div className="fn-celebration-sub">{celebration.sub}</div>
+              </div>
             </div>
           </div>
         )}
+        
         {motivation && (
-          <div style={{ position:'fixed', top:'15%', left:'50%', transform:'translateX(-50%)', zIndex:10000, pointerEvents:'none' }}>
-            <style>{`@keyframes fn-motAnim{0%{opacity:0;transform:translateX(-50%) scale(0.5)}15%{opacity:1;transform:translateX(-50%) scale(1.1)}25%{transform:translateX(-50%) scale(1)}80%{opacity:1}100%{opacity:0;transform:translateX(-50%) translateY(-30px)}}`}</style>
-            <div style={{ animation:'fn-motAnim 1.8s ease forwards', background:'linear-gradient(135deg,#667eea,#764ba2)', padding:'16px 32px', borderRadius:24, display:'flex', alignItems:'center', gap:12, boxShadow:'0 8px 30px rgba(118,75,162,0.5)', border:'2px solid rgba(255,255,255,0.5)' }}>
-              <span style={{ fontSize:36 }}>{motivation.emoji}</span>
-              <div><div style={{ fontFamily:"'Fredoka One', cursive", fontSize:20, color:'#fff' }}>{motivation.text}</div><div style={{ fontSize:12, color:'rgba(255,255,255,0.85)', fontWeight:600 }}>{motivation.sub}</div></div>
+          <div className="fn-motivation-toast">
+            <div className="fn-motivation-content">
+              <span className="fn-motivation-emoji">{motivation.emoji}</span>
+              <div>
+                <div className="fn-motivation-text">{motivation.text}</div>
+                <div className="fn-motivation-sub">{motivation.sub}</div>
+              </div>
             </div>
           </div>
         )}
+        
         {showCoinReward && (
           <div className="fn-coin-reward-animation">
             <span className="fn-coin-emoji">🪙</span>
@@ -551,17 +810,13 @@ export default function FacesNamesGame({
           </div>
         )}
 
-        {screen !== "gameover" && (
-          <div style={{ position:'fixed', top:76, right:16, zIndex:100, display:'flex', gap:10 }}>
-            <button onClick={togglePause} style={{ width:44, height:44, borderRadius:'50%', border:'2px solid rgba(255,255,255,0.25)', background:'rgba(0,0,0,0.4)', color:'#fff', fontSize:20, cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center' }}>⏸</button>
-          </div>
+        {screen !== "gameover" && screen !== "intro" && screen !== "countdown" && (
+          <button onClick={togglePause} className="fn-pause-btn">
+            ⏸
+          </button>
         )}
 
-        {screen !== "gameover" && (
-          <div className="fn-session-timer-wrap">
-            <div className="fn-session-timer-fill" style={{ width:`${sessionPct}%`, background:timerColor, transition:isTimerPaused?'none':'width 0.5s linear' }} />
-          </div>
-        )}
+        {/* Timer is now shown after header */}
 
         {(screen === "memorize" || screen === "flash") && (
           <>
@@ -579,9 +834,9 @@ export default function FacesNamesGame({
                 <div className="fn-countdown-circle">
                   <svg viewBox="0 0 100 100">
                     <circle className="fn-countdown-circle-bg" cx="50" cy="50" r="45" />
-                    <circle className="fn-countdown-circle-progress" cx="50" cy="50" r="45" style={{ strokeDasharray:`${2*Math.PI*45}`, strokeDashoffset:`${2*Math.PI*45*(1-memTime/4)}` }} />
+                    <circle className="fn-countdown-circle-progress" cx="50" cy="50" r="45" style={{ strokeDasharray:`${2*Math.PI*45}`, strokeDashoffset:`${2*Math.PI*45*(1-memTime/getRoundConfig(roundIndex).memorizeTime)}` }} />
                   </svg>
-                  <div className="fn-countdown-number">👀</div>
+                  <div className="fn-countdown-number">{memTime}s</div>
                 </div>
               </div>
             )}
@@ -639,65 +894,57 @@ export default function FacesNamesGame({
 
         {screen === "gameover" && (() => {
           const rounds = roundIndex + 1;
-          const goEm = accuracy>=80?"🧠":accuracy>=50?"🏆":accuracy>=30?"⭐":"💪";
-          const goTi = accuracy>=80?"Brilliant Memory!":accuracy>=50?"Great Recall!":accuracy>=30?"Nice Effort!":"Great Effort!";
-          const goSu = accuracy>=80?"You are a memory superstar!":accuracy>=50?"Your brain is getting stronger!":accuracy>=30?"Every round makes you better!":"You showed up and tried — that takes courage!";
-          const bgGrad = accuracy>=60?'linear-gradient(135deg,#0f0c29,#302b63,#24243e)':'linear-gradient(135deg,#1a1a2e,#16213e,#0f3460)';
+          const goEm = accuracy>=80?"🧠":accuracy>=60?"🏆":accuracy>=40?"⭐":"💪";
+          const goTi = accuracy>=80?"Brilliant Memory!":accuracy>=60?"Great Job!":accuracy>=40?"Good Try!":"Great Effort!";
+          const goSu = accuracy>=80?"You are a memory superstar!":accuracy>=60?"Your brain is getting stronger!":accuracy>=40?"Every round makes you better!":"You showed up and tried — that's what matters!";
+          const bgGrad = 'linear-gradient(135deg, #8BE3D8, #6BC5B8)';
+          
+          const coinsEarned = Math.max(1, Math.floor(totalCorrect * 1.5));
           
           return (
-            <div style={{ position:'fixed', inset:0, zIndex:9999, display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', background:bgGrad, overflow:'hidden' }}>
-              <style>{`
-                @keyframes fn-trophy{0%{transform:scale(0) rotate(-20deg)}50%{transform:scale(1.3) rotate(10deg)}100%{transform:scale(1) rotate(0deg)}}
-                @keyframes fn-slideUp{from{opacity:0;transform:translateY(40px)}to{opacity:1;transform:translateY(0)}}
-                @keyframes fn-glow{0%,100%{box-shadow:0 0 20px rgba(255,215,0,0.3)}50%{box-shadow:0 0 40px rgba(255,215,0,0.6)}}
-                @keyframes fn-conf{0%{transform:translateY(-100vh) rotate(0deg);opacity:1}100%{transform:translateY(100vh) rotate(720deg);opacity:0}}
-                .fn-cf{position:absolute;border-radius:2px;animation:fn-conf linear forwards;pointer-events:none}
-              `}</style>
-              {totalCorrect >= 2 && Array.from({length:25}).map((_,i) => (
-                <div key={i} className="fn-cf" style={{ left:`${Math.random()*100}%`, top:`-${Math.random()*20}%`, background:['#FFD700','#FF6B6B','#4ECDC4','#A78BFA','#F5B731','#00E5BF'][i%6], width:Math.random()*12+5, height:Math.random()*12+5, animationDuration:`${Math.random()*3+2}s`, animationDelay:`${Math.random()*2}s`, borderRadius:Math.random()>0.5?'50%':'2px' }} />
-              ))}
-              <div style={{ fontSize:100, animation:'fn-trophy 0.8s cubic-bezier(0.34,1.56,0.64,1) forwards', filter:'drop-shadow(0 10px 30px rgba(0,0,0,0.3))' }}>{goEm}</div>
-              <h1 style={{ fontFamily:"'Fredoka One', cursive", fontSize:42, color:'#fff', textShadow:'0 4px 15px rgba(0,0,0,0.3)', margin:'16px 0 8px', animation:'fn-slideUp 0.6s ease-out 0.3s both' }}>{goTi}</h1>
-              <p style={{ fontSize:16, color:'rgba(255,255,255,0.7)', fontWeight:600, animation:'fn-slideUp 0.6s ease-out 0.4s both', maxWidth:400, textAlign:'center', lineHeight:1.5 }}>{goSu}</p>
-              
-              {/* Enhanced stats display */}
-              <div style={{ display:'flex', gap:16, margin:'28px 0 20px', flexWrap:'wrap', justifyContent:'center', animation:'fn-slideUp 0.6s ease-out 0.5s both' }}>
-                {[
-                  { value: totalCorrect, label: 'Correct', color: '#00E5BF', icon: '✔️' },
-                  { value: rounds, label: 'Rounds', color: '#F5B731', icon: '🔄' },
-                  { value: `${accuracy}%`, label: 'Accuracy', color: '#A78BFA', icon: '🎯' },
-                  { value: Math.round(responseTimes.current.reduce((a,b)=>a+b,0)/Math.max(1,responseTimes.current.length)) + 'ms', label: 'Avg Time', color: '#FF6B6B', icon: '⏱️' }
-                ].map((s,i) => (
-                  <div key={i} style={{ background:'rgba(255,255,255,0.08)', borderRadius:20, padding:'18px 24px', minWidth:110, textAlign:'center', border:'1px solid rgba(255,255,255,0.1)', backdropFilter:'blur(10px)' }}>
-                    <div style={{ fontSize:24 }}>{s.icon}</div>
-                    <div style={{ fontFamily:"'Fredoka One', cursive", fontSize:28, color:s.color }}>{s.value}</div>
-                    <div style={{ fontSize:10, color:'rgba(255,255,255,0.5)', marginTop:4, fontWeight:700, textTransform:'uppercase', letterSpacing:1 }}>{s.label}</div>
+            <div className="fn-gameover-screen">
+              <div className="fn-gameover-content">
+                <div className="fn-go-emoji">{goEm}</div>
+                <h1 className="fn-go-title">{goTi}</h1>
+                <p className="fn-go-sub">{goSu}</p>
+                
+                <div className="fn-stats-grid">
+                  <div className="fn-stat-item">
+                    <div className="fn-stat-icon">✔️</div>
+                    <div className="fn-stat-value">{totalCorrect}</div>
+                    <div className="fn-stat-label">Correct</div>
                   </div>
-                ))}
-              </div>
-              
-              {/* Coin reward display - SHOW HOW MUCH THEY GAINED */}
-              <div style={{ 
-                background: earnedCoins > 0 ? 'linear-gradient(135deg,#FFD700,#FFA500)' : 'rgba(255,255,255,0.08)', 
-                borderRadius:50, 
-                padding:'14px 36px', 
-                display:'flex', 
-                alignItems:'center', 
-                gap:14, 
-                boxShadow: earnedCoins > 0 ? '0 8px 30px rgba(255,215,0,0.35)' : 'none', 
-                border: earnedCoins > 0 ? '3px solid rgba(255,255,255,0.4)' : '1px solid rgba(255,255,255,0.15)', 
-                animation:'fn-slideUp 0.6s ease-out 0.7s both' 
-              }}>
-                <span style={{ fontSize:32 }}>🪙</span>
-                <span style={{ fontFamily:"'Fredoka One', cursive", fontSize:30, color:'#fff', textShadow:'2px 2px 0 rgba(0,0,0,0.2)' }}>+{earnedCoins}</span>
-                <span style={{ fontSize:14, fontWeight:700, color:'rgba(255,255,255,0.85)', background:'rgba(0,0,0,0.15)', padding:'4px 12px', borderRadius:20 }}>
-                  {earnedCoins > 0 ? 'Coins Earned!' : 'Keep going!'}
-                </span>
-              </div>
-              
-              <div style={{ display:'flex', gap:14, marginTop:28, animation:'fn-slideUp 0.6s ease-out 0.9s both' }}>
-                <button onClick={resetGame} onMouseEnter={e=>e.target.style.transform='translateY(-3px)'} onMouseLeave={e=>e.target.style.transform='translateY(0)'} style={{ padding:'16px 40px', borderRadius:50, border:'none', background:'linear-gradient(135deg,#00a896,#00d4aa)', color:'#fff', fontSize:18, fontWeight:700, cursor:'pointer', boxShadow:'0 8px 25px rgba(0,168,150,0.4)', transition:'transform 0.2s' }}>🔄 Play Again</button>
-                <button onClick={goBack} onMouseEnter={e=>e.target.style.background='rgba(255,255,255,0.12)'} onMouseLeave={e=>e.target.style.background='rgba(255,255,255,0.06)'} style={{ padding:'16px 40px', borderRadius:50, border:'2px solid rgba(255,255,255,0.25)', background:'rgba(255,255,255,0.06)', color:'rgba(255,255,255,0.8)', fontSize:18, fontWeight:600, cursor:'pointer', transition:'all 0.2s' }}>← Back</button>
+                  
+                  <div className="fn-stat-item">
+                    <div className="fn-stat-icon">🔄</div>
+                    <div className="fn-stat-value">{rounds}</div>
+                    <div className="fn-stat-label">Rounds</div>
+                  </div>
+                  
+                  <div className="fn-stat-item">
+                    <div className="fn-stat-icon">🎯</div>
+                    <div className="fn-stat-value">{accuracy}%</div>
+                    <div className="fn-stat-label">Accuracy</div>
+                  </div>
+                  
+                  <div className="fn-stat-item">
+                    <div className="fn-stat-icon">⏱️</div>
+                    <div className="fn-stat-value">
+                      {responseTimes.current.length > 0 
+                        ? Math.round(responseTimes.current.reduce((a,b)=>a+b,0)/responseTimes.current.length) + 'ms'
+                        : '—'}
+                    </div>
+                    <div className="fn-stat-label">Avg Time</div>
+                  </div>
+                </div>
+                
+                <div className="fn-coin-reward-box">
+                  <span className="fn-coin-icon">🪙</span>
+                  <span className="fn-coin-value">+{coinsEarned}</span>
+                  <span className="fn-coin-label">Coins Earned!</span>
+                </div>
+                
+                
               </div>
             </div>
           );

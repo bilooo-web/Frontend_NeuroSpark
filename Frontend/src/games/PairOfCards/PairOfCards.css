@@ -189,9 +189,9 @@
 }
 
 @keyframes poc-matchPop {
-  0%   { transform: rotateY(180deg) scale(1); }
-  50%  { transform: rotateY(180deg) scale(1.08); }
-  100% { transform: rotateY(180deg) scale(1); }
+ 0%   { transform: rotateY(180deg) scale(1); }
+ 50%  { transform: rotateY(180deg) scale(1.08); }
+ 100% { transform: rotateY(180deg) scale(1); }
 }
 
 @keyframes poc-matchFade {
@@ -206,9 +206,9 @@
 }
 
 @keyframes poc-wrongShake {
-  0%,100% { transform: rotateY(180deg) translateX(0); }
-  25%     { transform: rotateY(180deg) translateX(-5px); }
-  75%     { transform: rotateY(180deg) translateX(5px); }
+ 0%,100% { transform: rotateY(180deg) translateX(0); }
+ 25%     { transform: rotateY(180deg) translateX(-5px); }
+ 75%     { transform: rotateY(180deg) translateX(5px); }
 }
 
 .poc-preview-overlay {
@@ -253,10 +253,10 @@
 }
 
 @keyframes poc-flashFadeInOut {
-  0%   { opacity: 0; }
-  15%  { opacity: 1; }
-  70%  { opacity: 1; }
-  100% { opacity: 0; }
+ 0%   { opacity: 0; }
+ 15%  { opacity: 1; }
+ 70%  { opacity: 1; }
+ 100% { opacity: 0; }
 }
 
 .poc-flash-emoji { 
@@ -273,139 +273,6 @@
   font-size: 15px; 
   font-weight: 700; 
   color: var(--poc-text-mid); 
-}
-
-.poc-gameover {
-  flex: 1; 
-  display: flex; 
-  flex-direction: column;
-  align-items: center; 
-  justify-content: center;
-  gap: 18px; 
-  padding: 40px 30px; 
-  text-align: center;
-}
-
-.poc-go-emoji { 
-  font-size: 72px; 
-  animation: poc-goBounce 0.5s ease; 
-}
-
-@keyframes poc-goBounce {
-  0%   { transform: scale(0.3); }
-  60%  { transform: scale(1.15); }
-  100% { transform: scale(1); }
-}
-
-.poc-go-title { 
-  font-family: 'Fredoka One', cursive; 
-  font-size: 32px; 
-  color: var(--poc-text-dark); 
-}
-
-.poc-go-sub { 
-  font-size: 15px; 
-  color: var(--poc-text-mid); 
-  font-weight: 700; 
-}
-
-.poc-stats { 
-  display: flex; 
-  gap: 16px; 
-  flex-wrap: wrap; 
-  justify-content: center; 
-  margin-top: 4px; 
-}
-
-.poc-stat {
-  background: #fff; 
-  border-radius: 16px;
-  padding: 14px 22px; 
-  box-shadow: var(--poc-shadow);
-  display: flex; 
-  flex-direction: column; 
-  align-items: center; 
-  gap: 3px;
-}
-
-.poc-stat-num { 
-  font-family: 'Fredoka One', cursive; 
-  font-size: 30px; 
-  color: var(--poc-text-dark); 
-}
-
-.poc-stat-lbl { 
-  font-size: 11px; 
-  font-weight: 700; 
-  color: var(--poc-text-mid); 
-  text-transform: uppercase; 
-  letter-spacing: 0.5px; 
-}
-
-.poc-play-again {
-  background: var(--poc-yellow); 
-  color: var(--poc-text-dark);
-  font-family: 'Fredoka One', cursive; 
-  font-size: 20px;
-  padding: 14px 44px; 
-  border-radius: 40px; 
-  border: none;
-  cursor: pointer; 
-  box-shadow: 0 4px 16px rgba(245,183,49,0.4);
-  transition: transform 0.15s, box-shadow 0.15s; 
-  margin-top: 8px;
-}
-
-.poc-play-again:hover { 
-  transform: translateY(-2px); 
-  box-shadow: 0 6px 20px rgba(245,183,49,0.5); 
-}
-
-@media (max-width: 500px) {
-  .poc-grid {
-    grid-template-columns: repeat(2, minmax(80px, 100px));
-    gap: 10px;
-  }
-  
-  .poc-grid.poc-cols3 {
-    grid-template-columns: repeat(3, minmax(70px, 85px));
-    gap: 8px;
-  }
-  
-  .poc-card-back {
-    font-size: 32px;
-    border-width: 2.5px;
-  }
-  
-  .poc-card-front {
-    font-size: 34px;
-    border-width: 2px;
-  }
-  
-  .poc-grid.poc-cols3 .poc-card-back {
-    font-size: 26px;
-  }
-  
-  .poc-grid.poc-cols3 .poc-card-front {
-    font-size: 26px;
-  }
-}
-
-.poc-coin-reward-animation {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  background: linear-gradient(135deg, #FFD700, #FFA500);
-  padding: 20px 40px;
-  border-radius: 60px;
-  display: flex;
-  align-items: center;
-  gap: 15px;
-  z-index: 100;
-  animation: poc-coinFloat 3s ease-out forwards;
-  box-shadow: 0 10px 30px rgba(255, 215, 0, 0.5);
-  border: 3px solid white;
 }
 
 .poc-coin-reward-animation .poc-coin-emoji {
@@ -448,57 +315,33 @@
   100% { transform: rotate(360deg); }
 }
 
-.poc-coin-reward-box {
-  background: linear-gradient(135deg, #FFD700, #FFA500);
-  padding: 15px 40px;
-  border-radius: 50px;
-  display: flex;
-  align-items: center;
-  gap: 15px;
-  margin: 10px 0;
-  box-shadow: 0 10px 25px rgba(255, 215, 0, 0.4);
-  border: 3px solid white;
-  animation: poc-slideUp 0.5s ease-out 0.8s both;
-  position: relative;
-  z-index: 1;
-}
-
-.poc-coin-reward-box .poc-coin-icon {
-  font-size: 32px;
-}
-
-.poc-coin-reward-box .poc-coin-value {
-  font-size: 36px;
-  font-weight: 900;
-  color: white;
-  text-shadow: 2px 2px 0 rgba(0,0,0,0.2);
-  font-family: 'Fredoka One', cursive;
-}
-
-.poc-coin-reward-box .poc-coin-label {
-  font-size: 18px;
-  font-weight: 700;
-  color: rgba(255,255,255,0.9);
-  background: rgba(0,0,0,0.1);
-  padding: 5px 15px;
-  border-radius: 30px;
-}
-
-.poc-redirect-message {
-  margin-top: 20px;
-  color: #666;
-  font-size: 16px;
-  font-weight: bold;
-  animation: poc-fadeInOut 2s ease-in-out infinite;
-}
-
-@keyframes poc-slideUp {
-  from {
-    opacity: 0;
-    transform: translateY(30px);
+@media (max-width: 500px) {
+  .poc-grid {
+    grid-template-columns: repeat(2, minmax(80px, 100px));
+    gap: 10px;
   }
-  to {
-    opacity: 1;
-    transform: translateY(0);
+  
+  .poc-grid.poc-cols3 {
+    grid-template-columns: repeat(3, minmax(70px, 85px));
+    gap: 8px;
+  }
+  
+  .poc-card-back {
+    font-size: 32px;
+    border-width: 2.5px;
+  }
+  
+  .poc-card-front {
+    font-size: 34px;
+    border-width: 2px;
+  }
+  
+  .poc-grid.poc-cols3 .poc-card-back {
+    font-size: 26px;
+  }
+  
+  .poc-grid.poc-cols3 .poc-card-front {
+    font-size: 26px;
   }
 }
+

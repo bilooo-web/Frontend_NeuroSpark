@@ -9,6 +9,8 @@ import AdminGames from "./pages/AdminGames";
 import AdminVoiceInstructions from "./pages/AdminVoiceInstructions";
 import AdminReports from "./pages/AdminReports";
 import AdminNotifications from "./pages/AdminNotifications";
+import FeedbackDashboard from './components/admin/FeedbackDashboard';
+
 
 import AboutUs2 from "./pages/AboutUs2";
 import Home from "./pages/Home";
@@ -22,6 +24,7 @@ import GameSwitcher from "./games/GameSwitcher";
 import StoryBook from "./pages/StoryBook";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Chatbot from "./components/Chatbot/Chatbot";
+import ChildDashboard from "./pages/ChildDashboard";
 
 
 const AdminRoute = ({ children }) => {
@@ -138,6 +141,12 @@ function App() {
         <Route path="/customization" element={<Customization />} />
         <Route path="/ReadingPage" element={<Reading />} />
         <Route path="/story/:id" element={<StoryBook />} />
+        <Route path="/child-dashboard" element={
+            <ProtectedRoute requiredRole="child">
+              <ChildDashboard />
+            </ProtectedRoute>
+          } 
+        />
 
 
         {/* Admin Routes */}
@@ -152,6 +161,8 @@ function App() {
           <Route path="voice-instructions" element={<AdminVoiceInstructions />} />
           <Route path="reports" element={<AdminReports />} />
           <Route path="notifications" element={<AdminNotifications />} />
+          <Route path="/admin/feedback" element={<FeedbackDashboard />} />
+
         </Route>
 
       </Routes>

@@ -20,30 +20,39 @@ const ProtectedRoute = ({ children, requiredRole }) => {
       try {
         const user = JSON.parse(userStr);
         
-        // Verify token by making a request to /me
-        const response = await api.get('/me');
-        
-        if (response.success && response.user) {
-          const currentUser = response.user;
-          
-          // Check if role matches required role
-          if (requiredRole && currentUser.role !== requiredRole) {
-            setIsAuthorized(false);
-          } else {
-            // Update stored user data
-            localStorage.setItem('user', JSON.stringify(currentUser));
-            setIsAuthorized(true);
-          }
-        } else {
+        // Fast path: Check if local storage user already satisfies the role
+        if (requiredRole && user.role !== requiredRole) {
+          // If local storage says no, we can double check or just fail
+          // For now, let's just fail if local role doesn't match
           setIsAuthorized(false);
+          setLoading(false);
+          return;
         }
-      } catch (error) {
-        console.error('Auth check failed:', error);
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
-        setIsAuthorized(false);
-      } finally {
+
+        // If we have a token and the local role looks good, proceed immediately
+        setIsAuthorized(true);
         setLoading(false);
+
+        // Verify with server in the background
+        api.get('/me').then(response => {
+          if (response.success && response.user) {
+            localStorage.setItem('user', JSON.stringify(response.user));
+            if (requiredRole && response.user.role !== requiredRole) {
+              setIsAuthorized(false);
+            }
+          }
+        }).catch(err => {
+          console.error('Background auth verification failed:', err);
+          // 401s are handled by api.js redirecting
+        });
+
+      } catch (error) {
+        console.error('Auth check initialization failed:', error);
+        setIsAuthorized(false);
+        setLoading(false);
+      } finally {
+        // Only set loading false if it hasn't been set yet
+        setLoading(prev => prev ? false : false);
       }
     };
 

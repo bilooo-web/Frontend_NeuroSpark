@@ -132,7 +132,7 @@
   font-size: 15px;
 }
 
-.sidebar-close-btn {
+.sidebar-title .sidebar-close-btn {
   background: none;
   border: none;
   color: #fff;
@@ -145,7 +145,7 @@
   transition: background 0.2s;
 }
 
-.sidebar-close-btn:hover {
+.sidebar-title .sidebar-close-btn:hover {
   background: rgba(255,255,255,0.15);
 }
 

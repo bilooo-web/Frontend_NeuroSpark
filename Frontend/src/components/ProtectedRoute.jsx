@@ -1,3 +1,4 @@
+import React from 'react'; 
 import { Navigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import api from '../services/api';
@@ -5,6 +6,7 @@ import api from '../services/api';
 const ProtectedRoute = ({ children, requiredRole }) => {
   const [isAuthorized, setIsAuthorized] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [guardianType, setGuardianType] = useState(null);
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -32,6 +34,11 @@ const ProtectedRoute = ({ children, requiredRole }) => {
           } else {
             // Update stored user data
             localStorage.setItem('user', JSON.stringify(currentUser));
+
+            if (currentUser.role === 'guardian' && currentUser.guardian_type) {
+              localStorage.setItem('guardian_type', currentUser.guardian_type);
+              setGuardianType(currentUser.guardian_type);
+            }
             setIsAuthorized(true);
           }
         } else {
@@ -41,6 +48,7 @@ const ProtectedRoute = ({ children, requiredRole }) => {
         console.error('Auth check failed:', error);
         localStorage.removeItem('token');
         localStorage.removeItem('user');
+        localStorage.removeItem('guardian_type');
         setIsAuthorized(false);
       } finally {
         setLoading(false);
@@ -67,7 +75,7 @@ const ProtectedRoute = ({ children, requiredRole }) => {
     return <Navigate to="/" replace />;
   }
 
-  return children;
+  return React.cloneElement(children, { guardianType });
 };
 
 export default ProtectedRoute;

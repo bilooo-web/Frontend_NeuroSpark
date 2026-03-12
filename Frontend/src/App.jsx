@@ -2,6 +2,8 @@ import { BrowserRouter, Routes, Route , useNavigate } from "react-router-dom";
 import { useState, useEffect, useRef } from "react";
 import { toast } from 'react-toastify'; // Add this import
 
+import { AppProvider } from './context/AppContext';
+
 import AdminLayout from "./components/admin/AdminLayout";
 import AdminDashboard from "./pages/AdminDashboard";
 import AdminUsers from "./pages/AdminUsers";
@@ -22,7 +24,9 @@ import GameSwitcher from "./games/GameSwitcher";
 import StoryBook from "./pages/StoryBook";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Chatbot from "./components/Chatbot/Chatbot";
+import GuardianRouter from "./pages/GuardianRouter";
 
+import './styles/dashboard.css'; 
 
 const AdminRoute = ({ children }) => {
       const navigate = useNavigate();
@@ -108,51 +112,60 @@ function App() {
   }, [showAuth , isAuthenticated]);
 
   return (
-    <BrowserRouter>
-      {showAuth && (
-        <AuthModal 
-          onClose={() => setShowAuth(false)} 
-          initialMode={authMode}
-        />
-      )}
-      <Routes>
+    // 👇 THIS IS THE CRITICAL FIX - Wrap everything with AppProvider
+    <AppProvider>
+      <BrowserRouter>
+        {showAuth && (
+          <AuthModal 
+            onClose={() => setShowAuth(false)} 
+            initialMode={authMode}
+          />
+        )}
+        <Routes>
 
-         {/* Public Routes */}
-        <Route path="/" element={<Home />} />
-        <Route path="/home" element={<Home />} />
-        <Route path="/challenges" element={<Challenges />} />
-        <Route path="/challenges/:id" element={<ChallengeDetails />} />
-        <Route 
-          path="/challenges/:id/play" 
-          element={
-            <GameSwitcher />
-          } 
-        />
-        <Route path="/about" element={<AboutUs2 />} />
-        <Route path="/customization" element={<Customization />} />
-        <Route path="/ReadingPage" element={<Reading />} />
-        <Route path="/story/:id" element={<StoryBook />} />
+           {/* Public Routes */}
+          <Route path="/" element={<Home />} />
+          <Route path="/home" element={<Home />} />
+          <Route path="/challenges" element={<Challenges />} />
+          <Route path="/challenges/:id" element={<ChallengeDetails />} />
+          <Route 
+            path="/challenges/:id/play" 
+            element={
+              <GameSwitcher />
+            } 
+          />
+          <Route path="/about" element={<AboutUs2 />} />
+          <Route path="/customization" element={<Customization />} />
+          <Route path="/ReadingPage" element={<Reading />} />
+          <Route path="/story/:id" element={<StoryBook />} />
 
 
-        {/* Admin Routes */}
-        <Route path="/admin" element={
-            <AdminRoute>
-              <AdminLayout />
-            </AdminRoute>
-          }>
-          <Route index element={<AdminDashboard />} />
-          <Route path="users" element={<AdminUsers />} />
-          <Route path="games" element={<AdminGames />} />
-          <Route path="voice-instructions" element={<AdminVoiceInstructions />} />
-          <Route path="reports" element={<AdminReports />} />
-          <Route path="notifications" element={<AdminNotifications />} />
-        </Route>
+          {/* Admin Routes */}
+          <Route path="/admin" element={
+              <AdminRoute>
+                <AdminLayout />
+              </AdminRoute>
+            }>
+            <Route index element={<AdminDashboard />} />
+            <Route path="users" element={<AdminUsers />} />
+            <Route path="games" element={<AdminGames />} />
+            <Route path="voice-instructions" element={<AdminVoiceInstructions />} />
+            <Route path="reports" element={<AdminReports />} />
+            <Route path="notifications" element={<AdminNotifications />} />
+          </Route>
+          <Route 
+            path="/guardian/*" 
+            element={
+              <ProtectedRoute requiredRole="guardian">
+                <GuardianRouter />
+              </ProtectedRoute>
+            } 
+          />
 
-      </Routes>
-      <Chatbot />
-
-    </BrowserRouter>
-
+        </Routes>
+        <Chatbot />
+      </BrowserRouter>
+    </AppProvider>
   );
 }
 

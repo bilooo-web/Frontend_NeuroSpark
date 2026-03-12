@@ -1,6 +1,6 @@
 import { BrowserRouter, Routes, Route , useNavigate } from "react-router-dom";
 import { useState, useEffect, useRef } from "react";
-import { toast } from 'react-toastify'; // Add this import
+import { toast } from 'react-toastify';
 
 import { AppProvider } from './context/AppContext';
 
@@ -26,6 +26,7 @@ import GameSwitcher from "./games/GameSwitcher";
 import StoryBook from "./pages/StoryBook";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Chatbot from "./components/Chatbot/Chatbot";
+import GuardianRouter from "./pages/GuardianRouter";
 
 import './styles/dashboard.css'; 
 
@@ -119,7 +120,6 @@ function App() {
   }, [showAuth , isAuthenticated]);
 
   return (
-    // 👇 THIS IS THE CRITICAL FIX - Wrap everything with AppProvider
     <AppProvider>
       <BrowserRouter>
         {showAuth && (
@@ -159,12 +159,23 @@ function App() {
           <Route path="voice-instructions" element={<AdminVoiceInstructions />} />
           <Route path="reports" element={<AdminReports />} />
           <Route path="notifications" element={<AdminNotifications />} />
+          <Route path="/admin/feedback" element={<FeedbackDashboard />} />
         </Route>
+
+        <Route 
+            path="/guardian/*" 
+            element={
+              <ProtectedRoute requiredRole="guardian">
+                <GuardianRouter />
+              </ProtectedRoute>
+            } 
+        />
 
       </Routes>
       <Chatbot />
 
     </BrowserRouter>
+    </AppProvider>
 
   );
 }

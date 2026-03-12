@@ -132,7 +132,7 @@
   font-size: 15px;
 }
 
-.sidebar-title .sidebar-close-btn {
+.sidebar-close-btn {
   background: none;
   border: none;
   color: #fff;
@@ -143,10 +143,12 @@
   align-items: center;
   justify-content: center;
   transition: background 0.2s;
+  position: static;
 }
 
-.sidebar-title .sidebar-close-btn:hover {
+.sidebar-close-btn:hover {
   background: rgba(255,255,255,0.15);
+  color: white;
 }
 
 .new-chat-btn {
@@ -566,6 +568,7 @@
 
 .message-input:focus {
   background: #e8eaf0;
+  outline: none;
 }
 
 .message-input:disabled {

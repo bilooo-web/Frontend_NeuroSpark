@@ -1,5 +1,5 @@
 /**
- * Chatbot.jsx — Updated with DeepSeek, file uploads, and database storage
+ * Chatbot.jsx — Updated with DeepSeek and database storage
  */
 
 import React, { useState, useRef, useEffect, useCallback } from "react";
@@ -85,28 +85,6 @@ const SearchIcon = () => (
   </svg>
 );
 
-const ImageIcon = () => (
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-    <rect x="2" y="2" width="20" height="20" rx="2" ry="2"></rect>
-    <circle cx="8.5" cy="8.5" r="1.5" fill="currentColor"/>
-    <polyline points="21 15 16 10 5 21"></polyline>
-  </svg>
-);
-
-const MicIcon = () => (
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-    <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"></path>
-    <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
-    <line x1="12" y1="19" x2="12" y2="22"></line>
-  </svg>
-);
-
-const FileIcon = () => (
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-    <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path>
-    <polyline points="13 2 13 9 20 9"></polyline>
-  </svg>
-);
 
 /* ========== MODEL CONFIGURATIONS ========== */
 const MODELS = {
@@ -162,15 +140,7 @@ const Chatbot = ({ isAuthenticated: propIsAuthenticated }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(propIsAuthenticated || false);
   const [authChecked, setAuthChecked] = useState(false);
   
-  // File upload states
-  const [selectedFile, setSelectedFile] = useState(null);
-  const [filePreview, setFilePreview] = useState(null);
-  const [uploadProgress, setUploadProgress] = useState(0);
-  
   const endRef = useRef(null);
-  const fileInputRef = useRef(null);
-  const imageInputRef = useRef(null);
-  const audioInputRef = useRef(null);
 
   // Sync internal isAuthenticated with prop
   useEffect(() => {
@@ -325,46 +295,8 @@ const Chatbot = ({ isAuthenticated: propIsAuthenticated }) => {
     window.dispatchEvent(new CustomEvent('open-auth', { detail: 'signin' }));
   };
 
-  // File upload handlers
-  const handleFileSelect = (e, type) => {
-    const file = e.target.files[0];
-    if (!file) return;
 
-    // Check file size (10MB max)
-    if (file.size > 10 * 1024 * 1024) {
-      toast.error('File size must be less than 10MB');
-      return;
-    }
-
-    setSelectedFile(file);
-    
-    // Create preview
-    if (type === 'image') {
-      const reader = new FileReader();
-      reader.onload = (e) => setFilePreview({ type: 'image', url: e.target.result });
-      reader.readAsDataURL(file);
-    } else if (type === 'audio') {
-      setFilePreview({ type: 'audio', name: file.name, size: file.size });
-    } else {
-      setFilePreview({ type: 'document', name: file.name, size: file.size });
-    }
-  };
-
-  const clearFileSelection = () => {
-    setSelectedFile(null);
-    setFilePreview(null);
-    if (fileInputRef.current) fileInputRef.current.value = '';
-    if (imageInputRef.current) imageInputRef.current.value = '';
-    if (audioInputRef.current) audioInputRef.current.value = '';
-  };
-
-  const formatFileSize = (bytes) => {
-    if (bytes < 1024) return bytes + ' B';
-    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
-    return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
-  };
-
-  const sendToBackend = async (messageContent, file = null) => {
+  const sendToBackend = async (messageContent) => {
   try {
     const token = localStorage.getItem('token');
     
@@ -372,39 +304,16 @@ const Chatbot = ({ isAuthenticated: propIsAuthenticated }) => {
       throw new Error('No authentication token found. Please login again.');
     }
 
-    let response;
-    
-    if (file) {
-      const formData = new FormData();
-      formData.append('message', messageContent);
-      formData.append('model', model);
-      if (currentChatId) {
-        formData.append('chat_id', currentChatId);
-      }
-      formData.append('file', file);
-      
-      if (file.type.startsWith('image/')) {
-        formData.append('file_type', 'image');
-      } else if (file.type.startsWith('audio/')) {
-        formData.append('file_type', 'audio');
-      } else {
-        formData.append('file_type', 'document');
-      }
-
-      response = await api.sendChatMessage(formData);
-    } else {
-      response = await api.sendChatMessage({
-        message: messageContent,
-        chat_id: currentChatId,
-        model: model
-      });
-    }
+    const response = await api.sendChatMessage({
+      message: messageContent,
+      chat_id: currentChatId,
+      model: model
+    });
 
     return response;
   } catch (error) {
     console.error('Backend chat error:', error);
     
-    // Check if it's a model-specific error
     if (error.data && error.data.model_used) {
       const modelName = MODELS[error.data.model_used]?.name || error.data.model_used;
       toast.error(`${modelName} is currently unavailable. Please try another model.`);
@@ -419,7 +328,7 @@ const Chatbot = ({ isAuthenticated: propIsAuthenticated }) => {
 };
 
   const send = async () => {
-    if ((!input.trim() && !selectedFile) || loading) return;
+    if (!input.trim()|| loading) return;
     
     if (!isAuthenticated) {
       toast.warning('Please login to use the chatbot');
@@ -428,23 +337,20 @@ const Chatbot = ({ isAuthenticated: propIsAuthenticated }) => {
     }
 
     const messageContent = input.trim();
-    const fileToUpload = selectedFile;
     
     // Add user message to UI immediately
     const userMsg = { 
       role: 'user', 
-      content: messageContent || (fileToUpload ? '📎 Sent a file' : ''),
-      file: filePreview,
+      content: messageContent,
       time: timeStr() 
     };
     
     setMessages(prev => [...prev, userMsg]);
     setInput('');
-    clearFileSelection();
     setLoading(true);
 
     try {
-      const response = await sendToBackend(messageContent, fileToUpload);
+      const response = await sendToBackend(messageContent);
       
       // Add assistant message
       setMessages(prev => [...prev, { 
@@ -729,33 +635,6 @@ const Chatbot = ({ isAuthenticated: propIsAuthenticated }) => {
                 <div className={`message-bubble ${m.role}`}>
                   {m.content}
                   
-                  {/* File attachment display */}
-                  {m.file && (
-                    <div className="file-attachment">
-                      {m.file.type === 'image' && (
-                        <img src={m.file.url} alt="Uploaded" />
-                      )}
-                      {m.file.type === 'audio' && (
-                        <>
-                          <span className="file-icon">🎤</span>
-                          <div>
-                            <div>{m.file.name}</div>
-                            <div className="file-name">{formatFileSize(m.file.size)}</div>
-                          </div>
-                        </>
-                      )}
-                      {m.file.type === 'document' && (
-                        <>
-                          <span className="file-icon">📄</span>
-                          <div>
-                            <div>{m.file.name}</div>
-                            <div className="file-name">{formatFileSize(m.file.size)}</div>
-                          </div>
-                        </>
-                      )}
-                    </div>
-                  )}
-                  
                   {/* Copy button for assistant messages */}
                   {m.role === 'assistant' && (
                     <button
@@ -796,109 +675,28 @@ const Chatbot = ({ isAuthenticated: propIsAuthenticated }) => {
             <div ref={endRef} />
           </div>
 
-          {/* File Preview */}
-          {filePreview && (
-            <div className="file-preview">
-              {filePreview.type === 'image' && (
-                <img src={filePreview.url} alt="Preview" />
-              )}
-              {filePreview.type === 'audio' && (
-                <span className="file-icon">🎤</span>
-              )}
-              {filePreview.type === 'document' && (
-                <span className="file-icon">📄</span>
-              )}
-              <div className="file-preview-info">
-                <div className="file-preview-name">
-                  {filePreview.name || 'Selected file'}
-                </div>
-                {filePreview.size && (
-                  <div className="file-preview-size">
-                    {formatFileSize(filePreview.size)}
-                  </div>
-                )}
-              </div>
-              <button 
-                onClick={clearFileSelection}
-                className="file-preview-remove"
-                title="Remove"
-              >
-                <XIcon />
-              </button>
-            </div>
-          )}
+  
 
           {/* Input Area */}
-          <div className="input-area">
-            {/* Image upload */}
-            <button 
-              className="attachment-btn"
-              title="Upload image"
-              onClick={() => imageInputRef.current?.click()}
-              disabled={!isAuthenticated}
-            >
-              <ImageIcon />
-              <input
-                ref={imageInputRef}
-                type="file"
-                accept="image/*"
-                onChange={(e) => handleFileSelect(e, 'image')}
-                style={{ display: 'none' }}
-              />
-            </button>
-
-            {/* Audio upload */}
-            <button 
-              className="attachment-btn"
-              title="Upload voice message"
-              onClick={() => audioInputRef.current?.click()}
-              disabled={!isAuthenticated}
-            >
-              <MicIcon />
-              <input
-                ref={audioInputRef}
-                type="file"
-                accept="audio/*"
-                onChange={(e) => handleFileSelect(e, 'audio')}
-                style={{ display: 'none' }}
-              />
-            </button>
-
-            {/* Document upload */}
-            <button 
-              className="attachment-btn"
-              title="Upload file"
-              onClick={() => fileInputRef.current?.click()}
-              disabled={!isAuthenticated}
-            >
-              <FileIcon />
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept=".pdf,.doc,.docx,.txt"
-                onChange={(e) => handleFileSelect(e, 'document')}
-                style={{ display: 'none' }}
-              />
-            </button>
-
-            <input
-              type="text" 
-              placeholder={isAuthenticated ? "Type your message..." : "Login to chat..."}
-              value={input}
-              onChange={e => setInput(e.target.value)} 
-              onKeyDown={e => e.key === 'Enter' && send()} 
-              disabled={loading || !isAuthenticated}
-              className="message-input"
-            />
-            
-            <button 
-              onClick={send} 
-              disabled={(!input.trim() && !selectedFile) || loading || !isAuthenticated} 
-              className="send-btn"
-            >
-              {isAuthenticated ? <SendIcon/> : <LockIcon/>}
-            </button>
-          </div>
+        <div className="input-area">
+          <input
+            type="text" 
+            placeholder={isAuthenticated ? "Type your message..." : "Login to chat..."}
+            value={input}
+            onChange={e => setInput(e.target.value)} 
+            onKeyDown={e => e.key === 'Enter' && send()} 
+            disabled={loading || !isAuthenticated}
+            className="message-input"
+          />
+          
+          <button 
+            onClick={send} 
+            disabled={!input.trim() || loading || !isAuthenticated} 
+            className="send-btn"
+          >
+            {isAuthenticated ? <SendIcon/> : <LockIcon/>}
+          </button>
+        </div>
 
           {/* Status Footer */}
           <div className="status-footer">

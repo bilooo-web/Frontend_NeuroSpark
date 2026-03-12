@@ -24,6 +24,7 @@ import GameSwitcher from "./games/GameSwitcher";
 import StoryBook from "./pages/StoryBook";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Chatbot from "./components/Chatbot/Chatbot";
+import ChildDashboard from "./pages/ChildDashboard";
 
 
 const AdminRoute = ({ children }) => {
@@ -140,6 +141,12 @@ function App() {
         <Route path="/customization" element={<Customization />} />
         <Route path="/ReadingPage" element={<Reading />} />
         <Route path="/story/:id" element={<StoryBook />} />
+        <Route path="/child-dashboard" element={
+            <ProtectedRoute requiredRole="child">
+              <ChildDashboard />
+            </ProtectedRoute>
+          } 
+        />
 
 
         {/* Admin Routes */}

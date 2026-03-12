@@ -88,7 +88,7 @@ function Header({ totalCoins }) {
 
   const openSignIn = () => window.dispatchEvent(new CustomEvent('open-auth', { detail: 'signin' }));
   const handleLogout = () => { const token = localStorage.getItem('token'); if (token) fetch(`${API}/logout`, { method:'POST', headers: { Authorization:`Bearer ${token}`, Accept:'application/json' } }).catch(() => {}); clearAll(); validated.current = false; window.dispatchEvent(new CustomEvent('logout')); navigate('/'); };
-  const goToDashboard = () => { if (user?.role === 'admin') navigate('/admin'); else if (user?.role === 'guardian') navigate('/guardian/dashboard'); };
+  const goToDashboard = () => { if (user?.role === 'admin') navigate('/admin'); else if (user?.role === 'guardian') navigate('/guardian/dashboard'); else if (user?.role === 'child') navigate('/child-dashboard'); };
   const isHomeActive = () => location.pathname === '/' || location.pathname === '/home';
 
   const tColors = { success:'#10b981', warning:'#f59e0b', alert:'#ef4444', info:'#3b82f6' };

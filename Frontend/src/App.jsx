@@ -2,6 +2,8 @@ import { BrowserRouter, Routes, Route , useNavigate } from "react-router-dom";
 import { useState, useEffect, useRef } from "react";
 import { toast } from 'react-toastify'; // Add this import
 
+import { AppProvider } from './context/AppContext';
+
 import AdminLayout from "./components/admin/AdminLayout";
 import AdminDashboard from "./pages/AdminDashboard";
 import AdminUsers from "./pages/AdminUsers";
@@ -24,8 +26,8 @@ import GameSwitcher from "./games/GameSwitcher";
 import StoryBook from "./pages/StoryBook";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Chatbot from "./components/Chatbot/Chatbot";
-import ChildDashboard from "./pages/ChildDashboard";
 
+import './styles/dashboard.css'; 
 
 const AdminRoute = ({ children }) => {
       const navigate = useNavigate();
@@ -117,14 +119,16 @@ function App() {
   }, [showAuth , isAuthenticated]);
 
   return (
-    <BrowserRouter>
-      {showAuth && (
-        <AuthModal 
-          onClose={() => setShowAuth(false)} 
-          initialMode={authMode}
-        />
-      )}
-      <Routes>
+    // 👇 THIS IS THE CRITICAL FIX - Wrap everything with AppProvider
+    <AppProvider>
+      <BrowserRouter>
+        {showAuth && (
+          <AuthModal 
+            onClose={() => setShowAuth(false)} 
+            initialMode={authMode}
+          />
+        )}
+        <Routes>
 
          {/* Public Routes */}
         <Route path="/" element={<Home />} />
@@ -141,12 +145,6 @@ function App() {
         <Route path="/customization" element={<Customization />} />
         <Route path="/ReadingPage" element={<Reading />} />
         <Route path="/story/:id" element={<StoryBook />} />
-        <Route path="/child-dashboard" element={
-            <ProtectedRoute requiredRole="child">
-              <ChildDashboard />
-            </ProtectedRoute>
-          } 
-        />
 
 
         {/* Admin Routes */}
@@ -161,12 +159,10 @@ function App() {
           <Route path="voice-instructions" element={<AdminVoiceInstructions />} />
           <Route path="reports" element={<AdminReports />} />
           <Route path="notifications" element={<AdminNotifications />} />
-          <Route path="/admin/feedback" element={<FeedbackDashboard />} />
-
         </Route>
 
       </Routes>
-      <Chatbot isAuthenticated={isAuthenticated} />
+      <Chatbot />
 
     </BrowserRouter>
 

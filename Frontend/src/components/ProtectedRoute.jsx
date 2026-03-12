@@ -1,3 +1,4 @@
+import React from 'react'; 
 import { Navigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import api from '../services/api';
@@ -5,6 +6,7 @@ import api from '../services/api';
 const ProtectedRoute = ({ children, requiredRole }) => {
   const [isAuthorized, setIsAuthorized] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [guardianType, setGuardianType] = useState(null);
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -20,10 +22,21 @@ const ProtectedRoute = ({ children, requiredRole }) => {
       try {
         const user = JSON.parse(userStr);
         
-        // Fast path: Check if local storage user already satisfies the role
-        if (requiredRole && user.role !== requiredRole) {
-          // If local storage says no, we can double check or just fail
-          // For now, let's just fail if local role doesn't match
+        // Verify token by making a request to /me
+        const response = await api.get('/me');
+        
+        if (response.success && response.user) {
+          const currentUser = response.user;
+          
+          // Check if role matches required role
+          if (requiredRole && currentUser.role !== requiredRole) {
+            setIsAuthorized(false);
+          } else {
+            // Update stored user data
+            localStorage.setItem('user', JSON.stringify(currentUser));
+            setIsAuthorized(true);
+          }
+        } else {
           setIsAuthorized(false);
           setLoading(false);
           return;
@@ -47,7 +60,9 @@ const ProtectedRoute = ({ children, requiredRole }) => {
         });
 
       } catch (error) {
-        console.error('Auth check initialization failed:', error);
+        console.error('Auth check failed:', error);
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
         setIsAuthorized(false);
         setLoading(false);
       } finally {
@@ -76,7 +91,7 @@ const ProtectedRoute = ({ children, requiredRole }) => {
     return <Navigate to="/" replace />;
   }
 
-  return children;
+  return React.cloneElement(children, { guardianType });
 };
 
 export default ProtectedRoute;

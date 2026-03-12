@@ -40,7 +40,7 @@ const ChallengeDetails = () => {
       const found = games.find(
         (g) => g.game_slug === id || g.name?.toLowerCase().replace(/\s+/g, "-") === id
       );
-      if (found) {
+      if (found) { 
         setGameData(found);
       }
     } catch (err) {

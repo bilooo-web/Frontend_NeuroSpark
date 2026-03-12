@@ -720,6 +720,12 @@ const AuthModal = ({ onClose, initialMode = 'signin' }) => {
     if (data.success) {
       localStorage.setItem('token', data.token);
       localStorage.setItem('user', JSON.stringify(data.user));
+      if (data.user.role === 'guardian' && data.user.guardian_type) {
+        localStorage.setItem('guardian_type', data.user.guardian_type);
+      }
+      console.log('User data:', data.user);
+      console.log('Guardian type:', data.user.guardian_type);
+      
 
       // Dispatch login success event
       window.dispatchEvent(new CustomEvent('login-success'));

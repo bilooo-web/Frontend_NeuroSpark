@@ -14,7 +14,7 @@ import adminService from "../services/adminService";
 const COLORS = ["#6c5ce7", "#00b894", "#fdcb6e", "#e17055", "#0984e3", "#d63031", "#00cec9", "#e84393"];
 
 const AdminReports = () => {
-  const [activeTab, setActiveTab] = useState("overview");
+  const [activeTab, setActiveTab] = useState("engagement");
   const [loading, setLoading] = useState(true);
   const [dashData, setDashData] = useState(null);
   const [metrics, setMetrics] = useState(null);
@@ -130,7 +130,6 @@ const AdminReports = () => {
   }));
 
   const tabs = [
-    { id: "overview", label: "Overview", icon: BarChart3 },
     { id: "engagement", label: "Engagement & Growth", icon: TrendingUp },
     { id: "behavioral", label: "Behavioral Analysis", icon: Brain },
     { id: "games", label: "Games & Performance", icon: Gamepad2 },
@@ -166,74 +165,6 @@ const AdminReports = () => {
           </button>
         ))}
       </div>
-
-      {/* ===== OVERVIEW TAB ===== */}
-      {activeTab === "overview" && (
-        <>
-          <div className="admin-summary-cards">
-            {renderKPI(<Users style={{ height: 22, width: 22 }} />, "Total Users", stats.total_users || 0, "#6c5ce7")}
-            {renderKPI(<Gamepad2 style={{ height: 22, width: 22 }} />, "Game Sessions", perf.total_game_sessions || 0, "#00b894")}
-            {renderKPI(<Activity style={{ height: 22, width: 22 }} />, "Voice Attempts", perf.total_voice_attempts || 0, "#0984e3")}
-            {renderKPI(<Target style={{ height: 22, width: 22 }} />, "Avg Score", `${avgScore}%`, "#fdcb6e")}
-          </div>
-
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20, marginTop: 20 }}>
-            <div className="glass-card" style={{ padding: 20 }}>
-              <h3 style={{ fontSize: 15, marginBottom: 16 }}>User Growth (Last 30 Days)</h3>
-              <ResponsiveContainer width="100%" height={260}>
-                <LineChart data={growthChart}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-                  <XAxis dataKey="date" fontSize={11} />
-                  <YAxis fontSize={11} />
-                  <Tooltip />
-                  <Line type="monotone" dataKey="users" stroke="#6c5ce7" strokeWidth={2} dot={{ r: 3 }} />
-                </LineChart>
-              </ResponsiveContainer>
-            </div>
-
-            <div className="glass-card" style={{ padding: 20 }}>
-              <h3 style={{ fontSize: 15, marginBottom: 16 }}>Platform Activity</h3>
-              <ResponsiveContainer width="100%" height={260}>
-                <BarChart data={activityChart}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-                  <XAxis dataKey="date" fontSize={11} />
-                  <YAxis fontSize={11} />
-                  <Tooltip />
-                  <Bar dataKey="games" fill="#6c5ce7" radius={[4, 4, 0, 0]} name="Game Sessions" />
-                  <Bar dataKey="voice" fill="#00b894" radius={[4, 4, 0, 0]} name="Voice Attempts" />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          </div>
-
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20, marginTop: 20 }}>
-            <div className="glass-card" style={{ padding: 20 }}>
-              <h3 style={{ fontSize: 15, marginBottom: 16 }}>Role Distribution</h3>
-              <ResponsiveContainer width="100%" height={260}>
-                <PieChart>
-                  <Pie data={rolePie} cx="50%" cy="50%" outerRadius={90} dataKey="value" label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}>
-                    {rolePie.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
-                  </Pie>
-                  <Tooltip />
-                </PieChart>
-              </ResponsiveContainer>
-            </div>
-
-            <div className="glass-card" style={{ padding: 20 }}>
-              <h3 style={{ fontSize: 15, marginBottom: 16 }}>Top Games by Sessions</h3>
-              <ResponsiveContainer width="100%" height={260}>
-                <BarChart data={topGamesChart} layout="vertical">
-                  <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-                  <XAxis type="number" fontSize={11} />
-                  <YAxis dataKey="name" type="category" fontSize={11} width={100} />
-                  <Tooltip />
-                  <Bar dataKey="sessions" fill="#0984e3" radius={[0, 4, 4, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          </div>
-        </>
-      )}
 
       {/* ===== ENGAGEMENT TAB ===== */}
       {activeTab === "engagement" && (

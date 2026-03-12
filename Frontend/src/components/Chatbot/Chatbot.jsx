@@ -1,14 +1,13 @@
 /**
- * Chatbot.jsx — Updated to use Laravel backend API
- * 
- * Users must be logged in to use the chatbot
- * API keys are securely stored on the server
+ * Chatbot.jsx — Updated with DeepSeek and database storage
  */
 
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import chatbotIcon from "../../assets/chatboticon.png";
 import logo_s from "../../assets/logo_s.png";
 import { toast } from 'react-toastify';
+import api from "../../services/api";
+import "./Chatbot.css"; // Import CSS file
 
 /* ========== ICONS ========== */
 const SendIcon = () => (
@@ -86,13 +85,14 @@ const SearchIcon = () => (
   </svg>
 );
 
+
 /* ========== MODEL CONFIGURATIONS ========== */
 const MODELS = {
-  openai: { 
+  github: { 
     name: 'ChatGPT', 
     emoji: '🤖', 
     color: '#10A37F', 
-    hint: 'OpenAI GPT-3.5',
+    hint: 'OpenAI GPT-4 (via GitHub Models)',
     needsKey: true
   },
   gemini: { 
@@ -102,11 +102,18 @@ const MODELS = {
     hint: 'Google AI (recommended)',
     needsKey: true
   },
-  claude: { 
-    name: 'Claude', 
-    emoji: '🦜', 
-    color: '#8B5CF6', 
-    hint: 'Anthropic Claude',
+  deepseek: { 
+    name: 'DeepSeek', 
+    emoji: '🧠', 
+    color: '#4D6CFA', 
+    hint: 'DeepSeek AI (powerful & free)',
+    needsKey: true
+  },
+  openai: { 
+    name: 'OpenAI', 
+    emoji: '⚡', 
+    color: '#10A37F', 
+    hint: 'OpenAI GPT-4o Mini',
     needsKey: true
   },
 };
@@ -116,9 +123,10 @@ const Chatbot = ({ isAuthenticated: propIsAuthenticated }) => {
   const [open, setOpen] = useState(false);
   const [full, setFull] = useState(false);
   
-  const generateId = () => Date.now().toString(36) + Math.random().toString(36).substr(2);
   const [chats, setChats] = useState([]);
   const [currentChatId, setCurrentChatId] = useState(null);
+  const [currentChat, setCurrentChat] = useState(null);
+  const [messages, setMessages] = useState([]);
   const [showSidebar, setShowSidebar] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [editingChatId, setEditingChatId] = useState(null);
@@ -131,6 +139,7 @@ const Chatbot = ({ isAuthenticated: propIsAuthenticated }) => {
   const [apiStatus, setApiStatus] = useState({});
   const [isAuthenticated, setIsAuthenticated] = useState(propIsAuthenticated || false);
   const [authChecked, setAuthChecked] = useState(false);
+  
   const endRef = useRef(null);
 
   // Sync internal isAuthenticated with prop
@@ -140,8 +149,6 @@ const Chatbot = ({ isAuthenticated: propIsAuthenticated }) => {
     }
   }, [propIsAuthenticated]);
 
-  const API_BASE_URL = 'http://localhost:8000/api';
-
   // Check authentication status on mount
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -149,84 +156,26 @@ const Chatbot = ({ isAuthenticated: propIsAuthenticated }) => {
     setAuthChecked(true);
   }, []);
 
-  const getChatsKey = useCallback(() => {
-    const user = JSON.parse(localStorage.getItem('user') || '{}');
-    return `ns_chats_${user.id || 'guest'}`;
-  }, []);
-
-  const createNewChat = useCallback(() => {
-    const newChat = {
-      id: generateId(),
-      title: 'New Chat',
-      messages: [
-        { 
-          role: 'assistant', 
-          content: "Hello! I'm your NeuroSpark Assistant 😊 How can I help you today?", 
-          time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-        }
-      ],
-      updatedAt: Date.now()
-    };
-    setChats(prev => [newChat, ...prev]);
-    setCurrentChatId(newChat.id);
-    if (window.innerWidth < 768) setShowSidebar(false);
-  }, []);
-
+  // Load chats from database when authenticated
   useEffect(() => {
-    if (isAuthenticated) {
-      const savedChats = localStorage.getItem(getChatsKey());
-      if (savedChats) {
-        try {
-          const parsed = JSON.parse(savedChats);
-          setChats(parsed);
-          if (parsed.length > 0) {
-            setCurrentChatId(parsed[0].id);
-          } else {
-            createNewChat();
-          }
-        } catch (e) {
-          createNewChat();
-        }
-      } else {
-        createNewChat();
-      }
-    } else {
-      setChats([]);
-      setCurrentChatId(null);
+    if (isAuthenticated && open) {
+      loadChats();
     }
-  }, [isAuthenticated, getChatsKey, createNewChat]);
+  }, [isAuthenticated, open]);
 
+  // Load current chat messages when chat changes
   useEffect(() => {
-    if (isAuthenticated && chats.length > 0) {
-      localStorage.setItem(getChatsKey(), JSON.stringify(chats));
+    if (currentChatId && isAuthenticated) {
+      loadChatMessages(currentChatId);
     }
-  }, [chats, isAuthenticated, getChatsKey]);
-
-  const currentChat = chats.find(c => c.id === currentChatId);
-  const msgs = currentChat ? currentChat.messages : [];
-
-  const updateCurrentChatMessages = (newMsgs) => {
-    setChats(prev => prev.map(chat => {
-      if (chat.id === currentChatId) {
-        let newTitle = chat.title;
-        if (chat.title === 'New Chat' && newMsgs.length > 1) {
-          const firstUserMsg = newMsgs.find(m => m.role === 'user');
-          if (firstUserMsg) {
-             newTitle = firstUserMsg.content.slice(0, 30) + (firstUserMsg.content.length > 30 ? '...' : '');
-          }
-        }
-        return { ...chat, messages: newMsgs, title: newTitle, updatedAt: Date.now() };
-      }
-      return chat;
-    }));
-  };
+  }, [currentChatId, isAuthenticated]);
 
   // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
     if (endRef.current) {
       endRef.current.scrollIntoView({ behavior: 'smooth' });
     }
-  }, [msgs]);
+  }, [messages]);
 
   // Check API key status from backend when authenticated
   useEffect(() => {
@@ -235,33 +184,98 @@ const Chatbot = ({ isAuthenticated: propIsAuthenticated }) => {
     }
   }, [isAuthenticated, open]);
 
+  const loadChats = async () => {
+    try {
+      const response = await api.getChats();
+      setChats(response.chats || []);
+      
+      if (response.chats?.length > 0) {
+        setCurrentChatId(response.chats[0].id);
+      } else {
+        createNewChat();
+      }
+    } catch (error) {
+      console.error('Failed to load chats:', error);
+      toast.error('Failed to load chat history');
+    }
+  };
+
+  const loadChatMessages = async (chatId) => {
+    try {
+      const response = await api.getChatMessages(chatId);
+      setMessages(response.messages || []);
+      setCurrentChat(response.chat);
+      setModel(response.chat.model || 'gemini');
+    } catch (error) {
+      console.error('Failed to load messages:', error);
+      toast.error('Failed to load messages');
+    }
+  };
+
+  const createNewChat = async () => {
+    try {
+      const response = await api.createChat({ model });
+      const newChat = response.chat;
+      
+      setChats(prev => [newChat, ...prev]);
+      setCurrentChatId(newChat.id);
+      setMessages([{
+        role: 'assistant',
+        content: "Hello! I'm your NeuroSpark Assistant 😊 How can I help you today?",
+        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      }]);
+      
+      if (window.innerWidth < 768) setShowSidebar(false);
+    } catch (error) {
+      console.error('Failed to create chat:', error);
+      toast.error('Failed to create new chat');
+    }
+  };
+
+  const deleteChat = async (chatId) => {
+    try {
+      await api.deleteChat(chatId);
+      const newChats = chats.filter(c => c.id !== chatId);
+      setChats(newChats);
+      
+      if (newChats.length > 0) {
+        setCurrentChatId(newChats[0].id);
+      } else {
+        createNewChat();
+      }
+      
+      toast.success('Chat deleted');
+    } catch (error) {
+      console.error('Failed to delete chat:', error);
+      toast.error('Failed to delete chat');
+    }
+  };
+
+  const renameChat = async (chatId, newTitle) => {
+    try {
+      await api.updateChat(chatId, { title: newTitle });
+      setChats(prev => prev.map(chat => 
+        chat.id === chatId ? { ...chat, title: newTitle } : chat
+      ));
+      setEditingChatId(null);
+      toast.success('Chat renamed');
+    } catch (error) {
+      console.error('Failed to rename chat:', error);
+      toast.error('Failed to rename chat');
+    }
+  };
+
   const checkApiKeyStatus = async () => {
     try {
-      const token = localStorage.getItem('token');
-      const response = await fetch(`${API_BASE_URL}/chatbot/status`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Accept': 'application/json',
-        }
-      });
-      
-      if (response.ok) {
-        const data = await response.json();
-        setApiStatus(data);
-      } else {
-        console.error('Failed to fetch API status');
-        setApiStatus({
-          openai: false,
-          gemini: false,
-          claude: false
-        });
-      }
+      const data = await api.get('/chatbot/status');
+      setApiStatus(data);
     } catch (error) {
       console.error('Error checking API status:', error);
       setApiStatus({
+        github: false,
         openai: false,
         gemini: false,
-        claude: false
+        deepseek: false,
       });
     }
   };
@@ -277,151 +291,90 @@ const Chatbot = ({ isAuthenticated: propIsAuthenticated }) => {
   };
 
   const handleOpenAuth = () => {
-    // Close chatbot first
     setOpen(false);
-    // Dispatch event to open auth modal
     window.dispatchEvent(new CustomEvent('open-auth', { detail: 'signin' }));
   };
 
-  /* ========== SEND MESSAGE TO BACKEND ========== */
-  const sendToBackend = async (history, selectedModel) => {
-  const lastUserMessage = history.filter(m => m.role === 'user').pop()?.content || '';
-  
-  // Prepare history without timestamps
-  const cleanHistory = history.map(({ role, content }) => ({ role, content }));
 
+  const sendToBackend = async (messageContent) => {
   try {
     const token = localStorage.getItem('token');
     
-    // Check if token exists
     if (!token) {
       throw new Error('No authentication token found. Please login again.');
     }
 
-    const controller = new AbortController();
-    // Increase timeout to 30 seconds (30000ms)
-    const timeoutId = setTimeout(() => controller.abort(), 30000);
-
-    const response = await fetch(`${API_BASE_URL}/chatbot/message`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
-        'Accept': 'application/json',
-      },
-      body: JSON.stringify({
-        message: lastUserMessage,
-        history: cleanHistory.slice(0, -1), // Exclude the last message we're sending
-        model: selectedModel
-      }),
-      signal: controller.signal
+    const response = await api.sendChatMessage({
+      message: messageContent,
+      chat_id: currentChatId,
+      model: model
     });
 
-    clearTimeout(timeoutId);
-
-    if (!response.ok) {
-      if (response.status === 401) {
-        // Token expired or invalid
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
-        setIsAuthenticated(false);
-        throw new Error('Session expired. Please login again.');
-      }
-      
-      if (response.status === 429) {
-        const data = await response.json();
-        toast.warning(data.message || 'Rate limit reached. Please wait a moment.');
-        return data.fallback; // Return fallback from backend
-      }
-      
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.message || `Error ${response.status}`);
-    }
-
-    const data = await response.json();
-    return data.reply;
-
+    return response;
   } catch (error) {
     console.error('Backend chat error:', error);
     
-    if (error.name === 'AbortError') {
-      toast.error('Request timed out. The server is taking too long to respond.');
+    if (error.data && error.data.model_used) {
+      const modelName = MODELS[error.data.model_used]?.name || error.data.model_used;
+      toast.error(`${modelName} is currently unavailable. Please try another model.`);
     } else if (error.message.includes('Failed to fetch')) {
       toast.error('Cannot connect to server. Please check if the backend is running.');
     } else {
       toast.error(error.message || 'Failed to get response');
     }
     
-    // Final fallback responses
-    const lastUserMessage = history.filter(m => m.role === 'user').pop()?.content || '';
-    if (/hello|hi |hey|greetings/i.test(lastUserMessage)) {
-      return "Hey there! 👋 I'm here to help! (Offline mode)";
-    }
-    return "I'm having trouble connecting right now. Please try again in a moment! 😊";
+    throw error;
   }
 };
 
   const send = async () => {
-    if (!input.trim() || loading) return;
+    if (!input.trim()|| loading) return;
     
-    // Check authentication before sending
     if (!isAuthenticated) {
       toast.warning('Please login to use the chatbot');
       handleOpenAuth();
       return;
     }
+
+    const messageContent = input.trim();
     
+    // Add user message to UI immediately
     const userMsg = { 
       role: 'user', 
-      content: input.trim(), 
+      content: messageContent,
       time: timeStr() 
     };
     
-    const history = [...msgs, userMsg];
-    updateCurrentChatMessages(history);
+    setMessages(prev => [...prev, userMsg]);
     setInput('');
     setLoading(true);
 
-    let reply = '';
-    let modelUsed = model;
-
     try {
-      reply = await sendToBackend(history, model);
+      const response = await sendToBackend(messageContent);
       
-      // Check if response indicates model was switched
-      if (reply && reply.includes('[using')) {
-        const match = reply.match(/\[using (\w+)\]/);
-        if (match && match[1]) {
-          modelUsed = match[1];
-        }
+      // Add assistant message
+      setMessages(prev => [...prev, { 
+        role: 'assistant', 
+        content: response.reply, 
+        time: timeStr(), 
+        model: response.model_used 
+      }]);
+
+      // Update current chat ID if new chat was created
+      if (response.chat_id && !currentChatId) {
+        setCurrentChatId(response.chat_id);
+        loadChats(); // Reload chat list
       }
-    } catch (e) {
-      console.warn('Chat error:', e);
-      reply = "I'm having trouble connecting. Please try again! 😊";
+    } catch (error) {
+      // Add error message
+      setMessages(prev => [...prev, { 
+        role: 'assistant', 
+        content: "I'm having trouble connecting. Please try again! 😊", 
+        time: timeStr() 
+      }]);
+    } finally {
+      setLoading(false);
     }
-
-    updateCurrentChatMessages([...history, { 
-      role: 'assistant', 
-      content: reply, 
-      time: timeStr(), 
-      model: modelUsed 
-    }]);
-    setLoading(false);
-  };
-
-  /* ========== CLEAR CONVERSATION ========== */
-  const clearConversation = () => {
-    if (!isAuthenticated) {
-      toast.warning('Please login to use the chatbot');
-      handleOpenAuth();
-      return;
-    }
-    
-    updateCurrentChatMessages([{ 
-      role: 'assistant', 
-      content: "Conversation cleared! 😊 How can I help you now?", 
-      time: timeStr() 
-    }]);
   };
 
   const handleOpenChatbot = () => {
@@ -433,578 +386,299 @@ const Chatbot = ({ isAuthenticated: propIsAuthenticated }) => {
     }
   };
 
+  const clearConversation = () => {
+    if (!isAuthenticated) {
+      toast.warning('Please login to use the chatbot');
+      handleOpenAuth();
+      return;
+    }
+    
+    // Delete current chat and create new one
+    if (currentChatId) {
+      deleteChat(currentChatId);
+    } else {
+      createNewChat();
+    }
+  };
+
   /* ========== RENDER CHATBOT BUTTON ========== */
   if (!open) {
     return (
       <button 
         onClick={handleOpenChatbot} 
         aria-label="Open Chatbot" 
-        style={{
-          position: 'fixed', 
-          bottom: 30, 
-          right: 30, 
-          width: 65, 
-          height: 65, 
-          borderRadius: '50%',
-          backgroundColor: '#8be3d8',
-          border: 'none',
-          cursor: 'pointer', 
-          zIndex: 9999,
-          display: 'flex', 
-          alignItems: 'center', 
-          justifyContent: 'center',
-          boxShadow: '0 4px 15px rgba(0,0,0,0.15)',
-          transition: 'transform 0.3s, box-shadow 0.3s',
-        }}
-        onMouseEnter={e => { 
-          if (isAuthenticated) {
-            e.currentTarget.style.transform = 'scale(1.12)'; 
-            e.currentTarget.style.boxShadow = '0 6px 20px rgba(0,0,0,0.2)'; 
-          }
-        }}
-        onMouseLeave={e => { 
-          e.currentTarget.style.transform = 'scale(1)'; 
-          e.currentTarget.style.boxShadow = isAuthenticated 
-            ? '0 4px 15px rgba(0,0,0,0.15)' 
-            : '0 4px 15px rgba(0,0,0,0.25)';
-        }}
+        className={`chatbot-button ${isAuthenticated ? 'authenticated' : ''}`}
       >
-        <img 
-          src={chatbotIcon} 
-          alt="Chat" 
-          style={{ 
-            width: '68%', 
-            height: '68%', 
-            objectFit: 'contain',
-            opacity: 1
-          }} 
-        />
-        {/* Removed red "!" mark */}
+        <img src={chatbotIcon} alt="Chat" />
       </button>
     );
   }
 
   /* ========== MODAL STYLES ========== */
-  const box = full
-    ? { 
-        width: '100vw', 
-        height: '100vh', 
-        maxWidth: 'none', 
-        maxHeight: 'none', 
-        borderRadius: 0 
-      }
-    : { 
-        width: 440, 
-        maxWidth: '92vw', 
-        height: 600, 
-        maxHeight: '82vh', 
-        borderRadius: 20 
-      };
+  const boxStyle = full
+    ? { width: '100vw', height: '100vh', maxWidth: 'none', maxHeight: 'none', borderRadius: 0 }
+    : { width: 440, maxWidth: '92vw', height: 600, maxHeight: '82vh', borderRadius: 20 };
 
   /* ========== RENDER CHATBOT MODAL ========== */
   return (
-    <div 
-      onClick={() => setOpen(false)} 
-      style={{
-        position: 'fixed', 
-        inset: 0, 
-        zIndex: 10000, 
-        background: 'rgba(0,0,0,0.35)',
-        backdropFilter: 'blur(2px)', 
-        display: 'flex', 
-        alignItems: 'center', 
-        justifyContent: 'center',
-      }}
-    >
-      <style>{`
-        @keyframes cbIn {
-          from { opacity: 0; transform: scale(0.92) translateY(16px); }
-          to { opacity: 1; transform: scale(1) translateY(0); }
-        }
-        @keyframes cbDots {
-          0%, 80%, 100% { transform: scale(0); }
-          40% { transform: scale(1); }
-        }
-        @keyframes slideIn {
-          from { transform: translateY(20px); opacity: 0; }
-          to { transform: translateY(0); opacity: 1; }
-        }
-        .message-enter {
-          animation: slideIn 0.3s ease-out;
-        }
-      `}</style>
-
+    <div className="chatbot-overlay" onClick={() => setOpen(false)}>
       <div 
-        onClick={e => e.stopPropagation()} 
-        style={{
-          ...box, 
-          background: '#fff', 
-          boxShadow: '0 20px 50px rgba(0,0,0,0.2)',
-          display: 'flex', 
-          flexDirection: 'row', 
-          overflow: 'hidden',
-          animation: 'cbIn 0.28s cubic-bezier(0.34,1.56,0.64,1)', 
-          transition: 'all 0.3s',
-          position: 'relative',
-        }}
+        className={`chatbot-modal ${full ? 'full' : ''}`}
+        style={boxStyle}
+        onClick={e => e.stopPropagation()}
       >
-        {/* ===== SIDEBAR ===== */}
-        <div style={{
-          width: showSidebar ? 260 : 0,
-          background: '#1CC4AF',
-          color: '#fff',
-          zIndex: 20,
-          transition: 'width 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-          display: 'flex',
-          flexDirection: 'column',
-          boxShadow: showSidebar ? '4px 0 15px rgba(0,0,0,0.1)' : 'none',
-          flexShrink: 0,
-          overflow: 'hidden'
-        }}>
-          {/* Inner fixed-width container to prevent text wrapping during transition */}
-          <div style={{ width: 260, display: 'flex', flexDirection: 'column', height: '100%' }}>
-            <div style={{ padding: '16px', borderBottom: '1px solid rgba(255,255,255,0.2)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span style={{ fontWeight: 'bold' }}>Chat History</span>
-            <button
-              onClick={() => setShowSidebar(false)}
-              style={{ background: 'none', border: 'none', color: '#fff', cursor: 'pointer', padding: 4 }}
-            >
-              <XIcon />
-            </button>
-          </div>
-          
-          <div style={{ padding: '16px 16px 8px 16px' }}>
-            <button
-              onClick={createNewChat}
-              style={{
-                width: '100%',
-                padding: '10px',
-                background: 'rgba(255,255,255,0.2)',
-                border: '1px solid rgba(255,255,255,0.4)',
-                borderRadius: 8,
-                color: '#fff',
-                fontFamily: 'inherit',
-                fontWeight: 'bold',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: 8,
-                transition: 'background 0.2s'
-              }}
-              onMouseEnter={e => e.target.style.background = 'rgba(255,255,255,0.3)'}
-              onMouseLeave={e => e.target.style.background = 'rgba(255,255,255,0.2)'}
-            >
-              + New Chat
-            </button>
-          </div>
-          
-          <div style={{ padding: '8px 16px' }}>
-            <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
-              <div style={{ position: 'absolute', left: 10, color: 'rgba(255,255,255,0.7)', display: 'flex' }}>
-                <SearchIcon />
-              </div>
-              <style>{`.search-input::placeholder { color: rgba(255,255,255,0.7); }`}</style>
-              <input
-                className="search-input"
-                type="text"
-                placeholder="Search chats..."
-                value={searchQuery}
-                onChange={e => setSearchQuery(e.target.value)}
-                style={{
-                  width: '100%',
-                  padding: '8px 8px 8px 32px',
-                  borderRadius: 6,
-                  border: '1px solid rgba(255,255,255,0.3)',
-                  background: 'rgba(255,255,255,0.15)',
-                  color: '#ffffff',
-                  outline: 'none',
-                  fontSize: 13,
-                  boxSizing: 'border-box'
-                }}
-                onFocus={e => {
-                  e.target.style.background = 'rgba(255,255,255,0.25)';
-                  e.target.style.borderColor = 'rgba(255,255,255,0.6)';
-                }}
-                onBlur={e => {
-                  e.target.style.background = 'rgba(255,255,255,0.15)';
-                  e.target.style.borderColor = 'rgba(255,255,255,0.3)';
-                }}
-              />
-            </div>
-          </div>
-
-          <div style={{ flex: 1, overflowY: 'auto', padding: '10px' }}>
-            {chats.filter(c => c.title.toLowerCase().includes(searchQuery.toLowerCase())).sort((a,b) => b.updatedAt - a.updatedAt).map(c => (
-              <div
-                key={c.id}
-                onClick={() => {
-                  if (editingChatId !== c.id) {
-                    setCurrentChatId(c.id);
-                    if (window.innerWidth < 768) setShowSidebar(false);
-                  }
-                }}
-                style={{
-                  padding: '10px 12px',
-                  borderRadius: 8,
-                  marginBottom: 6,
-                  cursor: 'pointer',
-                  background: currentChatId === c.id ? 'rgba(255,255,255,0.25)' : 'transparent',
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  transition: 'background 0.2s',
-                }}
-                onMouseEnter={e => {
-                  if (currentChatId !== c.id) e.currentTarget.style.background = 'rgba(255,255,255,0.1)';
-                }}
-                onMouseLeave={e => {
-                  if (currentChatId !== c.id) e.currentTarget.style.background = 'transparent';
-                }}
+        {/* Sidebar */}
+        <div className={`chatbot-sidebar ${showSidebar ? 'open' : 'closed'}`}>
+          <div className="chatbot-sidebar-inner">
+            <div className="sidebar-header">
+              <span className="sidebar-title">Chat History</span>
+              <button
+                onClick={() => setShowSidebar(false)}
+                className="sidebar-close-btn"
               >
-                {editingChatId === c.id ? (
-                  <input
-                    autoFocus
-                    value={editTitle}
-                    onChange={e => setEditTitle(e.target.value)}
-                    onBlur={() => {
-                      setChats(prev => prev.map(chat => chat.id === c.id ? { ...chat, title: editTitle || 'New Chat' } : chat));
-                      setEditingChatId(null);
-                    }}
-                    onKeyDown={e => {
-                      if (e.key === 'Enter') {
-                        setChats(prev => prev.map(chat => chat.id === c.id ? { ...chat, title: editTitle || 'New Chat' } : chat));
-                        setEditingChatId(null);
+                <XIcon />
+              </button>
+            </div>
+            
+            <div style={{ padding: '16px 16px 8px 16px' }}>
+              <button
+                onClick={createNewChat}
+                className="new-chat-btn"
+              >
+                + New Chat
+              </button>
+            </div>
+            
+            <div style={{ padding: '8px 16px' }}>
+              <div className="search-container">
+                <div className="search-icon">
+                  <SearchIcon />
+                </div>
+                <input
+                  type="text"
+                  placeholder="Search chats..."
+                  value={searchQuery}
+                  onChange={e => setSearchQuery(e.target.value)}
+                  className="search-input"
+                />
+              </div>
+            </div>
+
+            <div className="chat-list">
+              {chats
+                .filter(c => c.title.toLowerCase().includes(searchQuery.toLowerCase()))
+                .map(c => (
+                  <div
+                    key={c.id}
+                    onClick={() => {
+                      if (editingChatId !== c.id) {
+                        setCurrentChatId(c.id);
+                        if (window.innerWidth < 768) setShowSidebar(false);
                       }
                     }}
-                    style={{
-                      width: '100%',
-                      background: 'rgba(255,255,255,0.9)',
-                      border: 'none',
-                      borderRadius: 4,
-                      padding: '4px 8px',
-                      color: '#333',
-                      outline: 'none',
-                      fontSize: 13
-                    }}
-                  />
-                ) : (
-                  <>
-                    <div title={c.title} style={{ 
-                      whiteSpace: 'nowrap', 
-                      overflow: 'hidden', 
-                      textOverflow: 'ellipsis',
-                      fontSize: 14,
-                      flex: 1,
-                      marginRight: 10
-                    }}>
-                      {c.title}
-                    </div>
-                    {currentChatId === c.id && (
-                      <div style={{ display: 'flex', gap: 6, opacity: 0.8 }}>
-                        <button
-                          title="Rename"
-                          onClick={e => {
-                            e.stopPropagation();
-                            setEditingChatId(c.id);
-                            setEditTitle(c.title);
-                          }}
-                          style={{ background: 'none', border: 'none', color: '#fff', cursor: 'pointer', padding: 2, display: 'flex' }}
-                        >
-                          <EditIcon />
-                        </button>
-                        <button
-                          title="Delete"
-                          onClick={e => {
-                            e.stopPropagation();
-                            const newChats = chats.filter(chat => chat.id !== c.id);
-                            setChats(newChats);
-                            if (newChats.length > 0) setCurrentChatId(newChats[0].id);
-                            else createNewChat();
-                          }}
-                          style={{ background: 'none', border: 'none', color: '#fff', cursor: 'pointer', padding: 2, display: 'flex' }}
-                        >
-                          <TrashIcon />
-                        </button>
-                      </div>
+                    className={`chat-item ${currentChatId === c.id ? 'active' : ''}`}
+                  >
+                    {editingChatId === c.id ? (
+                      <input
+                        autoFocus
+                        value={editTitle}
+                        onChange={e => setEditTitle(e.target.value)}
+                        onBlur={() => renameChat(c.id, editTitle || 'New Chat')}
+                        onKeyDown={e => {
+                          if (e.key === 'Enter') {
+                            renameChat(c.id, editTitle || 'New Chat');
+                          }
+                        }}
+                        style={{
+                          width: '100%',
+                          background: 'rgba(255,255,255,0.9)',
+                          border: 'none',
+                          borderRadius: 4,
+                          padding: '4px 8px',
+                          color: '#333',
+                          outline: 'none',
+                          fontSize: 13
+                        }}
+                      />
+                    ) : (
+                      <>
+                        <div className="chat-item-title" title={c.title}>
+                          {c.title}
+                        </div>
+                        {currentChatId === c.id && (
+                          <div className="chat-item-actions">
+                            <button
+                              title="Rename"
+                              onClick={e => {
+                                e.stopPropagation();
+                                setEditingChatId(c.id);
+                                setEditTitle(c.title);
+                              }}
+                            >
+                              <EditIcon />
+                            </button>
+                            <button
+                              title="Delete"
+                              onClick={e => {
+                                e.stopPropagation();
+                                deleteChat(c.id);
+                              }}
+                            >
+                              <TrashIcon />
+                            </button>
+                          </div>
+                        )}
+                      </>
                     )}
-                  </>
-                )}
+                  </div>
+                ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Main Chat Area */}
+        <div className="chat-main">
+          {/* Header */}
+          <div className="chat-header">
+            <div className="header-left">
+              <button 
+                onClick={() => setShowSidebar(prev => !prev)}
+                className="menu-toggle"
+                title="Toggle Sidebar"
+              >
+                <MenuIcon />
+              </button>
+            </div>
+
+            <div className="header-logo">
+              <img src={logo_s} alt="Logo" />
+              <div className="status-dot" />
+            </div>
+
+            <div className="header-actions">
+              <button 
+                onClick={clearConversation}
+                className="header-btn"
+                title="Clear conversation"
+              >
+                🧹 Clear
+              </button>
+              <button 
+                onClick={() => setFull(f => !f)} 
+                className="header-btn"
+              >
+                {full ? <MinIcon/> : <MaxIcon/>}
+              </button>
+              <button 
+                onClick={() => setOpen(false)} 
+                className="header-btn"
+              >
+                <XIcon/>
+              </button>
+            </div>
+          </div>
+
+          {/* Model Tabs */}
+          <div style={{ 
+              padding: '7px 14px', 
+              borderBottom: '1px solid #f0f0f0', 
+              background: '#fafafa',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span style={{ fontSize: '12px', color: '#666' }}>Model:</span>
+                <select
+                  value={model}
+                  onChange={(e) => setModel(e.target.value)}
+                  style={{
+                    padding: '5px 10px',
+                    borderRadius: '6px',
+                    border: '1px solid #ddd',
+                    background: '#fff',
+                    fontSize: '13px',
+                    fontWeight: '500',
+                    cursor: 'pointer',
+                    outline: 'none',
+                    minWidth: '120px'
+                  }}
+                >
+                  {Object.entries(MODELS).map(([key, config]) => {
+                    const isAvailable = apiStatus[key];
+                    return (
+                      <option 
+                        key={key} 
+                        value={key}
+                        disabled={!isAvailable}
+                        style={{ 
+                          color: !isAvailable ? '#999' : 'inherit',
+                          backgroundColor: !isAvailable ? '#f5f5f5' : 'inherit'
+                        }}
+                      >
+                        {config.emoji} {config.name} {!isAvailable ? ' (unavailable)' : ''}
+                      </option>
+                    );
+                  })}
+                </select>
+              </div>
+
+              </div>
+
+          {/* Messages */}
+          <div className="messages-area">
+            {messages.map((m, i) => (
+              <div 
+                key={i} 
+                className={`message-wrapper ${m.role}`}
+              >
+                <div className={`message-bubble ${m.role}`}>
+                  {m.content}
+                  
+                  {/* Copy button for assistant messages */}
+                  {m.role === 'assistant' && (
+                    <button
+                      onClick={() => copyToClipboard(m.content, i)}
+                      className={`copy-btn ${copiedIndex === i ? 'copied' : ''}`}
+                      title="Copy to clipboard"
+                    >
+                      {copiedIndex === i ? <CheckIcon/> : <CopyIcon/>}
+                    </button>
+                  )}
+                </div>
+                
+                <div className="message-meta">
+                  {m.time} 
+                  {m.model && (
+                    <span className="model-badge">
+                      • via {MODELS[m.model]?.emoji} {MODELS[m.model]?.name}
+                    </span>
+                  )}
+                </div>
               </div>
             ))}
-          </div>
-          </div>
-        </div>
-
-        {/* ===== MAIN CHAT AREA WRAPPER ===== */}
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-
-        {/* ===== HEADER ===== */}
-        <div style={{ 
-          padding: '14px 18px', 
-          borderBottom: '1px solid #eee', 
-          display: 'flex', 
-          justifyContent: 'space-between', 
-          alignItems: 'center',
-          background: 'linear-gradient(135deg, #f8fafc, #f1f5f9)',
-          position: 'relative'
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, flex: 1 }}>
-            <button 
-              onClick={() => setShowSidebar(prev => !prev)}
-              style={{
-                background: 'none',
-                border: 'none',
-                cursor: 'pointer',
-                color: '#555',
-                padding: 4,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                borderRadius: 4,
-                transition: 'background 0.2s'
-              }}
-              title="Toggle Sidebar"
-              onMouseEnter={e => e.currentTarget.style.background = '#e2e8f0'}
-              onMouseLeave={e => e.currentTarget.style.background = 'none'}
-            >
-              <MenuIcon />
-            </button>
-          </div>
-
-          {/* Centered Logo container */}
-          <div style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', display: 'flex', alignItems: 'center', gap: 8 }}>
-            <img src={logo_s} alt="Logo" style={{ height: 32 }} />
-            <div style={{ 
-              width: 7, 
-              height: 7, 
-              background: '#8be3d8', 
-              borderRadius: '50%', 
-              boxShadow: '0 0 8px rgba(139,227,216,0.6)' 
-            }} />
-          </div>
-
-          <div style={{ display: 'flex', gap: 6, flex: 1, justifyContent: 'flex-end' }}>
-            <button 
-              onClick={clearConversation}
-              style={{ 
-                background: 'none', 
-                border: 'none', 
-                cursor: 'pointer', 
-                color: '#888', 
-                padding: '4px 8px',
-                fontSize: 13,
-                borderRadius: 4,
-                transition: 'background 0.2s'
-              }}
-              onMouseEnter={e => e.target.style.background = '#f0f0f0'}
-              onMouseLeave={e => e.target.style.background = 'none'}
-              title="Clear conversation"
-            >
-              🧹 Clear
-            </button>
-            <button 
-              onClick={() => setFull(f => !f)} 
-              style={{ 
-                background: 'none', 
-                border: 'none', 
-                cursor: 'pointer', 
-                color: '#888', 
-                padding: 4 
-              }}
-            >
-              {full ? <MinIcon/> : <MaxIcon/>}
-            </button>
-            <button 
-              onClick={() => setOpen(false)} 
-              style={{ 
-                background: 'none', 
-                border: 'none', 
-                cursor: 'pointer', 
-                color: '#b2bec3', 
-                padding: 4 
-              }}
-            >
-              <XIcon/>
-            </button>
-          </div>
-        </div>
-
-        {/* ===== MODEL TABS ===== */}
-        <div style={{ 
-          display: 'flex', 
-          gap: 5, 
-          padding: '7px 14px', 
-          borderBottom: '1px solid #f0f0f0', 
-          background: '#fafafa', 
-          flexWrap: 'wrap' 
-        }}>
-          {Object.entries(MODELS).map(([k, m]) => {
-            const hasKey = apiStatus[k];
-            const isSelected = model === k;
             
-            return (
-              <button 
-                key={k} 
-                onClick={() => hasKey && setModel(k)} 
-                title={hasKey ? m.hint : `⚠️ ${m.name} not available on server`}
-                style={{
-                  padding: '3px 11px', 
-                  borderRadius: 14, 
-                  fontSize: 11, 
-                  fontWeight: 700,
-                  border: isSelected ? `2px solid ${m.color}` : '1px solid #ddd',
-                  background: isSelected ? `${m.color}12` : '#fff',
-                  color: isSelected ? m.color : (hasKey ? '#999' : '#ccc'),
-                  cursor: hasKey ? 'pointer' : 'not-allowed',
-                  opacity: hasKey ? 1 : 0.6,
-                  transition: 'all 0.2s',
-                }}
-                disabled={!hasKey}
-              >
-                {m.emoji} {m.name} {!hasKey && '🔒'}
-              </button>
-            );
-          })}
-        </div>
+            {/* Loading indicator */}
+            {loading && (
+              <div style={{ alignSelf: 'flex-start' }}>
+                <div className="typing-indicator">
+                  {[0, 0.15, 0.3].map((d, i) => (
+                    <div 
+                      key={i} 
+                      className="typing-dot"
+                      style={{ animationDelay: `${d}s` }} 
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
+            <div ref={endRef} />
+          </div>
 
-        {/* ===== MESSAGES ===== */}
-        <div style={{
-          flex: 1,
-          padding: 14,
-          overflowY: 'auto',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: 10,
-          background: '#8be3d8',
-          backgroundImage: `
-            radial-gradient(2px 2px at 20% 30%, #fff 100%, transparent 100%),
-            radial-gradient(1.5px 1.5px at 70% 60%, #fff 100%, transparent 100%),
-            radial-gradient(1px 1px at 50% 80%, #fff 100%, transparent 100%)
-          `,
-          backgroundSize: '250px 250px',
-        }}>
-          {msgs.map((m, i) => (
-            <div 
-              key={i} 
-              className="message-enter"
-              style={{ 
-                alignSelf: m.role === 'user' ? 'flex-end' : 'flex-start', 
-                maxWidth: '82%',
-                position: 'relative',
-              }}
-            >
-              <div style={{
-                padding: '9px 13px',
-                borderRadius: 14,
-                fontSize: '0.88rem',
-                lineHeight: 1.45,
-                wordBreak: 'break-word',
-                boxShadow: '0 2px 5px rgba(0,0,0,0.05)',
-                ...(m.role === 'user'
-                  ? { 
-                      background: '#4a90e2', 
-                      color: '#fff', 
-                      borderBottomRightRadius: 4,
-                    }
-                  : { 
-                      background: '#fff', 
-                      color: '#2d3436', 
-                      border: '1px solid #eee', 
-                      borderBottomLeftRadius: 4,
-                      paddingRight: 25
-                    }),
-              }}>
-                {m.content}
-                
-                {/* Copy button for assistant messages */}
-                {m.role === 'assistant' && (
-                  <button
-                    onClick={() => copyToClipboard(m.content, i)}
-                    style={{
-                      position: 'absolute',
-                      top: 8,
-                      right: 8,
-                      background: 'none',
-                      border: 'none',
-                      cursor: 'pointer',
-                      color: copiedIndex === i ? '#10A37F' : '#999',
-                      padding: 4,
-                      borderRadius: 4,
-                      transition: 'all 0.2s',
-                      opacity: 0.5,
-                    }}
-                    onMouseEnter={e => {
-                      e.currentTarget.style.opacity = 1;
-                      e.currentTarget.style.background = '#f0f0f0';
-                    }}
-                    onMouseLeave={e => {
-                      e.currentTarget.style.opacity = 0.5;
-                      e.currentTarget.style.background = 'none';
-                    }}
-                    title="Copy to clipboard"
-                  >
-                    {copiedIndex === i ? <CheckIcon/> : <CopyIcon/>}
-                  </button>
-                )}
-              </div>
-              
-              <div style={{ 
-                fontSize: '0.65rem', 
-                color: 'rgba(255,255,255,0.65)', 
-                marginTop: 3, 
-                paddingLeft: 3, 
-                display: 'flex', 
-                gap: 5 
-              }}>
-                {m.time} 
-                {m.model && (
-                  <span style={{ opacity: 0.7 }}>
-                    • via {MODELS[m.model]?.emoji} {MODELS[m.model]?.name}
-                  </span>
-                )}
-              </div>
-            </div>
-          ))}
-          
-          {/* Loading indicator */}
-          {loading && (
-            <div style={{ alignSelf: 'flex-start' }}>
-              <div style={{ 
-                padding: '10px 18px', 
-                borderRadius: 14, 
-                background: '#fff', 
-                border: '1px solid #eee', 
-                display: 'flex', 
-                gap: 5 
-              }}>
-                {[0, 0.15, 0.3].map((d, i) => (
-                  <div 
-                    key={i} 
-                    style={{ 
-                      width: 7, 
-                      height: 7, 
-                      borderRadius: '50%', 
-                      background: '#8be3d8', 
-                      animation: 'cbDots 1.4s infinite ease-in-out both', 
-                      animationDelay: `${d}s` 
-                    }} 
-                  />
-                ))}
-              </div>
-            </div>
-          )}
-          <div ref={endRef} />
-        </div>
+  
 
-        {/* ===== INPUT AREA ===== */}
-        <div style={{ 
-          padding: '12px 14px', 
-          borderTop: '1px solid #eee', 
-          display: 'flex', 
-          gap: 8, 
-          background: '#fff' 
-        }}>
+          {/* Input Area */}
+        <div className="input-area">
           <input
             type="text" 
             placeholder={isAuthenticated ? "Type your message..." : "Login to chat..."}
@@ -1012,112 +686,54 @@ const Chatbot = ({ isAuthenticated: propIsAuthenticated }) => {
             onChange={e => setInput(e.target.value)} 
             onKeyDown={e => e.key === 'Enter' && send()} 
             disabled={loading || !isAuthenticated}
-            style={{ 
-              flex: 1, 
-              border: 'none', 
-              background: '#f1f2f6', 
-              padding: '9px 13px', 
-              borderRadius: 10, 
-              fontSize: '0.88rem', 
-              outline: 'none',
-              transition: 'all 0.2s',
-              opacity: isAuthenticated ? 1 : 0.7,
-              cursor: isAuthenticated ? 'text' : 'not-allowed'
-            }}
-            onFocus={e => {
-              if (isAuthenticated) {
-                e.target.style.background = '#e8eaf0';
-              }
-            }}
-            onBlur={e => e.target.style.background = '#f1f2f6'}
+            className="message-input"
           />
+          
           <button 
             onClick={send} 
             disabled={!input.trim() || loading || !isAuthenticated} 
-            style={{
-              width: 38, 
-              height: 38, 
-              borderRadius: 10, 
-              border: 'none', 
-              background: isAuthenticated ? '#8be3d8' : '#ccc', 
-              color: '#fff',
-              display: 'flex', 
-              alignItems: 'center', 
-              justifyContent: 'center', 
-              cursor: (isAuthenticated && input.trim() && !loading) ? 'pointer' : 'not-allowed',
-              opacity: (isAuthenticated && input.trim() && !loading) ? 1 : 0.5, 
-              transition: 'all 0.2s',
-            }}
-            onMouseEnter={e => {
-              if (isAuthenticated && input.trim() && !loading) {
-                e.target.style.background = '#7ad1c6';
-                e.target.style.transform = 'scale(1.05)';
-              }
-            }}
-            onMouseLeave={e => {
-              e.target.style.background = isAuthenticated ? '#8be3d8' : '#ccc';
-              e.target.style.transform = 'scale(1)';
-            }}
+            className="send-btn"
           >
             {isAuthenticated ? <SendIcon/> : <LockIcon/>}
           </button>
         </div>
 
-        {/* ===== STATUS FOOTER ===== */}
-        <div style={{ 
-          padding: '6px 14px', 
-          background: '#fafafa', 
-          borderTop: '1px solid #f0f0f0', 
-          display: 'flex', 
-          justifyContent: 'space-between',
-          alignItems: 'center', 
-          fontSize: 10,
-        }}>
-          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-            {/* OpenAI Status */}
-            {apiStatus.openai && (
-              <span style={{ color: '#10A37F' }}>
-                🤖 OpenAI
-              </span>
-            )}
+          {/* Status Footer */}
+          <div className="status-footer">
+            <div className="status-models">
+              {apiStatus.github && (
+                <span className="model-status github">
+                  🤖 ChatGPT
+                </span>
+              )}
+              {apiStatus.gemini && (
+                <span className="model-status gemini">
+                  💎 Gemini
+                </span>
+              )}
+              {apiStatus.deepseek && (
+                <span className="model-status deepseek">
+                  🧠 DeepSeek
+                </span>
+              )}
+            </div>
             
-            {/* Gemini Status */}
-            {apiStatus.gemini && (
-              <span style={{ color: '#4285F4' }}>
-                💎 Gemini
-              </span>
-            )}
-            
-            {/* Claude Status */}
-            {apiStatus.claude && (
-              <span style={{ color: '#8B5CF6' }}>
-                🦜 Claude
-              </span>
-            )}
-          </div>
-          
-          <div>
-            {!isAuthenticated ? (
-              <span 
-                onClick={handleOpenAuth}
-                style={{ 
-                  color: '#e74c3c', 
-                  cursor: 'pointer',
-                  textDecoration: 'underline'
-                }}
-              >
-                Login to chat
-              </span>
-            ) : (
-              <span style={{ color: '#38B2AC' }}>
-                ⚡ Connected
-              </span>
-            )}
+            <div>
+              {!isAuthenticated ? (
+                <span 
+                  onClick={handleOpenAuth}
+                  className="login-prompt"
+                >
+                  Login to chat
+                </span>
+              ) : (
+                <span className="connected-status">
+                  ⚡ Connected
+                </span>
+              )}
+            </div>
           </div>
         </div>
-        
-        </div> {/* CLOSE MAIN CHAT AREA WRAPPER */}
-
       </div>
     </div>
   );

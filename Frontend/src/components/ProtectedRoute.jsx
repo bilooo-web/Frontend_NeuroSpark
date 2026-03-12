@@ -34,6 +34,12 @@ const ProtectedRoute = ({ children, requiredRole }) => {
           } else {
             // Update stored user data
             localStorage.setItem('user', JSON.stringify(currentUser));
+
+            if (currentUser.role === 'guardian' && currentUser.guardian_type) {
+              localStorage.setItem('guardian_type', currentUser.guardian_type);
+              setGuardianType(currentUser.guardian_type);
+            }
+
             setIsAuthorized(true);
           }
         } else {
@@ -63,6 +69,7 @@ const ProtectedRoute = ({ children, requiredRole }) => {
         console.error('Auth check failed:', error);
         localStorage.removeItem('token');
         localStorage.removeItem('user');
+        localStorage.removeItem('guardian_type');
         setIsAuthorized(false);
         setLoading(false);
       } finally {

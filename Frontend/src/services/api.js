@@ -65,6 +65,52 @@ class ApiClient {
   delete(endpoint) {
     return this.request('DELETE', endpoint);
   }
+
+  async getChats() {
+    return this.get('/chatbot/chats');
+  }
+
+  async createChat(data = {}) {
+    return this.post('/chatbot/chats', data);
+  }
+
+  async getChatMessages(chatId) {
+    return this.get(`/chatbot/chats/${chatId}`);
+  }
+
+  async updateChat(chatId, data) {
+    return this.put(`/chatbot/chats/${chatId}`, data);
+  }
+
+  async deleteChat(chatId) {
+    return this.delete(`/chatbot/chats/${chatId}`);
+  }
+
+  async sendChatMessage(data) {
+    // Handle file upload with FormData
+    if (data instanceof FormData) {
+      const token = this.getToken();
+      const url = `${this.baseURL}/chatbot/message`;
+      
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/json',
+        },
+        body: data
+      });
+      
+      if (!response.ok) {
+        throw new Error('Upload failed');
+      }
+      
+      return response.json();
+    }
+    
+    return this.post('/chatbot/message', data);
+  }
+
 }
 const api = new ApiClient();
 

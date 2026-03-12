@@ -27,6 +27,16 @@ import StoryBook from "./pages/StoryBook";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Chatbot from "./components/Chatbot/Chatbot";
 
+import GuardianRouter from "./pages/GuardianRouter";
+import ParentDashboard from "./pages/ParentDashboard";
+import Children from "./pages/Children";
+import ChildDetail from "./pages/ChildDetail";
+import PendingInvites from "./pages/PendingInvites";
+import Anomalies from "./pages/Anomalies";
+import Feedbacks from "./pages/Feedbacks";
+import Settings from "./pages/Settings";
+
+
 import './styles/dashboard.css'; 
 
 const AdminRoute = ({ children }) => {
@@ -160,11 +170,23 @@ function App() {
           <Route path="reports" element={<AdminReports />} />
           <Route path="notifications" element={<AdminNotifications />} />
         </Route>
+        // Guardian Routes
+        <Route path="/guardian" element={<GuardianRouter />}>
+          <Route index element={<ParentDashboard />} />
+          <Route path="dashboard" element={<ParentDashboard />} />
+          <Route path="children" element={<Children />} />
+          <Route path="children/:id" element={<ChildDetail />} />
+          <Route path="invites" element={<PendingInvites />} />
+          <Route path="anomalies" element={<Anomalies />} />
+          <Route path="feedbacks" element={<Feedbacks />} />
+          <Route path="settings" element={<Settings />} />
+        </Route>
 
       </Routes>
       <Chatbot />
 
     </BrowserRouter>
+    </AppProvider>
 
   );
 }

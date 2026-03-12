@@ -74,7 +74,6 @@ const MemoryPadlocksGame = ({
   const roundIndex = level - 1;
   const totalCorrect = correctLevels.current;
   const accuracy = totalChecks.current > 0 ? Math.round((correctLevels.current / totalChecks.current) * 100) : 0;
-  const score = Math.min(correctLevels.current * 20, 100);
 
   // Listen for coin updates from parent
   useEffect(() => {

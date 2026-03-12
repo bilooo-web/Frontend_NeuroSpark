@@ -120,5 +120,31 @@ const adminService = {
   getNotifications(params = {}) {
     return api.get('/admin/notifications', params);
   },
+
+  // Feedback endpoints
+  getFeedback: async (page = 1, limit = 20, sentiment = '') => {
+    const params = new URLSearchParams({ page, limit });
+    if (sentiment) params.append('sentiment', sentiment);
+    
+    const response = await axios.get(`${API_URL}/admin/feedback?${params}`, {
+      headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+    });
+    return response.data;
+  },
+
+  getFeedbackStats: async () => {
+    const response = await axios.get(`${API_URL}/admin/feedback/stats`, {
+      headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+    });
+    return response.data;
+  },
+
+  getFeedbackTrends: async (period = 'week') => {
+    const response = await axios.get(`${API_URL}/admin/feedback/trends?period=${period}`, {
+      headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+    });
+    return response.data;
+  },
+
 };
 export default adminService;

@@ -1,5 +1,6 @@
 // AdminSidebar.jsx
 import { NavLink, useNavigate } from "react-router-dom";
+
 import {
   LayoutDashboard,
   Users,
@@ -10,6 +11,7 @@ import {
   Bell,
   Home,
   LogOut,
+  MessageSquare,
 } from "lucide-react";
 import logoImg from "../../assets/logo_s.png";
 
@@ -18,8 +20,10 @@ const navItems = [
   { path: "/admin/users", icon: Users, label: "User Management", end: false },
   { path: "/admin/games", icon: Gamepad2, label: "Games & Learning", end: false },
   { path: "/admin/voice-instructions", icon: BookOpen, label: "Voice Instructions", end: false },
+  { path: "/admin/feedback", icon: MessageSquare, label: "Feedback & Sentiment", end: false },
   { path: "/admin/reports", icon: BarChart3, label: "Reports & Analytics", end: false },
   { path: "/admin/notifications", icon: Bell, label: "Notifications", end: false },
+
 ];
 
 const AdminSidebar = ({ onClose }) => {
@@ -69,14 +73,13 @@ const AdminSidebar = ({ onClose }) => {
   return (
     <div className="sidebar">
       <div className="sidebar-logo">
-        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+        <div className="sidebar-logo-container">
           <img
             src={logoImg}
             alt="NeuroSpark"
-            style={{ height: 36, width: 36, borderRadius: 10, objectFit: "contain" }}
+            className="sidebar-logo-img"
           />
           <div className="sidebar-logo-text">
-            <h1>NeuroSpark</h1>
             <p>Admin Dashboard</p>
           </div>
         </div>
@@ -110,8 +113,8 @@ const AdminSidebar = ({ onClose }) => {
       {/* Action Buttons */}
       <div className="sidebar-action-btns">
         <button className="sidebar-action-btn home-btn" onClick={() => navigate("/")}>
-          <Home style={{ height: 18, width: 18 }} />
-          <span>Back to Home</span>
+          <Home style={{ height: 18, width: 18, color: "#1CC4AF" }} />
+          <span style={{ color: "#1CC4AF" }}>Back to Home</span>
         </button>
         <button className="sidebar-action-btn logout-btn" onClick={handleLogout}>
           <LogOut style={{ height: 18, width: 18 }} />

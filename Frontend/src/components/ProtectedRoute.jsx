@@ -34,24 +34,40 @@ const ProtectedRoute = ({ children, requiredRole }) => {
           } else {
             // Update stored user data
             localStorage.setItem('user', JSON.stringify(currentUser));
-
-            if (currentUser.role === 'guardian' && currentUser.guardian_type) {
-              localStorage.setItem('guardian_type', currentUser.guardian_type);
-              setGuardianType(currentUser.guardian_type);
-            }
             setIsAuthorized(true);
           }
         } else {
           setIsAuthorized(false);
+          setLoading(false);
+          return;
         }
+
+        // If we have a token and the local role looks good, proceed immediately
+        setIsAuthorized(true);
+        setLoading(false);
+
+        // Verify with server in the background
+        api.get('/me').then(response => {
+          if (response.success && response.user) {
+            localStorage.setItem('user', JSON.stringify(response.user));
+            if (requiredRole && response.user.role !== requiredRole) {
+              setIsAuthorized(false);
+            }
+          }
+        }).catch(err => {
+          console.error('Background auth verification failed:', err);
+          // 401s are handled by api.js redirecting
+        });
+
       } catch (error) {
         console.error('Auth check failed:', error);
         localStorage.removeItem('token');
         localStorage.removeItem('user');
-        localStorage.removeItem('guardian_type');
         setIsAuthorized(false);
-      } finally {
         setLoading(false);
+      } finally {
+        // Only set loading false if it hasn't been set yet
+        setLoading(prev => prev ? false : false);
       }
     };
 

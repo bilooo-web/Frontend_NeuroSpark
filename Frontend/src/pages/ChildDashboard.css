@@ -1,10 +1,39 @@
 .child-dashboard-container {
-  background-color: #FAF8F5;
+  background-color: #6D8DBF;
   min-height: 100vh;
   padding: 40px 0 80px 0;
   font-family: 'Inter', sans-serif;
+  position: relative;
+  overflow: hidden;
   display: flex;
   justify-content: center;
+}
+
+.stars-bg {
+  position: absolute;
+  inset: 0;
+  background-image:
+    radial-gradient(3px 3px at 20% 30%, #ffffff 100%, transparent 100%),
+    radial-gradient(1.5px 1.5px at 80% 70%, #ffffff 100%, transparent 100%),
+    radial-gradient(1px 1px at 40% 80%, #ffffff 100%, transparent 100%),
+    radial-gradient(1.5px 1.5px at 60% 20%, #ffffff 100%, transparent 100%),
+    radial-gradient(2px 2px at 10% 100%, #ffffff 100%, transparent 100%),
+    radial-gradient(1.5px 1.5px at 80% 70%, #ffffff 100%, transparent 100%),
+    radial-gradient(1px 1px at 40% 80%, #ffffff 100%, transparent 100%),
+    radial-gradient(1.5px 1.5px at 60% 20%, #ffffff 100%, transparent 100%),
+    radial-gradient(2px 2px at 20% 30%, #ffffff 100%, transparent 100%),
+    radial-gradient(1.5px 1.5px at 80% 70%, #ffffff 100%, transparent 100%),
+    radial-gradient(1px 1px at 40% 80%, #ffffff 100%, transparent 100%),
+    radial-gradient(1.5px 1.5px at 60% 20%, #ffffff 100%, transparent 100%);
+  background-size: 300px 300px;
+  animation: starsMove 60s linear infinite;
+  z-index: 0;
+}
+
+@keyframes starsMove {
+  to {
+    background-position: -1000px 1000px;
+  }
 }
 
 .child-dashboard-content {
@@ -14,10 +43,12 @@
   flex-direction: column;
   gap: 24px;
   padding: 0 20px;
+  position: relative;
+  z-index: 1;
 }
 
 .cd-card {
-  background: #FFFFFF;
+  background: #DEF0FF;
   border-radius: 20px;
   padding: 24px;
   box-shadow: 0 4px 20px rgba(0,0,0,0.02);
@@ -43,8 +74,26 @@
   gap: 20px;
 }
 
-.cd-welcome-icon {
-  font-size: 48px;
+.cd-welcome-char-wrapper {
+  width: 100px;
+  height: 100px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cd-welcome-char-wrapper:hover {
+  transform: scale(1.1) rotate(5deg);
+}
+
+.cd-welcome-char-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
 }
 
 .cd-welcome-text h2 {
@@ -71,8 +120,8 @@
   width: 36px;
   height: 36px;
   border-radius: 50%;
-  background: #F0F0F0;
-  color: #888;
+  background: #77A7C7;
+  color: #FFF;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -82,7 +131,12 @@
 }
 
 .cd-day.active {
-  background: #F48024;
+  background: #6D8DBF;
+  color: #FFF;
+}
+
+.cd-day.checked {
+  background: #9AD0EE;
   color: #FFF;
 }
 
@@ -90,7 +144,7 @@
   content: '✓';
   position: absolute;
   bottom: -20px;
-  color: #F48024;
+  color: #6D8DBF;
   font-size: 14px;
   font-weight: bold;
 }
@@ -225,7 +279,7 @@
 
 .cd-continue-item {
   flex: 1;
-  background: #FFFFFF;
+  background: #DEF0FF;
   border-radius: 20px;
   padding: 16px;
   display: flex;

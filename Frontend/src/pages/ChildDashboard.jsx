@@ -8,6 +8,9 @@ import './ChildDashboard.css';
 import char1 from '../assets/characterone.png';
 import char2 from '../assets/charactertwo.png';
 import char3 from '../assets/characterthree.png';
+import GamesIcon from '../assets/Games.png';
+import ReadingIcon from '../assets/Reading.png';
+import StreakIcon from '../assets/Streak.png';
 import char4 from '../assets/characterfour.png';
 import char5 from '../assets/characterfive.png';
 import char6 from '../assets/charactersix.png';
@@ -80,32 +83,31 @@ function ChildDashboard() {
 
           {/* Stats Row */}
           <div className="cd-stats-row">
-            <div className="cd-card cd-stat-card">
-              <div className="cd-stat-icon yellow">🕒</div>
+            <div className="cd-stat-card">
+              <div className="cd-stat-icon">
+                <img src={GamesIcon} alt="Games" style={{ width: '95%', height: '95%' }} />
+              </div>
               <div className="cd-stat-info">
-                <h3>12 hrs</h3>
-                <p>Reading Time</p>
+                <h3>8</h3>
+                <p>hours played</p>
               </div>
             </div>
-            <div className="cd-card cd-stat-card">
-              <div className="cd-stat-icon blue">📖</div>
+            <div className="cd-stat-card">
+              <div className="cd-stat-icon">
+                <img src={ReadingIcon} alt="Reading" />
+              </div>
               <div className="cd-stat-info">
                 <h3>18</h3>
                 <p>Stories Done</p>
               </div>
             </div>
-            <div className="cd-card cd-stat-card">
-              <div className="cd-stat-icon green">🎯</div>
-              <div className="cd-stat-info">
-                <h3>84%</h3>
-                <p>Pronunciation</p>
+            <div className="cd-stat-card">
+              <div className="cd-stat-icon">
+                <img src={StreakIcon} alt="Streak" />
               </div>
-            </div>
-            <div className="cd-card cd-stat-card">
-              <div className="cd-stat-icon yellow">🔥</div>
               <div className="cd-stat-info">
-                <h3>5 days</h3>
-                <p>Streak</p>
+                <h3>5</h3>
+                <p>days streak</p>
               </div>
             </div>
           </div>

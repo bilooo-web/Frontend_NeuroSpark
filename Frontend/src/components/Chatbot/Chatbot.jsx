@@ -1,13 +1,24 @@
 /**
- * Chatbot.jsx — Updated with DeepSeek and database storage
+ * Chatbot.jsx — Enhanced version
+ * 
+ * ENHANCEMENTS:
+ * 1. Rich markdown rendering for AI responses (code blocks, bold, italic, lists, links, tables)
+ *    matching the style of ChatGPT / Gemini / DeepSeek responses.
+ * 2. Draggable chatbot button — user can reposition it anywhere on screen.
+ * 
+ * PREVIOUS FIXES (preserved):
+ * 1. Auth sync: listens to 'login-success' and 'logout' events.
+ * 2. Gemini incomplete responses: increased maxOutputTokens (backend).
+ * 3. Sidebar overlay in compact mode.
+ * 4. AI-generated chat titles + always opens NEW chat on open.
  */
 
-import React, { useState, useRef, useEffect, useCallback } from "react";
+import React, { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import chatbotIcon from "../../assets/chatboticon.png";
 import logo_s from "../../assets/logo_s.png";
 import { toast } from 'react-toastify';
 import api from "../../services/api";
-import "./Chatbot.css"; // Import CSS file
+import "./Chatbot.css";
 
 /* ========== ICONS ========== */
 const SendIcon = () => (
@@ -85,6 +96,332 @@ const SearchIcon = () => (
   </svg>
 );
 
+const PlusIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <line x1="12" y1="5" x2="12" y2="19"></line>
+    <line x1="5" y1="12" x2="19" y2="12"></line>
+  </svg>
+);
+
+const CodeCopyIcon = ({ size = 12 }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+  </svg>
+);
+
+
+/* ========== MARKDOWN RENDERER ========== */
+
+/**
+ * Renders markdown-like content similar to ChatGPT / Gemini / DeepSeek.
+ * Supports: code blocks, inline code, bold, italic, strikethrough, links,
+ * ordered/unordered lists, blockquotes, horizontal rules, tables, headings.
+ */
+const MarkdownRenderer = ({ content }) => {
+  const [copiedBlock, setCopiedBlock] = useState(null);
+
+  const copyCode = useCallback((code, index) => {
+    navigator.clipboard.writeText(code);
+    setCopiedBlock(index);
+    setTimeout(() => setCopiedBlock(null), 2000);
+  }, []);
+
+  const rendered = useMemo(() => {
+    if (!content) return null;
+
+    // Split by code blocks first (``` ... ```)
+    const parts = content.split(/(```[\s\S]*?```)/g);
+    let codeBlockIndex = 0;
+
+    return parts.map((part, i) => {
+      // Code block
+      if (part.startsWith('```') && part.endsWith('```')) {
+        const blockIdx = codeBlockIndex++;
+        const inner = part.slice(3, -3);
+        const newlinePos = inner.indexOf('\n');
+        let lang = '';
+        let code = inner;
+
+        if (newlinePos !== -1) {
+          const firstLine = inner.slice(0, newlinePos).trim();
+          if (firstLine && firstLine.length < 30 && !/\s/.test(firstLine)) {
+            lang = firstLine;
+            code = inner.slice(newlinePos + 1);
+          }
+        }
+
+        code = code.replace(/^\n/, '').replace(/\n$/, '');
+
+        return (
+          <div key={`code-${i}`} className="md-code-block">
+            <div className="md-code-header">
+              <span className="md-code-lang">{lang || 'code'}</span>
+              <button
+                className={`md-code-copy ${copiedBlock === blockIdx ? 'copied' : ''}`}
+                onClick={() => copyCode(code, blockIdx)}
+              >
+                {copiedBlock === blockIdx ? (
+                  <><CheckIcon /> Copied!</>
+                ) : (
+                  <><CodeCopyIcon /> Copy</>
+                )}
+              </button>
+            </div>
+            <pre className="md-code-content"><code>{code}</code></pre>
+          </div>
+        );
+      }
+
+      return <MarkdownInline key={`text-${i}`} text={part} />;
+    });
+  }, [content, copiedBlock, copyCode]);
+
+  return <div className="md-rendered">{rendered}</div>;
+};
+
+/**
+ * Handles block-level markdown: paragraphs, lists, blockquotes, headings, tables, HR.
+ */
+const MarkdownInline = ({ text }) => {
+  if (!text || !text.trim()) return null;
+
+  const lines = text.split('\n');
+  const elements = [];
+  let i = 0;
+
+  while (i < lines.length) {
+    const line = lines[i];
+    const trimmed = line.trim();
+
+    if (!trimmed) { i++; continue; }
+
+    // Headings
+    const headingMatch = trimmed.match(/^(#{1,6})\s+(.+)$/);
+    if (headingMatch) {
+      const level = headingMatch[1].length;
+      const Tag = `h${level}`;
+      elements.push(
+        <Tag key={`h-${i}`} className={`md-heading md-h${level}`}>
+          {parseInline(headingMatch[2])}
+        </Tag>
+      );
+      i++; continue;
+    }
+
+    // Horizontal rule
+    if (/^(-{3,}|_{3,}|\*{3,})$/.test(trimmed)) {
+      elements.push(<hr key={`hr-${i}`} className="md-hr" />);
+      i++; continue;
+    }
+
+    // Table detection
+    if (trimmed.includes('|') && i + 1 < lines.length && /^\|?[\s\-:|]+\|?$/.test(lines[i + 1]?.trim())) {
+      const tableLines = [];
+      let j = i;
+      while (j < lines.length && lines[j].trim().includes('|')) {
+        tableLines.push(lines[j].trim());
+        j++;
+      }
+      if (tableLines.length >= 2) {
+        elements.push(renderTable(tableLines, i));
+        i = j; continue;
+      }
+    }
+
+    // Blockquote
+    if (trimmed.startsWith('>')) {
+      const quoteLines = [];
+      let j = i;
+      while (j < lines.length && lines[j].trim().startsWith('>')) {
+        quoteLines.push(lines[j].trim().replace(/^>\s?/, ''));
+        j++;
+      }
+      elements.push(
+        <blockquote key={`bq-${i}`} className="md-blockquote">
+          {parseInline(quoteLines.join('\n'))}
+        </blockquote>
+      );
+      i = j; continue;
+    }
+
+    // Unordered list
+    if (/^[-*+]\s/.test(trimmed)) {
+      const listItems = [];
+      let j = i;
+      while (j < lines.length && /^[-*+]\s/.test(lines[j].trim())) {
+        listItems.push(lines[j].trim().replace(/^[-*+]\s/, ''));
+        j++;
+      }
+      elements.push(
+        <ul key={`ul-${i}`} className="md-list md-ul">
+          {listItems.map((item, idx) => (
+            <li key={idx} className="md-li">{parseInline(item)}</li>
+          ))}
+        </ul>
+      );
+      i = j; continue;
+    }
+
+    // Ordered list
+    if (/^\d+[.)]\s/.test(trimmed)) {
+      const listItems = [];
+      let j = i;
+      while (j < lines.length && /^\d+[.)]\s/.test(lines[j].trim())) {
+        listItems.push(lines[j].trim().replace(/^\d+[.)]\s/, ''));
+        j++;
+      }
+      elements.push(
+        <ol key={`ol-${i}`} className="md-list md-ol">
+          {listItems.map((item, idx) => (
+            <li key={idx} className="md-li">{parseInline(item)}</li>
+          ))}
+        </ol>
+      );
+      i = j; continue;
+    }
+
+    // Regular paragraph
+    const paraLines = [];
+    let j = i;
+    while (j < lines.length) {
+      const l = lines[j].trim();
+      if (!l || /^#{1,6}\s/.test(l) || /^[-*+]\s/.test(l) || /^\d+[.)]\s/.test(l) 
+          || l.startsWith('>') || /^(-{3,}|_{3,}|\*{3,})$/.test(l)
+          || (l.includes('|') && j + 1 < lines.length && /^\|?[\s\-:|]+\|?$/.test(lines[j + 1]?.trim()))) {
+        break;
+      }
+      paraLines.push(lines[j]);
+      j++;
+    }
+    if (paraLines.length > 0) {
+      elements.push(
+        <p key={`p-${i}`} className="md-paragraph">
+          {parseInline(paraLines.join('\n'))}
+        </p>
+      );
+    }
+    i = j === i ? i + 1 : j;
+  }
+
+  return <>{elements}</>;
+};
+
+/**
+ * Parse inline formatting: bold, italic, strikethrough, inline code, links.
+ */
+function parseInline(text) {
+  if (!text) return text;
+
+  const codeParts = text.split(/(`[^`]+`)/g);
+
+  return codeParts.map((segment, i) => {
+    if (segment.startsWith('`') && segment.endsWith('`') && segment.length > 1) {
+      return <code key={i} className="md-inline-code">{segment.slice(1, -1)}</code>;
+    }
+
+    let result = segment;
+    const tokens = [];
+    const regex = /(\*\*\*.+?\*\*\*|\*\*.+?\*\*|\*.+?\*|~~.+?~~|\[.+?\]\(.+?\)|\n)/g;
+    let lastIndex = 0;
+    let match;
+
+    while ((match = regex.exec(result)) !== null) {
+      if (match.index > lastIndex) {
+        tokens.push({ type: 'text', value: result.slice(lastIndex, match.index) });
+      }
+
+      const m = match[0];
+      if (m === '\n') {
+        tokens.push({ type: 'br' });
+      } else if (m.startsWith('***') && m.endsWith('***')) {
+        tokens.push({ type: 'bolditalic', value: m.slice(3, -3) });
+      } else if (m.startsWith('**') && m.endsWith('**')) {
+        tokens.push({ type: 'bold', value: m.slice(2, -2) });
+      } else if (m.startsWith('*') && m.endsWith('*')) {
+        tokens.push({ type: 'italic', value: m.slice(1, -1) });
+      } else if (m.startsWith('~~') && m.endsWith('~~')) {
+        tokens.push({ type: 'strike', value: m.slice(2, -2) });
+      } else if (m.startsWith('[')) {
+        const linkMatch = m.match(/\[(.+?)\]\((.+?)\)/);
+        if (linkMatch) {
+          tokens.push({ type: 'link', text: linkMatch[1], href: linkMatch[2] });
+        }
+      }
+      lastIndex = match.index + m.length;
+    }
+
+    if (lastIndex < result.length) {
+      tokens.push({ type: 'text', value: result.slice(lastIndex) });
+    }
+
+    if (tokens.length === 0) {
+      return <React.Fragment key={i}>{result}</React.Fragment>;
+    }
+
+    return (
+      <React.Fragment key={i}>
+        {tokens.map((token, j) => {
+          switch (token.type) {
+            case 'bold':
+              return <strong key={j} className="md-bold">{token.value}</strong>;
+            case 'italic':
+              return <em key={j} className="md-italic">{token.value}</em>;
+            case 'bolditalic':
+              return <strong key={j} className="md-bold"><em className="md-italic">{token.value}</em></strong>;
+            case 'strike':
+              return <del key={j} className="md-strike">{token.value}</del>;
+            case 'link':
+              return (
+                <a key={j} href={token.href} target="_blank" rel="noopener noreferrer" className="md-link">
+                  {token.text}
+                </a>
+              );
+            case 'br':
+              return <br key={j} />;
+            default:
+              return <React.Fragment key={j}>{token.value}</React.Fragment>;
+          }
+        })}
+      </React.Fragment>
+    );
+  });
+}
+
+/**
+ * Render a markdown table.
+ */
+function renderTable(tableLines, keyPrefix) {
+  const parseRow = (line) =>
+    line.replace(/^\|/, '').replace(/\|$/, '').split('|').map(cell => cell.trim());
+
+  const headers = parseRow(tableLines[0]);
+  const rows = tableLines.slice(2).map(parseRow);
+
+  return (
+    <div key={`table-${keyPrefix}`} className="md-table-wrapper">
+      <table className="md-table">
+        <thead>
+          <tr>
+            {headers.map((h, i) => (
+              <th key={i} className="md-th">{parseInline(h)}</th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((row, ri) => (
+            <tr key={ri}>
+              {row.map((cell, ci) => (
+                <td key={ci} className="md-td">{parseInline(cell)}</td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
 
 /* ========== MODEL CONFIGURATIONS ========== */
 const MODELS = {
@@ -140,6 +477,23 @@ const Chatbot = ({ isAuthenticated: propIsAuthenticated }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(propIsAuthenticated || false);
   const [authChecked, setAuthChecked] = useState(false);
   
+  /* ===== Draggable button state ===== */
+  const [btnPos, setBtnPos] = useState(() => {
+    try {
+      const saved = localStorage.getItem('chatbot-btn-pos');
+      if (saved) return JSON.parse(saved);
+    } catch {}
+    return { right: 30, bottom: 30 };
+  });
+  const [btnDragging, setBtnDragging] = useState(false);
+  const isDragging = useRef(false);
+  const dragStart = useRef({ x: 0, y: 0 });
+  const dragStartPos = useRef({ right: 30, bottom: 30 });
+  const hasMoved = useRef(false);
+
+  // Track if we've already loaded for this "open" session
+  const hasInitialized = useRef(false);
+  
   const endRef = useRef(null);
 
   // Sync internal isAuthenticated with prop
@@ -149,19 +503,60 @@ const Chatbot = ({ isAuthenticated: propIsAuthenticated }) => {
     }
   }, [propIsAuthenticated]);
 
-  // Check authentication status on mount
+  // ===== FIX #1: Listen to login-success and logout events =====
   useEffect(() => {
     const token = localStorage.getItem('token');
     setIsAuthenticated(!!token);
     setAuthChecked(true);
+
+    const handleLoginSuccess = () => {
+      setIsAuthenticated(true);
+    };
+
+    const handleLogout = () => {
+      setIsAuthenticated(false);
+      setChats([]);
+      setCurrentChatId(null);
+      setMessages([]);
+      setCurrentChat(null);
+    };
+
+    const handleStorageChange = (e) => {
+      if (e.key === 'token') {
+        setIsAuthenticated(!!e.newValue);
+      }
+    };
+
+    window.addEventListener('login-success', handleLoginSuccess);
+    window.addEventListener('logout', handleLogout);
+    window.addEventListener('storage', handleStorageChange);
+
+    return () => {
+      window.removeEventListener('login-success', handleLoginSuccess);
+      window.removeEventListener('logout', handleLogout);
+      window.removeEventListener('storage', handleStorageChange);
+    };
   }, []);
 
-  // Load chats from database when authenticated
+  // ===== FIX #4: Always open a NEW chat when chatbot opens =====
   useEffect(() => {
     if (isAuthenticated && open) {
-      loadChats();
+      loadChats(false);
+      checkApiKeyStatus();
+      
+      if (!hasInitialized.current) {
+        hasInitialized.current = true;
+        createNewChat();
+      }
     }
   }, [isAuthenticated, open]);
+
+  // Reset initialization flag when chatbot closes
+  useEffect(() => {
+    if (!open) {
+      hasInitialized.current = false;
+    }
+  }, [open]);
 
   // Load current chat messages when chat changes
   useEffect(() => {
@@ -177,26 +572,83 @@ const Chatbot = ({ isAuthenticated: propIsAuthenticated }) => {
     }
   }, [messages]);
 
-  // Check API key status from backend when authenticated
+  // ===== FIX #3: Close sidebar when leaving full mode =====
   useEffect(() => {
-    if (isAuthenticated && open) {
-      checkApiKeyStatus();
+    if (!full) {
+      setShowSidebar(false);
     }
-  }, [isAuthenticated, open]);
+  }, [full]);
 
-  const loadChats = async () => {
+  /* ===== DRAGGABLE BUTTON LOGIC ===== */
+  useEffect(() => {
+    const handleMove = (e) => {
+      if (!isDragging.current) return;
+      e.preventDefault();
+      
+      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+      const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+      
+      const dx = clientX - dragStart.current.x;
+      const dy = clientY - dragStart.current.y;
+
+      if (Math.abs(dx) > 3 || Math.abs(dy) > 3) {
+        hasMoved.current = true;
+        setBtnDragging(true);
+      }
+
+      const newRight = Math.max(5, Math.min(window.innerWidth - 70, dragStartPos.current.right - dx));
+      const newBottom = Math.max(5, Math.min(window.innerHeight - 70, dragStartPos.current.bottom - dy));
+
+      setBtnPos({ right: newRight, bottom: newBottom });
+    };
+
+    const handleUp = () => {
+      if (isDragging.current) {
+        isDragging.current = false;
+        setBtnDragging(false);
+        document.body.style.userSelect = '';
+        setBtnPos(prev => {
+          try { localStorage.setItem('chatbot-btn-pos', JSON.stringify(prev)); } catch {}
+          return prev;
+        });
+      }
+    };
+
+    window.addEventListener('mousemove', handleMove);
+    window.addEventListener('mouseup', handleUp);
+    window.addEventListener('touchmove', handleMove, { passive: false });
+    window.addEventListener('touchend', handleUp);
+
+    return () => {
+      window.removeEventListener('mousemove', handleMove);
+      window.removeEventListener('mouseup', handleUp);
+      window.removeEventListener('touchmove', handleMove);
+      window.removeEventListener('touchend', handleUp);
+    };
+  }, []);
+
+  const handleBtnMouseDown = (e) => {
+    // Prevent default to avoid text selection and ghost images
+    if (e.type === 'mousedown') e.preventDefault();
+    isDragging.current = true;
+    hasMoved.current = false;
+    document.body.style.userSelect = 'none';
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+    dragStart.current = { x: clientX, y: clientY };
+    dragStartPos.current = { ...btnPos };
+  };
+
+  const loadChats = async (autoSelect = false) => {
     try {
       const response = await api.getChats();
       setChats(response.chats || []);
       
-      if (response.chats?.length > 0) {
+      if (autoSelect && response.chats?.length > 0 && !currentChatId) {
         setCurrentChatId(response.chats[0].id);
-      } else {
-        createNewChat();
       }
     } catch (error) {
       console.error('Failed to load chats:', error);
-      toast.error('Failed to load chat history');
     }
   };
 
@@ -238,10 +690,12 @@ const Chatbot = ({ isAuthenticated: propIsAuthenticated }) => {
       const newChats = chats.filter(c => c.id !== chatId);
       setChats(newChats);
       
-      if (newChats.length > 0) {
-        setCurrentChatId(newChats[0].id);
-      } else {
-        createNewChat();
+      if (currentChatId === chatId) {
+        if (newChats.length > 0) {
+          setCurrentChatId(newChats[0].id);
+        } else {
+          createNewChat();
+        }
       }
       
       toast.success('Chat deleted');
@@ -295,40 +749,39 @@ const Chatbot = ({ isAuthenticated: propIsAuthenticated }) => {
     window.dispatchEvent(new CustomEvent('open-auth', { detail: 'signin' }));
   };
 
-
   const sendToBackend = async (messageContent) => {
-  try {
-    const token = localStorage.getItem('token');
-    
-    if (!token) {
-      throw new Error('No authentication token found. Please login again.');
-    }
+    try {
+      const token = localStorage.getItem('token');
+      
+      if (!token) {
+        throw new Error('No authentication token found. Please login again.');
+      }
 
-    const response = await api.sendChatMessage({
-      message: messageContent,
-      chat_id: currentChatId,
-      model: model
-    });
+      const response = await api.sendChatMessage({
+        message: messageContent,
+        chat_id: currentChatId,
+        model: model
+      });
 
-    return response;
-  } catch (error) {
-    console.error('Backend chat error:', error);
-    
-    if (error.data && error.data.model_used) {
-      const modelName = MODELS[error.data.model_used]?.name || error.data.model_used;
-      toast.error(`${modelName} is currently unavailable. Please try another model.`);
-    } else if (error.message.includes('Failed to fetch')) {
-      toast.error('Cannot connect to server. Please check if the backend is running.');
-    } else {
-      toast.error(error.message || 'Failed to get response');
+      return response;
+    } catch (error) {
+      console.error('Backend chat error:', error);
+      
+      if (error.data && error.data.model_used) {
+        const modelName = MODELS[error.data.model_used]?.name || error.data.model_used;
+        toast.error(`${modelName} is currently unavailable. Please try another model.`);
+      } else if (error.message.includes('Failed to fetch')) {
+        toast.error('Cannot connect to server. Please check if the backend is running.');
+      } else {
+        toast.error(error.message || 'Failed to get response');
+      }
+      
+      throw error;
     }
-    
-    throw error;
-  }
-};
+  };
 
   const send = async () => {
-    if (!input.trim()|| loading) return;
+    if (!input.trim() || loading) return;
     
     if (!isAuthenticated) {
       toast.warning('Please login to use the chatbot');
@@ -338,7 +791,6 @@ const Chatbot = ({ isAuthenticated: propIsAuthenticated }) => {
 
     const messageContent = input.trim();
     
-    // Add user message to UI immediately
     const userMsg = { 
       role: 'user', 
       content: messageContent,
@@ -352,7 +804,6 @@ const Chatbot = ({ isAuthenticated: propIsAuthenticated }) => {
     try {
       const response = await sendToBackend(messageContent);
       
-      // Add assistant message
       setMessages(prev => [...prev, { 
         role: 'assistant', 
         content: response.reply, 
@@ -360,13 +811,13 @@ const Chatbot = ({ isAuthenticated: propIsAuthenticated }) => {
         model: response.model_used 
       }]);
 
-      // Update current chat ID if new chat was created
       if (response.chat_id && !currentChatId) {
         setCurrentChatId(response.chat_id);
-        loadChats(); // Reload chat list
       }
+
+      loadChats(false);
+
     } catch (error) {
-      // Add error message
       setMessages(prev => [...prev, { 
         role: 'assistant', 
         content: "I'm having trouble connecting. Please try again! 😊", 
@@ -378,7 +829,14 @@ const Chatbot = ({ isAuthenticated: propIsAuthenticated }) => {
   };
 
   const handleOpenChatbot = () => {
-    if (!isAuthenticated && authChecked) {
+    // If the button was dragged, don't open the chatbot
+    if (hasMoved.current) return;
+
+    const token = localStorage.getItem('token');
+    const currentlyAuthenticated = !!token;
+    setIsAuthenticated(currentlyAuthenticated);
+
+    if (!currentlyAuthenticated) {
       toast.info('Please sign in to chat with NeuroSpark Assistant!');
       handleOpenAuth();
     } else {
@@ -392,24 +850,26 @@ const Chatbot = ({ isAuthenticated: propIsAuthenticated }) => {
       handleOpenAuth();
       return;
     }
-    
-    // Delete current chat and create new one
-    if (currentChatId) {
-      deleteChat(currentChatId);
-    } else {
-      createNewChat();
-    }
+    createNewChat();
   };
 
-  /* ========== RENDER CHATBOT BUTTON ========== */
+  /* ========== RENDER CHATBOT BUTTON (Draggable) ========== */
   if (!open) {
     return (
       <button 
+        onMouseDown={handleBtnMouseDown}
+        onTouchStart={handleBtnMouseDown}
         onClick={handleOpenChatbot} 
         aria-label="Open Chatbot" 
-        className={`chatbot-button ${isAuthenticated ? 'authenticated' : ''}`}
+        className={`chatbot-button ${isAuthenticated ? 'authenticated' : ''} ${btnDragging ? 'dragging' : ''}`}
+        style={{
+          right: btnPos.right,
+          bottom: btnPos.bottom,
+          left: 'auto',
+          top: 'auto',
+        }}
       >
-        <img src={chatbotIcon} alt="Chat" />
+        <img src={chatbotIcon} alt="Chat" draggable={false} />
       </button>
     );
   }
@@ -423,12 +883,12 @@ const Chatbot = ({ isAuthenticated: propIsAuthenticated }) => {
   return (
     <div className="chatbot-overlay" onClick={() => setOpen(false)}>
       <div 
-        className={`chatbot-modal ${full ? 'full' : ''}`}
+        className={`chatbot-modal ${full ? 'full' : 'compact'}`}
         style={boxStyle}
         onClick={e => e.stopPropagation()}
       >
         {/* Sidebar */}
-        <div className={`chatbot-sidebar ${showSidebar ? 'open' : 'closed'}`}>
+        <div className={`chatbot-sidebar ${showSidebar ? 'open' : 'closed'} ${full ? 'sidebar-inline' : 'sidebar-overlay'}`}>
           <div className="chatbot-sidebar-inner">
             <div className="sidebar-header">
               <span className="sidebar-title">Chat History</span>
@@ -445,7 +905,7 @@ const Chatbot = ({ isAuthenticated: propIsAuthenticated }) => {
                 onClick={createNewChat}
                 className="new-chat-btn"
               >
-                + New Chat
+                <PlusIcon /> New Chat
               </button>
             </div>
             
@@ -473,7 +933,7 @@ const Chatbot = ({ isAuthenticated: propIsAuthenticated }) => {
                     onClick={() => {
                       if (editingChatId !== c.id) {
                         setCurrentChatId(c.id);
-                        if (window.innerWidth < 768) setShowSidebar(false);
+                        if (!full || window.innerWidth < 768) setShowSidebar(false);
                       }
                     }}
                     className={`chat-item ${currentChatId === c.id ? 'active' : ''}`}
@@ -489,16 +949,7 @@ const Chatbot = ({ isAuthenticated: propIsAuthenticated }) => {
                             renameChat(c.id, editTitle || 'New Chat');
                           }
                         }}
-                        style={{
-                          width: '100%',
-                          background: 'rgba(255,255,255,0.9)',
-                          border: 'none',
-                          borderRadius: 4,
-                          padding: '4px 8px',
-                          color: '#333',
-                          outline: 'none',
-                          fontSize: 13
-                        }}
+                        className="chat-edit-input"
                       />
                     ) : (
                       <>
@@ -536,6 +987,14 @@ const Chatbot = ({ isAuthenticated: propIsAuthenticated }) => {
           </div>
         </div>
 
+        {/* Overlay backdrop for compact sidebar */}
+        {showSidebar && !full && (
+          <div 
+            className="sidebar-backdrop" 
+            onClick={() => setShowSidebar(false)} 
+          />
+        )}
+
         {/* Main Chat Area */}
         <div className="chat-main">
           {/* Header */}
@@ -548,6 +1007,13 @@ const Chatbot = ({ isAuthenticated: propIsAuthenticated }) => {
               >
                 <MenuIcon />
               </button>
+              <button
+                onClick={createNewChat}
+                className="menu-toggle"
+                title="New Chat"
+              >
+                <PlusIcon />
+              </button>
             </div>
 
             <div className="header-logo">
@@ -556,13 +1022,6 @@ const Chatbot = ({ isAuthenticated: propIsAuthenticated }) => {
             </div>
 
             <div className="header-actions">
-              <button 
-                onClick={clearConversation}
-                className="header-btn"
-                title="Clear conversation"
-              >
-                🧹 Clear
-              </button>
               <button 
                 onClick={() => setFull(f => !f)} 
                 className="header-btn"
@@ -579,51 +1038,33 @@ const Chatbot = ({ isAuthenticated: propIsAuthenticated }) => {
           </div>
 
           {/* Model Tabs */}
-          <div style={{ 
-              padding: '7px 14px', 
-              borderBottom: '1px solid #f0f0f0', 
-              background: '#fafafa',
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center'
-            }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <span style={{ fontSize: '12px', color: '#666' }}>Model:</span>
-                <select
-                  value={model}
-                  onChange={(e) => setModel(e.target.value)}
-                  style={{
-                    padding: '5px 10px',
-                    borderRadius: '6px',
-                    border: '1px solid #ddd',
-                    background: '#fff',
-                    fontSize: '13px',
-                    fontWeight: '500',
-                    cursor: 'pointer',
-                    outline: 'none',
-                    minWidth: '120px'
-                  }}
-                >
-                  {Object.entries(MODELS).map(([key, config]) => {
-                    const isAvailable = apiStatus[key];
-                    return (
-                      <option 
-                        key={key} 
-                        value={key}
-                        disabled={!isAvailable}
-                        style={{ 
-                          color: !isAvailable ? '#999' : 'inherit',
-                          backgroundColor: !isAvailable ? '#f5f5f5' : 'inherit'
-                        }}
-                      >
-                        {config.emoji} {config.name} {!isAvailable ? ' (unavailable)' : ''}
-                      </option>
-                    );
-                  })}
-                </select>
-              </div>
-
-              </div>
+          <div className="model-selector-bar">
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span style={{ fontSize: '12px', color: '#666' }}>Model:</span>
+              <select
+                value={model}
+                onChange={(e) => setModel(e.target.value)}
+                className="model-select"
+              >
+                {Object.entries(MODELS).map(([key, config]) => {
+                  const isAvailable = apiStatus[key];
+                  return (
+                    <option 
+                      key={key} 
+                      value={key}
+                      disabled={!isAvailable}
+                      style={{ 
+                        color: !isAvailable ? '#999' : 'inherit',
+                        backgroundColor: !isAvailable ? '#f5f5f5' : 'inherit'
+                      }}
+                    >
+                      {config.emoji} {config.name} {!isAvailable ? ' (unavailable)' : ''}
+                    </option>
+                  );
+                })}
+              </select>
+            </div>
+          </div>
 
           {/* Messages */}
           <div className="messages-area">
@@ -633,7 +1074,12 @@ const Chatbot = ({ isAuthenticated: propIsAuthenticated }) => {
                 className={`message-wrapper ${m.role}`}
               >
                 <div className={`message-bubble ${m.role}`}>
-                  {m.content}
+                  {/* ENHANCED: Rich markdown rendering for assistant messages */}
+                  {m.role === 'assistant' ? (
+                    <MarkdownRenderer content={m.content} />
+                  ) : (
+                    m.content
+                  )}
                   
                   {/* Copy button for assistant messages */}
                   {m.role === 'assistant' && (
@@ -675,28 +1121,26 @@ const Chatbot = ({ isAuthenticated: propIsAuthenticated }) => {
             <div ref={endRef} />
           </div>
 
-  
-
           {/* Input Area */}
-        <div className="input-area">
-          <input
-            type="text" 
-            placeholder={isAuthenticated ? "Type your message..." : "Login to chat..."}
-            value={input}
-            onChange={e => setInput(e.target.value)} 
-            onKeyDown={e => e.key === 'Enter' && send()} 
-            disabled={loading || !isAuthenticated}
-            className="message-input"
-          />
-          
-          <button 
-            onClick={send} 
-            disabled={!input.trim() || loading || !isAuthenticated} 
-            className="send-btn"
-          >
-            {isAuthenticated ? <SendIcon/> : <LockIcon/>}
-          </button>
-        </div>
+          <div className="input-area">
+            <input
+              type="text" 
+              placeholder={isAuthenticated ? "Type your message..." : "Login to chat..."}
+              value={input}
+              onChange={e => setInput(e.target.value)} 
+              onKeyDown={e => e.key === 'Enter' && send()} 
+              disabled={loading || !isAuthenticated}
+              className="message-input"
+            />
+            
+            <button 
+              onClick={send} 
+              disabled={!input.trim() || loading || !isAuthenticated} 
+              className="send-btn"
+            >
+              {isAuthenticated ? <SendIcon/> : <LockIcon/>}
+            </button>
+          </div>
 
           {/* Status Footer */}
           <div className="status-footer">

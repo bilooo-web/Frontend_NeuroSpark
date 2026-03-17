@@ -28,17 +28,10 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import Chatbot from "./components/Chatbot/Chatbot";
 import GuardianRouter from "./pages/GuardianRouter";
 
-import ParentDashboard from "./pages/ParentDashboard";
-import Children from "./pages/Children";
-import ChildDetail from "./pages/ChildDetail";
 import ChildDashboard from "./pages/ChildDashboard";
-import PendingInvites from "./pages/PendingInvites";
-import Anomalies from "./pages/Anomalies";
-import Feedbacks from "./pages/Feedbacks";
-import Settings from "./pages/Settings";
-
 
 import './styles/dashboard.css'; 
+import './components/common/Loader.css';
 
 const AdminRoute = ({ children }) => {
       const navigate = useNavigate();

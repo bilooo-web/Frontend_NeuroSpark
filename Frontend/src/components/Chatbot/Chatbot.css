@@ -126,6 +126,80 @@
 }
 
 /* ============================================================
+   STARS BACKGROUND — Matching AdminLayout aesthetic
+   Subtle animated stars that don't interfere with readability
+   ============================================================ */
+
+@keyframes chatbotTwinkle {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 0.8; }
+}
+
+@keyframes chatbotTwinkle2 {
+  0%, 100% { opacity: 0.2; }
+  50% { opacity: 0.6; }
+}
+
+@keyframes chatbotDrift {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-6px); }
+  100% { transform: translateY(0px); }
+}
+
+.chatbot-stars-bg {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+  border-radius: inherit;
+}
+
+.chatbot-stars-bg::before,
+.chatbot-stars-bg::after {
+  content: '';
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+}
+
+.chatbot-stars-bg::before {
+  background-image:
+    radial-gradient(1.5px 1.5px at 10% 15%, rgba(28, 196, 175, 0.35) 50%, transparent 50%),
+    radial-gradient(1px 1px at 25% 45%, rgba(28, 196, 175, 0.25) 50%, transparent 50%),
+    radial-gradient(1.5px 1.5px at 40% 20%, rgba(139, 227, 216, 0.3) 50%, transparent 50%),
+    radial-gradient(1px 1px at 55% 65%, rgba(28, 196, 175, 0.2) 50%, transparent 50%),
+    radial-gradient(1.5px 1.5px at 70% 35%, rgba(139, 227, 216, 0.35) 50%, transparent 50%),
+    radial-gradient(1px 1px at 85% 80%, rgba(28, 196, 175, 0.25) 50%, transparent 50%),
+    radial-gradient(1.5px 1.5px at 15% 75%, rgba(139, 227, 216, 0.2) 50%, transparent 50%),
+    radial-gradient(1px 1px at 60% 10%, rgba(28, 196, 175, 0.3) 50%, transparent 50%),
+    radial-gradient(1.5px 1.5px at 90% 50%, rgba(139, 227, 216, 0.25) 50%, transparent 50%),
+    radial-gradient(1px 1px at 35% 90%, rgba(28, 196, 175, 0.2) 50%, transparent 50%),
+    radial-gradient(1.5px 1.5px at 75% 5%, rgba(139, 227, 216, 0.3) 50%, transparent 50%),
+    radial-gradient(1px 1px at 5% 55%, rgba(28, 196, 175, 0.2) 50%, transparent 50%),
+    radial-gradient(1.5px 1.5px at 48% 42%, rgba(139, 227, 216, 0.25) 50%, transparent 50%),
+    radial-gradient(1px 1px at 95% 25%, rgba(28, 196, 175, 0.3) 50%, transparent 50%);
+  animation: chatbotTwinkle 4s ease-in-out infinite, chatbotDrift 8s ease-in-out infinite;
+}
+
+.chatbot-stars-bg::after {
+  background-image:
+    radial-gradient(1px 1px at 18% 30%, rgba(28, 196, 175, 0.2) 50%, transparent 50%),
+    radial-gradient(1.5px 1.5px at 32% 60%, rgba(139, 227, 216, 0.3) 50%, transparent 50%),
+    radial-gradient(1px 1px at 50% 85%, rgba(28, 196, 175, 0.2) 50%, transparent 50%),
+    radial-gradient(1.5px 1.5px at 65% 15%, rgba(139, 227, 216, 0.25) 50%, transparent 50%),
+    radial-gradient(1px 1px at 80% 55%, rgba(28, 196, 175, 0.3) 50%, transparent 50%),
+    radial-gradient(1.5px 1.5px at 12% 95%, rgba(139, 227, 216, 0.2) 50%, transparent 50%),
+    radial-gradient(1px 1px at 42% 5%, rgba(28, 196, 175, 0.25) 50%, transparent 50%),
+    radial-gradient(1.5px 1.5px at 88% 70%, rgba(139, 227, 216, 0.2) 50%, transparent 50%),
+    radial-gradient(1px 1px at 22% 48%, rgba(28, 196, 175, 0.15) 50%, transparent 50%),
+    radial-gradient(1.5px 1.5px at 58% 35%, rgba(139, 227, 216, 0.2) 50%, transparent 50%);
+  animation: chatbotTwinkle2 5s ease-in-out infinite 1.5s, chatbotDrift 10s ease-in-out infinite 2s;
+}
+
+/* ============================================================
    SIDEBAR - Two modes: inline (full) and overlay (compact)
    ============================================================ */
 
@@ -325,29 +399,92 @@
   text-overflow: ellipsis;
   font-size: 14px;
   flex: 1;
-  margin-right: 10px;
+  margin-right: 4px;
 }
 
-.chat-item-actions {
-  display: flex;
-  gap: 6px;
-  opacity: 0.8;
+/* ---- 3-Dot Hover Menu ---- */
+.chat-item-more-wrapper {
+  position: relative;
   flex-shrink: 0;
 }
 
-.chat-item-actions button {
+.chat-item-more-btn {
   background: none;
   border: none;
-  color: #fff;
+  color: rgba(255,255,255,0.5);
   cursor: pointer;
-  padding: 2px;
+  padding: 4px;
+  border-radius: 4px;
   display: flex;
-  border-radius: 3px;
-  transition: background 0.2s;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s;
+  opacity: 0;
+  pointer-events: none;
 }
 
-.chat-item-actions button:hover {
-  background: rgba(255,255,255,0.3);
+/* Show 3-dot button on chat item hover */
+.chat-item:hover .chat-item-more-btn,
+.chat-item.active .chat-item-more-btn {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.chat-item-more-btn:hover {
+  background: rgba(255,255,255,0.25);
+  color: #fff;
+}
+
+/* Dropdown menu */
+.chat-item-dropdown {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 4px);
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.2), 0 0 0 1px rgba(0,0,0,0.05);
+  min-width: 130px;
+  z-index: 50;
+  overflow: hidden;
+  animation: chatDropdownIn 0.15s ease-out;
+}
+
+@keyframes chatDropdownIn {
+  from { opacity: 0; transform: translateY(-4px) scale(0.95); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.chat-dropdown-option {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 14px;
+  border: none;
+  background: none;
+  color: #333;
+  font-size: 13px;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 0.15s;
+  text-align: left;
+}
+
+.chat-dropdown-option:hover {
+  background: #f3f4f6;
+}
+
+.chat-dropdown-option.delete {
+  color: #ef4444;
+}
+
+.chat-dropdown-option.delete:hover {
+  background: #fef2f2;
+}
+
+/* Legacy — keep for backward compat but hidden */
+.chat-item-actions {
+  display: none;
 }
 
 .chat-edit-input {
@@ -371,6 +508,8 @@
   flex-direction: column;
   overflow: hidden;
   min-width: 0;
+  position: relative;
+  z-index: 1;
 }
 
 /* Header */
@@ -585,6 +724,52 @@
   border-radius: 50%;
   background: #8be3d8;
   animation: cbDots 1.4s infinite ease-in-out both;
+}
+
+/* Enhanced thinking indicator */
+.thinking-container {
+  max-width: 85%;
+}
+
+.thinking-indicator {
+  padding: 10px 16px;
+  border-radius: 14px;
+  background: #fff;
+  border: 1px solid #eee;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.thinking-dots {
+  display: flex;
+  gap: 5px;
+}
+
+.thinking-text {
+  font-size: 0.78rem;
+  color: #888;
+  font-weight: 500;
+}
+
+.thinking-timer {
+  color: #aaa;
+  font-weight: 400;
+}
+
+.thinking-hint {
+  font-size: 0.72rem;
+  color: #b0b0b0;
+  font-style: italic;
+}
+
+@keyframes thinkingPulse {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
+}
+
+.thinking-text {
+  animation: thinkingPulse 2s ease-in-out infinite;
 }
 
 /* Input Area */
@@ -949,6 +1134,58 @@
   background: rgba(139, 227, 216, 0.06);
 }
 
+
+/* ============================================================
+   COPY BUTTON FOR USER MESSAGES
+   ============================================================ */
+
+.copy-btn-user {
+  color: rgba(255,255,255,0.5);
+}
+
+.copy-btn-user:hover {
+  opacity: 1;
+  background: rgba(255,255,255,0.15);
+  color: #fff;
+}
+
+.copy-btn-user.copied {
+  color: #a6e3a1;
+}
+
+/* Make user bubble have room for copy button */
+.message-bubble.user {
+  padding-right: 28px;
+}
+
+/* ============================================================
+   CHAT LIST LOADING & EMPTY STATES
+   ============================================================ */
+
+.chat-list-loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+  padding: 24px 0;
+}
+
+.chat-list-empty {
+  text-align: center;
+  padding: 24px 16px;
+  color: rgba(255,255,255,0.6);
+  font-size: 13px;
+  font-style: italic;
+}
+
+/* Messages area loading spinner */
+.messages-loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex: 1;
+  padding: 40px 0;
+}
 
 /* ============================================================
    MOBILE RESPONSIVENESS

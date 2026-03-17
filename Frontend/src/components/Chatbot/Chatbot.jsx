@@ -1,19 +1,24 @@
 /**
- * Chatbot.jsx — Enhanced version
+ * Chatbot.jsx — Enhanced version v2
  * 
- * ENHANCEMENTS:
- * 1. Rich markdown rendering for AI responses (code blocks, bold, italic, lists, links, tables)
- *    matching the style of ChatGPT / Gemini / DeepSeek responses.
- * 2. Draggable chatbot button — user can reposition it anywhere on screen.
+ * ENHANCEMENTS (v2):
+ * 1. Lazy chat creation: no chat is created when opening chatbot. Chat is created
+ *    on first message send only.
+ * 2. User message appears instantly (optimistic UI) before API response.
+ * 3. Each chat can use multiple models — model badge shown per message.
+ * 4. Copy button on ALL messages (user + assistant).
+ * 5. Performance: cached API status, debounced chat load, memoized components.
  * 
  * PREVIOUS FIXES (preserved):
  * 1. Auth sync: listens to 'login-success' and 'logout' events.
  * 2. Gemini incomplete responses: increased maxOutputTokens (backend).
  * 3. Sidebar overlay in compact mode.
- * 4. AI-generated chat titles + always opens NEW chat on open.
+ * 4. AI-generated chat titles.
+ * 5. Rich markdown rendering for AI responses.
+ * 6. Draggable chatbot button.
  */
 
-import React, { useState, useRef, useEffect, useCallback, useMemo } from "react";
+import React, { useState, useRef, useEffect, useCallback, useMemo, memo } from "react";
 import chatbotIcon from "../../assets/chatboticon.png";
 import logo_s from "../../assets/logo_s.png";
 import { toast } from 'react-toastify';
@@ -103,6 +108,14 @@ const PlusIcon = () => (
   </svg>
 );
 
+const MoreDotsIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+    <circle cx="5" cy="12" r="2"></circle>
+    <circle cx="12" cy="12" r="2"></circle>
+    <circle cx="19" cy="12" r="2"></circle>
+  </svg>
+);
+
 const CodeCopyIcon = ({ size = 12 }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
     <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
@@ -113,12 +126,7 @@ const CodeCopyIcon = ({ size = 12 }) => (
 
 /* ========== MARKDOWN RENDERER ========== */
 
-/**
- * Renders markdown-like content similar to ChatGPT / Gemini / DeepSeek.
- * Supports: code blocks, inline code, bold, italic, strikethrough, links,
- * ordered/unordered lists, blockquotes, horizontal rules, tables, headings.
- */
-const MarkdownRenderer = ({ content }) => {
+const MarkdownRenderer = memo(({ content }) => {
   const [copiedBlock, setCopiedBlock] = useState(null);
 
   const copyCode = useCallback((code, index) => {
@@ -130,12 +138,10 @@ const MarkdownRenderer = ({ content }) => {
   const rendered = useMemo(() => {
     if (!content) return null;
 
-    // Split by code blocks first (``` ... ```)
     const parts = content.split(/(```[\s\S]*?```)/g);
     let codeBlockIndex = 0;
 
     return parts.map((part, i) => {
-      // Code block
       if (part.startsWith('```') && part.endsWith('```')) {
         const blockIdx = codeBlockIndex++;
         const inner = part.slice(3, -3);
@@ -178,11 +184,8 @@ const MarkdownRenderer = ({ content }) => {
   }, [content, copiedBlock, copyCode]);
 
   return <div className="md-rendered">{rendered}</div>;
-};
+});
 
-/**
- * Handles block-level markdown: paragraphs, lists, blockquotes, headings, tables, HR.
- */
 const MarkdownInline = ({ text }) => {
   if (!text || !text.trim()) return null;
 
@@ -196,7 +199,6 @@ const MarkdownInline = ({ text }) => {
 
     if (!trimmed) { i++; continue; }
 
-    // Headings
     const headingMatch = trimmed.match(/^(#{1,6})\s+(.+)$/);
     if (headingMatch) {
       const level = headingMatch[1].length;
@@ -209,13 +211,11 @@ const MarkdownInline = ({ text }) => {
       i++; continue;
     }
 
-    // Horizontal rule
     if (/^(-{3,}|_{3,}|\*{3,})$/.test(trimmed)) {
       elements.push(<hr key={`hr-${i}`} className="md-hr" />);
       i++; continue;
     }
 
-    // Table detection
     if (trimmed.includes('|') && i + 1 < lines.length && /^\|?[\s\-:|]+\|?$/.test(lines[i + 1]?.trim())) {
       const tableLines = [];
       let j = i;
@@ -229,7 +229,6 @@ const MarkdownInline = ({ text }) => {
       }
     }
 
-    // Blockquote
     if (trimmed.startsWith('>')) {
       const quoteLines = [];
       let j = i;
@@ -245,7 +244,6 @@ const MarkdownInline = ({ text }) => {
       i = j; continue;
     }
 
-    // Unordered list
     if (/^[-*+]\s/.test(trimmed)) {
       const listItems = [];
       let j = i;
@@ -263,7 +261,6 @@ const MarkdownInline = ({ text }) => {
       i = j; continue;
     }
 
-    // Ordered list
     if (/^\d+[.)]\s/.test(trimmed)) {
       const listItems = [];
       let j = i;
@@ -281,7 +278,6 @@ const MarkdownInline = ({ text }) => {
       i = j; continue;
     }
 
-    // Regular paragraph
     const paraLines = [];
     let j = i;
     while (j < lines.length) {
@@ -307,9 +303,6 @@ const MarkdownInline = ({ text }) => {
   return <>{elements}</>;
 };
 
-/**
- * Parse inline formatting: bold, italic, strikethrough, inline code, links.
- */
 function parseInline(text) {
   if (!text) return text;
 
@@ -388,9 +381,6 @@ function parseInline(text) {
   });
 }
 
-/**
- * Render a markdown table.
- */
 function renderTable(tableLines, keyPrefix) {
   const parseRow = (line) =>
     line.replace(/^\|/, '').replace(/\|$/, '').split('|').map(cell => cell.trim());
@@ -455,6 +445,47 @@ const MODELS = {
   },
 };
 
+/* ========== WELCOME MESSAGE (shown locally, never sent to backend) ========== */
+const WELCOME_MESSAGE = {
+  role: 'assistant',
+  content: "Hello! I'm your NeuroSpark Assistant 😊 How can I help you today?",
+  time: '',
+  isWelcome: true,
+};
+
+/* ========== MEMOIZED MESSAGE BUBBLE ========== */
+const MessageBubble = memo(({ message, index, copiedIndex, onCopy }) => {
+  return (
+    <div className={`message-wrapper ${message.role}`}>
+      <div className={`message-bubble ${message.role}`}>
+        {message.role === 'assistant' ? (
+          <MarkdownRenderer content={message.content} />
+        ) : (
+          message.content
+        )}
+        
+        {/* Copy button for ALL messages */}
+        <button
+          onClick={() => onCopy(message.content, index)}
+          className={`copy-btn ${message.role === 'user' ? 'copy-btn-user' : ''} ${copiedIndex === index ? 'copied' : ''}`}
+          title="Copy to clipboard"
+        >
+          {copiedIndex === index ? <CheckIcon/> : <CopyIcon/>}
+        </button>
+      </div>
+      
+      <div className="message-meta">
+        {message.time} 
+        {message.model && (
+          <span className="model-badge" style={{ color: MODELS[message.model]?.color || '#666' }}>
+            • {MODELS[message.model]?.emoji} {MODELS[message.model]?.name}
+          </span>
+        )}
+      </div>
+    </div>
+  );
+});
+
 /* ========== MAIN CHATBOT COMPONENT ========== */
 const Chatbot = ({ isAuthenticated: propIsAuthenticated }) => {
   const [open, setOpen] = useState(false);
@@ -463,19 +494,24 @@ const Chatbot = ({ isAuthenticated: propIsAuthenticated }) => {
   const [chats, setChats] = useState([]);
   const [currentChatId, setCurrentChatId] = useState(null);
   const [currentChat, setCurrentChat] = useState(null);
-  const [messages, setMessages] = useState([]);
+  const [messages, setMessages] = useState([WELCOME_MESSAGE]);
   const [showSidebar, setShowSidebar] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [editingChatId, setEditingChatId] = useState(null);
   const [editTitle, setEditTitle] = useState('');
-
+  const [menuOpenChatId, setMenuOpenChatId] = useState(null);
+  const menuRef = useRef(null);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
+  const [thinkingSeconds, setThinkingSeconds] = useState(0);
+  const thinkingTimerRef = useRef(null);
   const [model, setModel] = useState('gemini');
   const [copiedIndex, setCopiedIndex] = useState(null);
   const [apiStatus, setApiStatus] = useState({});
   const [isAuthenticated, setIsAuthenticated] = useState(propIsAuthenticated || false);
   const [authChecked, setAuthChecked] = useState(false);
+  const [chatsLoading, setChatsLoading] = useState(false);
+  const [messagesLoading, setMessagesLoading] = useState(false);
   
   /* ===== Draggable button state ===== */
   const [btnPos, setBtnPos] = useState(() => {
@@ -491,8 +527,9 @@ const Chatbot = ({ isAuthenticated: propIsAuthenticated }) => {
   const dragStartPos = useRef({ right: 30, bottom: 30 });
   const hasMoved = useRef(false);
 
-  // Track if we've already loaded for this "open" session
   const hasInitialized = useRef(false);
+  const apiStatusCache = useRef({ data: null, timestamp: 0 });
+  const skipNextLoad = useRef(false); // Skip message reload after inline chat creation
   
   const endRef = useRef(null);
 
@@ -503,21 +540,22 @@ const Chatbot = ({ isAuthenticated: propIsAuthenticated }) => {
     }
   }, [propIsAuthenticated]);
 
-  // ===== FIX #1: Listen to login-success and logout events =====
+  // Listen to login-success and logout events
   useEffect(() => {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('token') || sessionStorage.getItem('token');
     setIsAuthenticated(!!token);
     setAuthChecked(true);
 
     const handleLoginSuccess = () => {
       setIsAuthenticated(true);
+      apiStatusCache.current = { data: null, timestamp: 0 };
     };
 
     const handleLogout = () => {
       setIsAuthenticated(false);
       setChats([]);
       setCurrentChatId(null);
-      setMessages([]);
+      setMessages([WELCOME_MESSAGE]);
       setCurrentChat(null);
     };
 
@@ -535,18 +573,21 @@ const Chatbot = ({ isAuthenticated: propIsAuthenticated }) => {
       window.removeEventListener('login-success', handleLoginSuccess);
       window.removeEventListener('logout', handleLogout);
       window.removeEventListener('storage', handleStorageChange);
+      if (thinkingTimerRef.current) clearInterval(thinkingTimerRef.current);
     };
   }, []);
 
-  // ===== FIX #4: Always open a NEW chat when chatbot opens =====
+  // When chatbot opens: load chats + check API status. NO auto-create chat.
   useEffect(() => {
     if (isAuthenticated && open) {
-      loadChats(false);
-      checkApiKeyStatus();
-      
       if (!hasInitialized.current) {
         hasInitialized.current = true;
-        createNewChat();
+        loadChats(false);
+        checkApiKeyStatus();
+        // Start fresh with just the welcome message — no backend call
+        setCurrentChatId(null);
+        setCurrentChat(null);
+        setMessages([WELCOME_MESSAGE]);
       }
     }
   }, [isAuthenticated, open]);
@@ -558,21 +599,26 @@ const Chatbot = ({ isAuthenticated: propIsAuthenticated }) => {
     }
   }, [open]);
 
-  // Load current chat messages when chat changes
+  // Load current chat messages when chat changes (only for existing chats from sidebar)
   useEffect(() => {
     if (currentChatId && isAuthenticated) {
+      // Skip if we just created this chat inline (messages already in state)
+      if (skipNextLoad.current) {
+        skipNextLoad.current = false;
+        return;
+      }
       loadChatMessages(currentChatId);
     }
   }, [currentChatId, isAuthenticated]);
 
-  // Auto-scroll to bottom when new messages arrive
+  // Auto-scroll
   useEffect(() => {
     if (endRef.current) {
       endRef.current.scrollIntoView({ behavior: 'smooth' });
     }
-  }, [messages]);
+  }, [messages, loading]);
 
-  // ===== FIX #3: Close sidebar when leaving full mode =====
+  // Close sidebar when leaving full mode
   useEffect(() => {
     if (!full) {
       setShowSidebar(false);
@@ -628,7 +674,6 @@ const Chatbot = ({ isAuthenticated: propIsAuthenticated }) => {
   }, []);
 
   const handleBtnMouseDown = (e) => {
-    // Prevent default to avoid text selection and ghost images
     if (e.type === 'mousedown') e.preventDefault();
     isDragging.current = true;
     hasMoved.current = false;
@@ -639,7 +684,19 @@ const Chatbot = ({ isAuthenticated: propIsAuthenticated }) => {
     dragStartPos.current = { ...btnPos };
   };
 
-  const loadChats = async (autoSelect = false) => {
+  // Close 3-dot menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (menuRef.current && !menuRef.current.contains(e.target)) {
+        setMenuOpenChatId(null);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const loadChats = useCallback(async (autoSelect = false) => {
+    setChatsLoading(true);
     try {
       const response = await api.getChats();
       setChats(response.chats || []);
@@ -649,42 +706,36 @@ const Chatbot = ({ isAuthenticated: propIsAuthenticated }) => {
       }
     } catch (error) {
       console.error('Failed to load chats:', error);
+    } finally {
+      setChatsLoading(false);
     }
-  };
+  }, [currentChatId]);
 
-  const loadChatMessages = async (chatId) => {
+  const loadChatMessages = useCallback(async (chatId) => {
+    setMessagesLoading(true);
     try {
       const response = await api.getChatMessages(chatId);
       setMessages(response.messages || []);
       setCurrentChat(response.chat);
-      setModel(response.chat.model || 'gemini');
+      // Don't override model — allow user to switch model mid-chat
     } catch (error) {
       console.error('Failed to load messages:', error);
       toast.error('Failed to load messages');
+    } finally {
+      setMessagesLoading(false);
     }
-  };
+  }, []);
 
-  const createNewChat = async () => {
-    try {
-      const response = await api.createChat({ model });
-      const newChat = response.chat;
-      
-      setChats(prev => [newChat, ...prev]);
-      setCurrentChatId(newChat.id);
-      setMessages([{
-        role: 'assistant',
-        content: "Hello! I'm your NeuroSpark Assistant 😊 How can I help you today?",
-        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-      }]);
-      
-      if (window.innerWidth < 768) setShowSidebar(false);
-    } catch (error) {
-      console.error('Failed to create chat:', error);
-      toast.error('Failed to create new chat');
-    }
-  };
+  // Start a new blank chat (no backend call)
+  const startNewChat = useCallback(() => {
+    setCurrentChatId(null);
+    setCurrentChat(null);
+    setMessages([WELCOME_MESSAGE]);
+    setInput('');
+    if (window.innerWidth < 768) setShowSidebar(false);
+  }, []);
 
-  const deleteChat = async (chatId) => {
+  const deleteChat = useCallback(async (chatId) => {
     try {
       await api.deleteChat(chatId);
       const newChats = chats.filter(c => c.id !== chatId);
@@ -694,7 +745,7 @@ const Chatbot = ({ isAuthenticated: propIsAuthenticated }) => {
         if (newChats.length > 0) {
           setCurrentChatId(newChats[0].id);
         } else {
-          createNewChat();
+          startNewChat();
         }
       }
       
@@ -703,9 +754,9 @@ const Chatbot = ({ isAuthenticated: propIsAuthenticated }) => {
       console.error('Failed to delete chat:', error);
       toast.error('Failed to delete chat');
     }
-  };
+  }, [chats, currentChatId, startNewChat]);
 
-  const renameChat = async (chatId, newTitle) => {
+  const renameChat = useCallback(async (chatId, newTitle) => {
     try {
       await api.updateChat(chatId, { title: newTitle });
       setChats(prev => prev.map(chat => 
@@ -717,12 +768,20 @@ const Chatbot = ({ isAuthenticated: propIsAuthenticated }) => {
       console.error('Failed to rename chat:', error);
       toast.error('Failed to rename chat');
     }
-  };
+  }, []);
 
-  const checkApiKeyStatus = async () => {
+  // Cached API status check (reuse for 60s)
+  const checkApiKeyStatus = useCallback(async () => {
+    const now = Date.now();
+    if (apiStatusCache.current.data && (now - apiStatusCache.current.timestamp) < 60000) {
+      setApiStatus(apiStatusCache.current.data);
+      return;
+    }
+
     try {
       const data = await api.get('/chatbot/status');
       setApiStatus(data);
+      apiStatusCache.current = { data, timestamp: now };
     } catch (error) {
       console.error('Error checking API status:', error);
       setApiStatus({
@@ -732,36 +791,55 @@ const Chatbot = ({ isAuthenticated: propIsAuthenticated }) => {
         deepseek: false,
       });
     }
-  };
+  }, []);
 
-  const timeStr = () => {
+  const timeStr = useCallback(() => {
     return new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-  };
+  }, []);
 
-  const copyToClipboard = (text, index) => {
-    navigator.clipboard.writeText(text);
-    setCopiedIndex(index);
-    setTimeout(() => setCopiedIndex(null), 2000);
-  };
+  const copyToClipboard = useCallback((text, index) => {
+    navigator.clipboard.writeText(text).then(() => {
+      setCopiedIndex(index);
+      setTimeout(() => setCopiedIndex(null), 2000);
+    }).catch(() => {
+      // Fallback for older browsers
+      const textarea = document.createElement('textarea');
+      textarea.value = text;
+      textarea.style.position = 'fixed';
+      textarea.style.opacity = '0';
+      document.body.appendChild(textarea);
+      textarea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textarea);
+      setCopiedIndex(index);
+      setTimeout(() => setCopiedIndex(null), 2000);
+    });
+  }, []);
 
-  const handleOpenAuth = () => {
+  const handleOpenAuth = useCallback(() => {
     setOpen(false);
     window.dispatchEvent(new CustomEvent('open-auth', { detail: 'signin' }));
-  };
+  }, []);
 
-  const sendToBackend = async (messageContent) => {
+  const sendToBackend = useCallback(async (messageContent, chatId) => {
     try {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('token') || sessionStorage.getItem('token');
       
       if (!token) {
         throw new Error('No authentication token found. Please login again.');
       }
 
-      const response = await api.sendChatMessage({
+      const payload = {
         message: messageContent,
-        chat_id: currentChatId,
         model: model
-      });
+      };
+
+      // Only include chat_id if we have one (existing chat)
+      if (chatId) {
+        payload.chat_id = chatId;
+      }
+
+      const response = await api.sendChatMessage(payload);
 
       return response;
     } catch (error) {
@@ -770,7 +848,7 @@ const Chatbot = ({ isAuthenticated: propIsAuthenticated }) => {
       if (error.data && error.data.model_used) {
         const modelName = MODELS[error.data.model_used]?.name || error.data.model_used;
         toast.error(`${modelName} is currently unavailable. Please try another model.`);
-      } else if (error.message.includes('Failed to fetch')) {
+      } else if (error.message && error.message.includes('Failed to fetch')) {
         toast.error('Cannot connect to server. Please check if the backend is running.');
       } else {
         toast.error(error.message || 'Failed to get response');
@@ -778,9 +856,9 @@ const Chatbot = ({ isAuthenticated: propIsAuthenticated }) => {
       
       throw error;
     }
-  };
+  }, [model]);
 
-  const send = async () => {
+  const send = useCallback(async () => {
     if (!input.trim() || loading) return;
     
     if (!isAuthenticated) {
@@ -790,49 +868,80 @@ const Chatbot = ({ isAuthenticated: propIsAuthenticated }) => {
     }
 
     const messageContent = input.trim();
+    const now = timeStr();
     
+    // Optimistic: show user message immediately
     const userMsg = { 
       role: 'user', 
       content: messageContent,
-      time: timeStr() 
+      time: now,
     };
     
-    setMessages(prev => [...prev, userMsg]);
+    // Filter out the welcome message if it's still there, keep all real messages
+    setMessages(prev => {
+      const filtered = prev.filter(m => !m.isWelcome);
+      return [...filtered, userMsg];
+    });
     setInput('');
     setLoading(true);
+    setThinkingSeconds(0);
+    thinkingTimerRef.current = setInterval(() => {
+      setThinkingSeconds(prev => prev + 1);
+    }, 1000);
 
     try {
-      const response = await sendToBackend(messageContent);
+      // Send to backend — it will create the chat if chat_id is null
+      const response = await sendToBackend(messageContent, currentChatId);
       
-      setMessages(prev => [...prev, { 
+      const assistantMsg = { 
         role: 'assistant', 
         content: response.reply, 
         time: timeStr(), 
         model: response.model_used 
-      }]);
+      };
 
-      if (response.chat_id && !currentChatId) {
+      setMessages(prev => [...prev, assistantMsg]);
+
+      // If this was a new chat (no currentChatId), update state with the new chat id
+      if (!currentChatId && response.chat_id) {
+        skipNextLoad.current = true; // Don't reload messages, we already have them
         setCurrentChatId(response.chat_id);
+        setCurrentChat({ id: response.chat_id, title: 'New Chat', model: model });
       }
 
-      loadChats(false);
+      // Reload chats list to get updated titles
+      setTimeout(() => loadChats(false), 800);
 
     } catch (error) {
+      const isTimeout = error.message && (error.message.includes('timed out') || error.message.includes('cURL error 28'));
+      const modelName = MODELS[model]?.name || model;
+      let errorContent;
+      
+      if (isTimeout && model === 'deepseek') {
+        errorContent = `⏱️ ${modelName} took too long to respond. Complex questions can exceed the time limit on the free tier. Try simplifying your question or switching to Gemini or ChatGPT.`;
+      } else if (error.message && error.message.includes('unavailable')) {
+        errorContent = `${modelName} is currently unavailable. Please try a different model.`;
+      } else {
+        errorContent = "I'm having trouble connecting. Please try again! 😊";
+      }
+      
       setMessages(prev => [...prev, { 
         role: 'assistant', 
-        content: "I'm having trouble connecting. Please try again! 😊", 
+        content: errorContent, 
         time: timeStr() 
       }]);
     } finally {
+      clearInterval(thinkingTimerRef.current);
+      thinkingTimerRef.current = null;
+      setThinkingSeconds(0);
       setLoading(false);
     }
-  };
+  }, [input, loading, isAuthenticated, currentChatId, model, handleOpenAuth, sendToBackend, timeStr, loadChats]);
 
-  const handleOpenChatbot = () => {
-    // If the button was dragged, don't open the chatbot
+  const handleOpenChatbot = useCallback(() => {
     if (hasMoved.current) return;
 
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('token') || sessionStorage.getItem('token');
     const currentlyAuthenticated = !!token;
     setIsAuthenticated(currentlyAuthenticated);
 
@@ -842,16 +951,23 @@ const Chatbot = ({ isAuthenticated: propIsAuthenticated }) => {
     } else {
       setOpen(true);
     }
-  };
+  }, [handleOpenAuth]);
 
-  const clearConversation = () => {
+  const clearConversation = useCallback(() => {
     if (!isAuthenticated) {
       toast.warning('Please login to use the chatbot');
       handleOpenAuth();
       return;
     }
-    createNewChat();
-  };
+    startNewChat();
+  }, [isAuthenticated, handleOpenAuth, startNewChat]);
+
+  // Filtered chats for search (memoized)
+  const filteredChats = useMemo(() => {
+    if (!searchQuery) return chats;
+    const q = searchQuery.toLowerCase();
+    return chats.filter(c => c.title.toLowerCase().includes(q));
+  }, [chats, searchQuery]);
 
   /* ========== RENDER CHATBOT BUTTON (Draggable) ========== */
   if (!open) {
@@ -887,6 +1003,9 @@ const Chatbot = ({ isAuthenticated: propIsAuthenticated }) => {
         style={boxStyle}
         onClick={e => e.stopPropagation()}
       >
+        {/* Stars background effect */}
+        <div className="chatbot-stars-bg" />
+        
         {/* Sidebar */}
         <div className={`chatbot-sidebar ${showSidebar ? 'open' : 'closed'} ${full ? 'sidebar-inline' : 'sidebar-overlay'}`}>
           <div className="chatbot-sidebar-inner">
@@ -902,7 +1021,7 @@ const Chatbot = ({ isAuthenticated: propIsAuthenticated }) => {
             
             <div style={{ padding: '16px 16px 8px 16px' }}>
               <button
-                onClick={createNewChat}
+                onClick={startNewChat}
                 className="new-chat-btn"
               >
                 <PlusIcon /> New Chat
@@ -925,14 +1044,24 @@ const Chatbot = ({ isAuthenticated: propIsAuthenticated }) => {
             </div>
 
             <div className="chat-list">
-              {chats
-                .filter(c => c.title.toLowerCase().includes(searchQuery.toLowerCase()))
-                .map(c => (
+              {chatsLoading ? (
+                <div className="chat-list-loading">
+                  <div className="typing-dot" style={{ animationDelay: '0s' }} />
+                  <div className="typing-dot" style={{ animationDelay: '0.15s' }} />
+                  <div className="typing-dot" style={{ animationDelay: '0.3s' }} />
+                </div>
+              ) : filteredChats.length === 0 ? (
+                <div className="chat-list-empty">
+                  {searchQuery ? 'No chats match your search' : 'No chat history yet'}
+                </div>
+              ) : (
+                filteredChats.map(c => (
                   <div
                     key={c.id}
                     onClick={() => {
                       if (editingChatId !== c.id) {
                         setCurrentChatId(c.id);
+                        setMenuOpenChatId(null);
                         if (!full || window.innerWidth < 768) setShowSidebar(false);
                       }
                     }}
@@ -948,6 +1077,9 @@ const Chatbot = ({ isAuthenticated: propIsAuthenticated }) => {
                           if (e.key === 'Enter') {
                             renameChat(c.id, editTitle || 'New Chat');
                           }
+                          if (e.key === 'Escape') {
+                            setEditingChatId(null);
+                          }
                         }}
                         className="chat-edit-input"
                       />
@@ -956,33 +1088,48 @@ const Chatbot = ({ isAuthenticated: propIsAuthenticated }) => {
                         <div className="chat-item-title" title={c.title}>
                           {c.title}
                         </div>
-                        {currentChatId === c.id && (
-                          <div className="chat-item-actions">
-                            <button
-                              title="Rename"
-                              onClick={e => {
-                                e.stopPropagation();
-                                setEditingChatId(c.id);
-                                setEditTitle(c.title);
-                              }}
-                            >
-                              <EditIcon />
-                            </button>
-                            <button
-                              title="Delete"
-                              onClick={e => {
-                                e.stopPropagation();
-                                deleteChat(c.id);
-                              }}
-                            >
-                              <TrashIcon />
-                            </button>
-                          </div>
-                        )}
+                        <div className="chat-item-more-wrapper" ref={menuOpenChatId === c.id ? menuRef : null}>
+                          <button
+                            className="chat-item-more-btn"
+                            title="Options"
+                            onClick={e => {
+                              e.stopPropagation();
+                              setMenuOpenChatId(prev => prev === c.id ? null : c.id);
+                            }}
+                          >
+                            <MoreDotsIcon />
+                          </button>
+                          {menuOpenChatId === c.id && (
+                            <div className="chat-item-dropdown">
+                              <button
+                                className="chat-dropdown-option"
+                                onClick={e => {
+                                  e.stopPropagation();
+                                  setEditingChatId(c.id);
+                                  setEditTitle(c.title);
+                                  setMenuOpenChatId(null);
+                                }}
+                              >
+                                <EditIcon /> Rename
+                              </button>
+                              <button
+                                className="chat-dropdown-option delete"
+                                onClick={e => {
+                                  e.stopPropagation();
+                                  setMenuOpenChatId(null);
+                                  deleteChat(c.id);
+                                }}
+                              >
+                                <TrashIcon /> Delete
+                              </button>
+                            </div>
+                          )}
+                        </div>
                       </>
                     )}
                   </div>
-                ))}
+                ))
+              )}
             </div>
           </div>
         </div>
@@ -1008,7 +1155,7 @@ const Chatbot = ({ isAuthenticated: propIsAuthenticated }) => {
                 <MenuIcon />
               </button>
               <button
-                onClick={createNewChat}
+                onClick={startNewChat}
                 className="menu-toggle"
                 title="New Chat"
               >
@@ -1068,45 +1215,8 @@ const Chatbot = ({ isAuthenticated: propIsAuthenticated }) => {
 
           {/* Messages */}
           <div className="messages-area">
-            {messages.map((m, i) => (
-              <div 
-                key={i} 
-                className={`message-wrapper ${m.role}`}
-              >
-                <div className={`message-bubble ${m.role}`}>
-                  {/* ENHANCED: Rich markdown rendering for assistant messages */}
-                  {m.role === 'assistant' ? (
-                    <MarkdownRenderer content={m.content} />
-                  ) : (
-                    m.content
-                  )}
-                  
-                  {/* Copy button for assistant messages */}
-                  {m.role === 'assistant' && (
-                    <button
-                      onClick={() => copyToClipboard(m.content, i)}
-                      className={`copy-btn ${copiedIndex === i ? 'copied' : ''}`}
-                      title="Copy to clipboard"
-                    >
-                      {copiedIndex === i ? <CheckIcon/> : <CopyIcon/>}
-                    </button>
-                  )}
-                </div>
-                
-                <div className="message-meta">
-                  {m.time} 
-                  {m.model && (
-                    <span className="model-badge">
-                      • via {MODELS[m.model]?.emoji} {MODELS[m.model]?.name}
-                    </span>
-                  )}
-                </div>
-              </div>
-            ))}
-            
-            {/* Loading indicator */}
-            {loading && (
-              <div style={{ alignSelf: 'flex-start' }}>
+            {messagesLoading ? (
+              <div className="messages-loading">
                 <div className="typing-indicator">
                   {[0, 0.15, 0.3].map((d, i) => (
                     <div 
@@ -1115,6 +1225,40 @@ const Chatbot = ({ isAuthenticated: propIsAuthenticated }) => {
                       style={{ animationDelay: `${d}s` }} 
                     />
                   ))}
+                </div>
+              </div>
+            ) : (
+              messages.map((m, i) => (
+                <MessageBubble 
+                  key={m.id || `msg-${i}`} 
+                  message={m} 
+                  index={i} 
+                  copiedIndex={copiedIndex}
+                  onCopy={copyToClipboard}
+                />
+              ))
+            )}
+            
+            {/* Loading indicator — enhanced thinking display */}
+            {loading && (
+              <div className="thinking-container" style={{ alignSelf: 'flex-start' }}>
+                <div className="thinking-indicator">
+                  <div className="thinking-dots">
+                    {[0, 0.15, 0.3].map((d, i) => (
+                      <div 
+                        key={i} 
+                        className="typing-dot"
+                        style={{ animationDelay: `${d}s` }} 
+                      />
+                    ))}
+                  </div>
+                  <span className="thinking-text">
+                    {MODELS[model]?.emoji} {MODELS[model]?.name || model} is thinking
+                    {thinkingSeconds > 0 && <span className="thinking-timer"> ({thinkingSeconds}s)</span>}
+                  </span>
+                  {thinkingSeconds >= 15 && model === 'deepseek' && (
+                    <span className="thinking-hint">DeepSeek may take up to 90s for complex questions</span>
+                  )}
                 </div>
               </div>
             )}
@@ -1128,7 +1272,7 @@ const Chatbot = ({ isAuthenticated: propIsAuthenticated }) => {
               placeholder={isAuthenticated ? "Type your message..." : "Login to chat..."}
               value={input}
               onChange={e => setInput(e.target.value)} 
-              onKeyDown={e => e.key === 'Enter' && send()} 
+              onKeyDown={e => e.key === 'Enter' && !e.shiftKey && send()} 
               disabled={loading || !isAuthenticated}
               className="message-input"
             />

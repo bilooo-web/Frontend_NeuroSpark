@@ -42,7 +42,31 @@ function Header({ totalCoins }) {
     }; init();
   }, [clearAll]);
 
-  useEffect(() => { const check = () => { const raw = localStorage.getItem('user'); if (raw) { try { setUser(JSON.parse(raw)); } catch { setUser(null); } } else { setUser(null); setCoins(0); } }; window.addEventListener('login-success', check); window.addEventListener('storage', check); return () => { window.removeEventListener('login-success', check); window.removeEventListener('storage', check); }; }, []);
+  useEffect(() => {
+    const check = () => {
+      const raw = localStorage.getItem('user');
+      if (raw) {
+        try { setUser(JSON.parse(raw)); } catch { setUser(null); }
+      } else {
+        setUser(null); setCoins(0);
+      }
+    };
+    const handleLogoutEvent = () => {
+      setUser(null);
+      setCoins(0);
+      setNotifications([]);
+      setUnreadCount(0);
+      validated.current = false;
+    };
+    window.addEventListener('login-success', check);
+    window.addEventListener('storage', check);
+    window.addEventListener('logout', handleLogoutEvent);
+    return () => {
+      window.removeEventListener('login-success', check);
+      window.removeEventListener('storage', check);
+      window.removeEventListener('logout', handleLogoutEvent);
+    };
+  }, []);
 
   useEffect(() => { const sync = async () => { const token = localStorage.getItem('token'); const u = JSON.parse(localStorage.getItem('user') || '{}'); if (!token || u.role !== 'child') { if (u.role !== 'child') setCoins(0); return; } try { const r = await fetch(`${API}/child/profile`, { headers: { Authorization:`Bearer ${token}`, Accept:'application/json' } }); if (!r.ok) return; const d = await r.json(); if (d?.stats?.total_coins != null) { localStorage.setItem('totalCoins', String(d.stats.total_coins)); setCoins(d.stats.total_coins); } } catch { setCoins(readCoins()); } }; setCoins(readCoins()); window.addEventListener('login-success', sync); return () => window.removeEventListener('login-success', sync); }, []);
 

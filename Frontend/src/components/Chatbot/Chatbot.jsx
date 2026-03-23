@@ -429,13 +429,6 @@ const MODELS = {
     hint: 'Google AI (recommended)',
     needsKey: true
   },
-  deepseek: { 
-    name: 'DeepSeek', 
-    emoji: '🧠', 
-    color: '#4D6CFA', 
-    hint: 'DeepSeek AI (powerful & free)',
-    needsKey: true
-  },
   openai: { 
     name: 'OpenAI', 
     emoji: '⚡', 
@@ -457,7 +450,7 @@ const WELCOME_MESSAGE = {
 const MessageBubble = memo(({ message, index, copiedIndex, onCopy }) => {
   return (
     <div className={`message-wrapper ${message.role}`}>
-      <div className={`message-bubble ${message.role}`}>
+      <div className={`message-bubble ${message.role}${message.isStreaming ? ' streaming' : ''}`}>
         {message.role === 'assistant' ? (
           <MarkdownRenderer content={message.content} />
         ) : (
@@ -788,7 +781,6 @@ const Chatbot = ({ isAuthenticated: propIsAuthenticated }) => {
         github: false,
         openai: false,
         gemini: false,
-        deepseek: false,
       });
     }
   }, []);
@@ -821,6 +813,107 @@ const Chatbot = ({ isAuthenticated: propIsAuthenticated }) => {
     window.dispatchEvent(new CustomEvent('open-auth', { detail: 'signin' }));
   }, []);
 
+  // ========== STREAMING SEND (word-by-word for ChatGPT) ==========
+  const sendStreaming = useCallback(async (messageContent, chatId) => {
+    const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+    const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api';
+
+    const response = await fetch(`${API_BASE}/chatbot/stream`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'text/event-stream',
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        message: messageContent,
+        model: model,
+        ...(chatId ? { chat_id: chatId } : {}),
+      }),
+    });
+
+    if (!response.ok) throw new Error('Stream request failed');
+
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+    let fullReply = '';
+    let newChatId = chatId;
+
+    // Add empty assistant message that we'll update
+    setMessages(prev => [...prev, {
+      role: 'assistant',
+      content: '',
+      time: timeStr(),
+      model: model,
+      isStreaming: true,
+    }]);
+
+    // Stop the thinking indicator
+    clearInterval(thinkingTimerRef.current);
+    thinkingTimerRef.current = null;
+    setThinkingSeconds(0);
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+
+      const text = decoder.decode(value, { stream: true });
+      const lines = text.split('\n').filter(l => l.startsWith('data: '));
+
+      for (const line of lines) {
+        const jsonStr = line.slice(6); // Remove "data: "
+        try {
+          const data = JSON.parse(jsonStr);
+
+          if (data.done) {
+            newChatId = data.chat_id || newChatId;
+            break;
+          }
+
+          if (data.chunk) {
+            fullReply += data.chunk;
+            // Update the last message in real-time
+            setMessages(prev => {
+              const updated = [...prev];
+              const last = updated[updated.length - 1];
+              if (last && last.isStreaming) {
+                updated[updated.length - 1] = {
+                  ...last,
+                  content: fullReply,
+                };
+              }
+              return updated;
+            });
+          }
+
+          if (data.error) {
+            throw new Error(data.error);
+          }
+        } catch (e) {
+          if (e.message === 'Stream failed') throw e;
+          // JSON parse errors on partial chunks are normal, skip
+        }
+      }
+    }
+
+    // Finalize the streaming message
+    setMessages(prev => {
+      const updated = [...prev];
+      const last = updated[updated.length - 1];
+      if (last && last.isStreaming) {
+        updated[updated.length - 1] = {
+          ...last,
+          content: fullReply || "I'm having trouble connecting. Please try again! 😊",
+          isStreaming: false,
+        };
+      }
+      return updated;
+    });
+
+    return { reply: fullReply, chat_id: newChatId, model_used: model };
+  }, [model, timeStr]);
+
+  // ========== REGULAR SEND (non-streaming, for Gemini) ==========
   const sendToBackend = useCallback(async (messageContent, chatId) => {
     try {
       const token = localStorage.getItem('token') || sessionStorage.getItem('token');
@@ -834,13 +927,11 @@ const Chatbot = ({ isAuthenticated: propIsAuthenticated }) => {
         model: model
       };
 
-      // Only include chat_id if we have one (existing chat)
       if (chatId) {
         payload.chat_id = chatId;
       }
 
       const response = await api.sendChatMessage(payload);
-
       return response;
     } catch (error) {
       console.error('Backend chat error:', error);
@@ -877,7 +968,6 @@ const Chatbot = ({ isAuthenticated: propIsAuthenticated }) => {
       time: now,
     };
     
-    // Filter out the welcome message if it's still there, keep all real messages
     setMessages(prev => {
       const filtered = prev.filter(m => !m.isWelcome);
       return [...filtered, userMsg];
@@ -890,21 +980,26 @@ const Chatbot = ({ isAuthenticated: propIsAuthenticated }) => {
     }, 1000);
 
     try {
-      // Send to backend — it will create the chat if chat_id is null
-      const response = await sendToBackend(messageContent, currentChatId);
-      
-      const assistantMsg = { 
-        role: 'assistant', 
-        content: response.reply, 
-        time: timeStr(), 
-        model: response.model_used 
-      };
+      let response;
 
-      setMessages(prev => [...prev, assistantMsg]);
+      // Use streaming for ChatGPT (github/openai), regular for Gemini
+      if (model === 'github' || model === 'openai') {
+        response = await sendStreaming(messageContent, currentChatId);
+      } else {
+        response = await sendToBackend(messageContent, currentChatId);
+        
+        const assistantMsg = { 
+          role: 'assistant', 
+          content: response.reply, 
+          time: timeStr(), 
+          model: response.model_used 
+        };
+        setMessages(prev => [...prev, assistantMsg]);
+      }
 
-      // If this was a new chat (no currentChatId), update state with the new chat id
+      // If this was a new chat, update state
       if (!currentChatId && response.chat_id) {
-        skipNextLoad.current = true; // Don't reload messages, we already have them
+        skipNextLoad.current = true;
         setCurrentChatId(response.chat_id);
         setCurrentChat({ id: response.chat_id, title: 'New Chat', model: model });
       }
@@ -917,8 +1012,8 @@ const Chatbot = ({ isAuthenticated: propIsAuthenticated }) => {
       const modelName = MODELS[model]?.name || model;
       let errorContent;
       
-      if (isTimeout && model === 'deepseek') {
-        errorContent = `⏱️ ${modelName} took too long to respond. Complex questions can exceed the time limit on the free tier. Try simplifying your question or switching to Gemini or ChatGPT.`;
+      if (isTimeout) {
+        errorContent = `⏱️ ${modelName} took too long to respond. Try simplifying your question or switching to another model.`;
       } else if (error.message && error.message.includes('unavailable')) {
         errorContent = `${modelName} is currently unavailable. Please try a different model.`;
       } else {
@@ -936,7 +1031,7 @@ const Chatbot = ({ isAuthenticated: propIsAuthenticated }) => {
       setThinkingSeconds(0);
       setLoading(false);
     }
-  }, [input, loading, isAuthenticated, currentChatId, model, handleOpenAuth, sendToBackend, timeStr, loadChats]);
+  }, [input, loading, isAuthenticated, currentChatId, model, handleOpenAuth, sendToBackend, sendStreaming, timeStr, loadChats]);
 
   const handleOpenChatbot = useCallback(() => {
     if (hasMoved.current) return;
@@ -1256,9 +1351,6 @@ const Chatbot = ({ isAuthenticated: propIsAuthenticated }) => {
                     {MODELS[model]?.emoji} {MODELS[model]?.name || model} is thinking
                     {thinkingSeconds > 0 && <span className="thinking-timer"> ({thinkingSeconds}s)</span>}
                   </span>
-                  {thinkingSeconds >= 15 && model === 'deepseek' && (
-                    <span className="thinking-hint">DeepSeek may take up to 90s for complex questions</span>
-                  )}
                 </div>
               </div>
             )}
@@ -1297,11 +1389,6 @@ const Chatbot = ({ isAuthenticated: propIsAuthenticated }) => {
               {apiStatus.gemini && (
                 <span className="model-status gemini">
                   💎 Gemini
-                </span>
-              )}
-              {apiStatus.deepseek && (
-                <span className="model-status deepseek">
-                  🧠 DeepSeek
                 </span>
               )}
             </div>

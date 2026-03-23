@@ -2,7 +2,7 @@
  *
  * ENHANCEMENTS:
  * - Markdown rendering styles for AI responses (code blocks, tables, lists, etc.)
- *   matching ChatGPT / Gemini / DeepSeek response formatting.
+ *   matching ChatGPT / Gemini response formatting.
  * - Draggable button cursor styles.
  *
  * PREVIOUS FIXES (preserved):
@@ -856,7 +856,6 @@
 
 .model-status.github { color: #10A37F; }
 .model-status.gemini { color: #4285F4; }
-.model-status.deepseek { color: #4D6CFA; }
 .model-status.openai { color: #10A37F; }
 
 .login-prompt {
@@ -892,7 +891,7 @@
 
 /* ============================================================
    MARKDOWN RENDERING STYLES
-   Matches ChatGPT / Gemini / DeepSeek response formatting
+   Matches ChatGPT / Gemini response formatting
    ============================================================ */
 
 /* Container reset */
@@ -1239,4 +1238,16 @@
   .md-table {
     font-size: 0.78em;
   }
+}
+/* ========== Streaming cursor animation ========== */
+.message-bubble.streaming .message-text::after {
+  content: '▊';
+  animation: blink-cursor 0.8s step-end infinite;
+  color: #1CC4AF;
+  font-weight: bold;
+}
+
+@keyframes blink-cursor {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
 }

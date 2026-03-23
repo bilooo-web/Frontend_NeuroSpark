@@ -704,20 +704,37 @@ const Chatbot = ({ isAuthenticated: propIsAuthenticated }) => {
     }
   }, [currentChatId]);
 
-  const loadChatMessages = useCallback(async (chatId) => {
+  // In Chatbot.jsx, update the loadChatMessages function:
+
+const loadChatMessages = useCallback(async (chatId) => {
     setMessagesLoading(true);
     try {
-      const response = await api.getChatMessages(chatId);
-      setMessages(response.messages || []);
-      setCurrentChat(response.chat);
-      // Don't override model — allow user to switch model mid-chat
+        // FIRST: Summarize previous chat if there is one
+        if (currentChatId && currentChatId !== chatId) {
+            try {
+                await api.post(`/chatbot/chats/${currentChatId}/summarize`);
+                console.log('Summarized previous chat:', currentChatId);
+            } catch (e) {
+                // Non-critical, ignore
+                console.warn('Failed to summarize previous chat:', e);
+            }
+        }
+        
+        const response = await api.getChatMessages(chatId);
+        setMessages(response.messages || []);
+        setCurrentChat(response.chat);
+        
+        // Set the model to match the chat's default model, but let user override
+        if (response.chat?.model) {
+            setModel(response.chat.model);
+        }
     } catch (error) {
-      console.error('Failed to load messages:', error);
-      toast.error('Failed to load messages');
+        console.error('Failed to load messages:', error);
+        toast.error('Failed to load messages');
     } finally {
-      setMessagesLoading(false);
+        setMessagesLoading(false);
     }
-  }, []);
+}, [currentChatId]);
 
   // Start a new blank chat (no backend call)
   const startNewChat = useCallback(() => {

@@ -35,8 +35,39 @@ import Anomalies from "./pages/Anomalies";
 import Feedbacks from "./pages/Feedbacks";
 import Settings from "./pages/Settings";
 
+import ChildDashboard from "./pages/ChildDashboard";
+
+=======
+
+import ChildDashboard from "./pages/ChildDashboard";
+>>>>>>> 472984999b8ccf2ead261e5bdbb7a6011e5db0f4
+=======
+import ChildDashboard from "./pages/ChildDashboard";
+import ParentDashboard from "./pages/ParentDashboard";
+import Children from "./pages/Children";
+import ChildDetail from "./pages/ChildDetail";
+import PendingInvites from "./pages/PendingInvites";
+import Anomalies from "./pages/Anomalies";
+import Feedbacks from "./pages/Feedbacks";
+import Settings from "./pages/Settings";
+=======
+import ParentDashboard from "./pages/ParentDashboard";
+import Children from "./pages/Children";
+import ChildDetail from "./pages/ChildDetail";
+import PendingInvites from "./pages/PendingInvites";
+import Anomalies from "./pages/Anomalies";
+import Feedbacks from "./pages/Feedbacks";
+import Settings from "./pages/Settings";
+
+import ChildDashboard from "./pages/ChildDashboard";
+
+=======
+
+import ChildDashboard from "./pages/ChildDashboard";
+>>>>>>> 472984999b8ccf2ead261e5bdbb7a6011e5db0f4
 
 import './styles/dashboard.css'; 
+import './components/common/Loader.css';
 
 const AdminRoute = ({ children }) => {
       const navigate = useNavigate();
@@ -169,18 +200,18 @@ function App() {
           <Route path="notifications" element={<AdminNotifications />} />
           <Route path="/admin/feedback" element={<FeedbackDashboard />} />
         </Route>
-        // Guardian Routes
-        <Route path="/guardian" element={<GuardianRouter />}>
-          <Route index element={<ParentDashboard />} />
-          <Route path="dashboard" element={<ParentDashboard />} />
-          <Route path="children" element={<Children />} />
-          <Route path="children/:id" element={<ChildDetail />} />
-          <Route path="invites" element={<PendingInvites />} />
-          <Route path="anomalies" element={<Anomalies />} />
-          <Route path="feedbacks" element={<Feedbacks />} />
-          <Route path="settings" element={<Settings />} />
-        </Route>
 
+        {/* Child Routes */}
+        <Route 
+          path="/child-dashboard" 
+          element={
+            <ProtectedRoute requiredRole="child">
+              <ChildDashboard />
+            </ProtectedRoute>
+          } 
+        />
+
+        {/* Guardian Routes */}
         <Route 
             path="/guardian/*" 
             element={

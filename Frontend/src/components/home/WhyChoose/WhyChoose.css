@@ -192,3 +192,35 @@
 .wave-bottom {
   margin-top: -1px;
 }
+
+@media (max-width: 1024px) {
+  .why-choose {
+    padding: 80px 40px;
+  }
+  .why-cards {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .Why-features-wave, .Why-features-wave-b {
+    width: 100vw;
+    margin-left: -40px;
+  }
+}
+
+@media (max-width: 768px) {
+  .why-choose {
+    padding: 60px 20px;
+  }
+  .why-container h2 {
+    font-size: 32px;
+  }
+  .why-desc {
+    font-size: 15px;
+    margin-bottom: 40px;
+  }
+  .why-cards {
+    grid-template-columns: 1fr;
+  }
+  .Why-features-wave, .Why-features-wave-b {
+    margin-left: -20px;
+  }
+}

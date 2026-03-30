@@ -110,9 +110,29 @@ function Header({ totalCoins }) {
 
   useEffect(() => { const h = (e) => { if (notifRef.current && !notifRef.current.contains(e.target)) { setShowNotifPanel(false); setSelectedNotif(null); } }; document.addEventListener('mousedown', h); return () => document.removeEventListener('mousedown', h); }, []);
 
+  // Guarded navigate — dispatches a cancellable event so GameSwitcher can intercept
+  const guardedNavigate = useCallback((path) => {
+    const event = new CustomEvent('header-navigate', { detail: { path }, cancelable: true });
+    const cancelled = !window.dispatchEvent(event);
+    if (!cancelled) {
+      navigate(path);
+    }
+  }, [navigate]);
+
   const openSignIn = () => window.dispatchEvent(new CustomEvent('open-auth', { detail: 'signin' }));
-  const handleLogout = () => { const token = localStorage.getItem('token'); if (token) fetch(`${API}/logout`, { method:'POST', headers: { Authorization:`Bearer ${token}`, Accept:'application/json' } }).catch(() => {}); clearAll(); validated.current = false; window.dispatchEvent(new CustomEvent('logout')); navigate('/'); };
-  const goToDashboard = () => { if (user?.role === 'admin') navigate('/admin'); else if (user?.role === 'guardian') navigate('/guardian/dashboard'); else if (user?.role === 'child') navigate('/child-dashboard'); };
+  const handleLogout = () => {
+    const event = new CustomEvent('header-navigate', { detail: { path: '/', isLogout: true }, cancelable: true });
+    const cancelled = !window.dispatchEvent(event);
+    if (cancelled) return; // Game is active, popup will show
+    const token = localStorage.getItem('token');
+    if (token) fetch(`${API}/logout`, { method:'POST', headers: { Authorization:`Bearer ${token}`, Accept:'application/json' } }).catch(() => {});
+    clearAll(); validated.current = false; window.dispatchEvent(new CustomEvent('logout')); navigate('/');
+  };
+  const goToDashboard = () => {
+    if (user?.role === 'admin') guardedNavigate('/admin');
+    else if (user?.role === 'guardian') guardedNavigate('/guardian/dashboard');
+    else if (user?.role === 'child') guardedNavigate('/child-dashboard');
+  };
   const isHomeActive = () => location.pathname === '/' || location.pathname === '/home';
 
   const tColors = { success:'#10b981', warning:'#f59e0b', alert:'#ef4444', info:'#3b82f6' };
@@ -122,14 +142,14 @@ function Header({ totalCoins }) {
   return (
     <header className="header">
       <div className="header-container">
-        <div className="logo" onClick={() => navigate('/home')}><img src={logo_s} alt="NeuroSpark" /></div>
+        <div className="logo" onClick={() => guardedNavigate('/home')}><img src={logo_s} alt="NeuroSpark" /></div>
         <nav className="nav">
-          <NavLink to="/home" className={isHomeActive() ? 'active' : ''} end>Home</NavLink>
-          <NavLink to="/challenges" className={({ isActive }) => isActive ? 'active' : ''}>Challenges</NavLink>
-          <NavLink to="/spark-city" className={({ isActive }) => isActive ? 'active' : ''}>Spark City</NavLink>
-          <NavLink to="/customization" className={({ isActive }) => isActive ? 'active' : ''}>Customization</NavLink>
-          <NavLink to="/homework" className={({ isActive }) => isActive ? 'active' : ''}>Homework</NavLink>
-          <NavLink to="/about" className={({ isActive }) => isActive ? 'active' : ''}>About Us</NavLink>
+          <NavLink to="/home" className={isHomeActive() ? 'active' : ''} end onClick={(e) => { e.preventDefault(); guardedNavigate('/home'); }}>Home</NavLink>
+          <NavLink to="/challenges" className={({ isActive }) => isActive ? 'active' : ''} onClick={(e) => { e.preventDefault(); guardedNavigate('/challenges'); }}>Challenges</NavLink>
+          <NavLink to="/spark-city" className={({ isActive }) => isActive ? 'active' : ''} onClick={(e) => { e.preventDefault(); guardedNavigate('/spark-city'); }}>Spark City</NavLink>
+          <NavLink to="/customization" className={({ isActive }) => isActive ? 'active' : ''} onClick={(e) => { e.preventDefault(); guardedNavigate('/customization'); }}>Customization</NavLink>
+          <NavLink to="/homework" className={({ isActive }) => isActive ? 'active' : ''} onClick={(e) => { e.preventDefault(); guardedNavigate('/homework'); }}>Homework</NavLink>
+          <NavLink to="/about" className={({ isActive }) => isActive ? 'active' : ''} onClick={(e) => { e.preventDefault(); guardedNavigate('/about'); }}>About Us</NavLink>
         </nav>
         <div className="header-right">
           {user ? (<>

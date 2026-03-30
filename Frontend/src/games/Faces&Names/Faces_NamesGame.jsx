@@ -899,7 +899,7 @@ export default function FacesNamesGame({
           const goSu = accuracy>=80?"You are a memory superstar!":accuracy>=60?"Your brain is getting stronger!":accuracy>=40?"Every round makes you better!":"You showed up and tried — that's what matters!";
           const bgGrad = 'linear-gradient(135deg, #8BE3D8, #6BC5B8)';
           
-          const coinsEarned = Math.max(1, Math.floor(totalCorrect * 1.5));
+          const coinsEarned = earnedCoins || 0;
           
           return (
             <div className="fn-gameover-screen">
@@ -944,9 +944,23 @@ export default function FacesNamesGame({
                   <span className="fn-coin-label">Coins Earned!</span>
                 </div>
                 
+                <div style={{ display: 'flex', gap: 14, marginTop: 28, justifyContent: 'center' }}>
+                  <button onClick={resetGame} style={{
+                    padding: '16px 40px', borderRadius: 50, border: 'none',
+                    background: 'linear-gradient(135deg, #00a896, #00d4aa)', color: '#fff',
+                    fontSize: 18, fontWeight: 700, cursor: 'pointer',
+                    boxShadow: '0 8px 25px rgba(0,168,150,0.4)',
+                    transition: 'transform 0.2s, box-shadow 0.2s',
+                  }}>🔄 Play Again</button>
+                  <button onClick={goBack} style={{
+                    padding: '16px 40px', borderRadius: 50,
+                    border: '2px solid rgba(255,255,255,0.25)', background: 'rgba(255,255,255,0.06)',
+                    color: 'rgba(255,255,255,0.8)', fontSize: 18, fontWeight: 600, cursor: 'pointer',
+                    backdropFilter: 'blur(10px)', transition: 'all 0.2s',
+                  }}>← Back</button>
+                </div>
                 
-              </div>
-            </div>
+              </div>            </div>
           );
         })()}
       </div>

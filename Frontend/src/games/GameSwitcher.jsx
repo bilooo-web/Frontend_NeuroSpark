@@ -12,9 +12,14 @@ const GameSwitcher = () => {
   const [gameInfo, setGameInfo] = useState(null);
   const [sessionId, setSessionId] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [showLeavePopup, setShowLeavePopup] = useState(false);
+  const [pendingNavigation, setPendingNavigation] = useState(null);
+  const [gameFinished, setGameFinished] = useState(false);
   const sessionIdRef = useRef(null);
   const gameInfoRef = useRef(null);
   const initCalled = useRef(false);
+  const gameFinishedRef = useRef(false);
+  const gameActiveRef = useRef(false); // Tracks if game is actively being played (any role)
   const [totalCoins, setTotalCoins] = useState(() => {
     const saved = localStorage.getItem('totalCoins');
     return saved ? parseInt(saved) : 0;
@@ -45,6 +50,74 @@ const GameSwitcher = () => {
     return () => window.removeEventListener('coins-updated', handleCoinsUpdated);
   }, []);
 
+  // Browser tab close / refresh guard
+  useEffect(() => {
+    const handleBeforeUnload = (e) => {
+      if (gameActiveRef.current && !gameFinishedRef.current) {
+        e.preventDefault();
+        e.returnValue = '';
+      }
+    };
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, []);
+
+  // Browser back button guard
+  useEffect(() => {
+    if (!gameActiveRef.current || gameFinishedRef.current) return;
+
+    // Push a dummy state so we can intercept back
+    window.history.pushState({ gameGuard: true }, '');
+
+    const handlePopState = (e) => {
+      if (gameActiveRef.current && !gameFinishedRef.current) {
+        // Re-push state to prevent leaving
+        window.history.pushState({ gameGuard: true }, '');
+        setShowLeavePopup(true);
+        setPendingNavigation(`/challenges/${id}`);
+      }
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, [id, sessionId, loading]);
+
+  // Intercept Header navigation (logo, nav links, dashboard, logout)
+  useEffect(() => {
+    const handleHeaderNavigate = (e) => {
+      if (!gameActiveRef.current || gameFinishedRef.current) return;
+      // Cancel the navigation — GameSwitcher will handle it
+      e.preventDefault();
+      setShowLeavePopup(true);
+      setPendingNavigation(e.detail?.path || '/');
+    };
+
+    window.addEventListener('header-navigate', handleHeaderNavigate);
+    return () => window.removeEventListener('header-navigate', handleHeaderNavigate);
+  }, []);
+
+  // Handle confirmed leave
+  const handleConfirmLeave = async () => {
+    setShowLeavePopup(false);
+    // Only abandon session if one exists (child users)
+    if (sessionIdRef.current && abandonSession) {
+      await abandonSession();
+    }
+    gameFinishedRef.current = true;
+    gameActiveRef.current = false;
+    setGameFinished(true);
+    if (pendingNavigation) {
+      navigate(pendingNavigation);
+    } else {
+      navigate(`/challenges/${id}`);
+    }
+  };
+
+  const handleCancelLeave = () => {
+    setShowLeavePopup(false);
+    setPendingNavigation(null);
+  };
+
   const initGame = async () => {
     try {
       const gamesRes = await api.get('/games');
@@ -59,6 +132,7 @@ const GameSwitcher = () => {
 
       setGameInfo(game);
       gameInfoRef.current = game;
+      gameActiveRef.current = true; // Game is now active for all users
 
       const user = JSON.parse(localStorage.getItem('user') || '{}');
       if (user.role === 'child') {
@@ -87,9 +161,7 @@ const GameSwitcher = () => {
     try {
       const g = game || gameInfoRef.current;
       if (!g) return null;
-      const res = await api.post(`/child/games/${g.id}/start`, {
-        difficulty_used: g.difficulty_level || 'easy',
-      });
+      const res = await api.post(`/child/games/${g.id}/start`, {});
       const newId = res.session_id;
       setSessionId(newId);
       sessionIdRef.current = newId;
@@ -195,12 +267,15 @@ const GameSwitcher = () => {
         }
 
         sessionIdRef.current = null;
+        gameFinishedRef.current = true;
+        gameActiveRef.current = false;
+        setGameFinished(true);
       } catch (err) {
         console.error('Failed to complete session:', err);
       }
     }
 
-    // Update local scores
+    // Update local scores as cache
     const scoreVal = Math.min(100, Math.max(0, Math.round(results.score || 0)));
     localStorage.setItem(`${id}-last`, scoreVal.toString());
     const prevBest = parseInt(localStorage.getItem(`${id}-best`) || '0');
@@ -243,20 +318,39 @@ const GameSwitcher = () => {
     abandonSession,
     navigateBack,
     gameInfo,
-    totalCoins, // Pass current total coins to games
+    totalCoins,
   };
 
+  const leavePopup = showLeavePopup ? (
+    <div style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.7)', backdropFilter:'blur(8px)', display:'flex', alignItems:'center', justifyContent:'center', zIndex:99999 }}>
+      <div style={{ background:'#fff', borderRadius:24, padding:'32px 40px', maxWidth:400, width:'90%', textAlign:'center', boxShadow:'0 20px 60px rgba(0,0,0,0.3)' }}>
+        <div style={{ fontSize:48, marginBottom:12 }}>⚠️</div>
+        <h2 style={{ fontSize:22, fontWeight:700, color:'#1a1a2e', margin:'0 0 8px' }}>Leave Game?</h2>
+        <p style={{ fontSize:14, color:'#64748b', marginBottom:24, lineHeight:1.6 }}>Your progress will be lost and this session will be abandoned. Are you sure?</p>
+        <div style={{ display:'flex', gap:12 }}>
+          <button onClick={handleCancelLeave} style={{ flex:1, padding:'14px', borderRadius:50, border:'2px solid #e2e8f0', background:'#fff', color:'#334155', fontSize:16, fontWeight:600, cursor:'pointer' }}>No, Stay</button>
+          <button onClick={handleConfirmLeave} style={{ flex:1, padding:'14px', borderRadius:50, border:'none', background:'linear-gradient(135deg,#e74c3c,#c0392b)', color:'#fff', fontSize:16, fontWeight:700, cursor:'pointer' }}>Yes, Leave</button>
+        </div>
+      </div>
+    </div>
+  ) : null;
+
+  let gameComponent;
   switch (id) {
     case 'path-change':
-      return <PathChangeGame {...gameProps} />;
+      gameComponent = <PathChangeGame {...gameProps} />;
+      break;
     case 'padlocks':
-      return <MemoryPadlocksGame {...gameProps} />;
+      gameComponent = <MemoryPadlocksGame {...gameProps} />;
+      break;
     case 'faces-and-names':
-      return <FacesNamesGame {...gameProps} />;
+      gameComponent = <FacesNamesGame {...gameProps} />;
+      break;
     case 'pair-of-cards':
-      return <PairOfCardsGame {...gameProps} />;
+      gameComponent = <PairOfCardsGame {...gameProps} />;
+      break;
     default:
-      return (
+      gameComponent = (
         <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', height: '100vh', fontSize: '20px', color: '#fff', background: '#1a1a1a', gap: '16px' }}>
           <p>🚧 This game is coming soon!</p>
           <button onClick={() => navigate('/challenges')} style={{ marginTop: '16px', padding: '12px 32px', borderRadius: '30px', border: 'none', background: '#00a896', color: '#fff', fontSize: '16px', cursor: 'pointer' }}>
@@ -265,6 +359,13 @@ const GameSwitcher = () => {
         </div>
       );
   }
+
+  return (
+    <>
+      {gameComponent}
+      {leavePopup}
+    </>
+  );
 };
 
 export default GameSwitcher;

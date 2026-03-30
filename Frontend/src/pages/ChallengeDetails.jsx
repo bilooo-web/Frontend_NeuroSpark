@@ -50,7 +50,26 @@ const ChallengeDetails = () => {
     }
   };
 
-  const loadScores = () => {
+  const loadScores = async () => {
+    const user = JSON.parse(localStorage.getItem("user") || "{}");
+    const token = localStorage.getItem("token");
+
+    // For child users, fetch from backend
+    if (token && user.role === "child") {
+      try {
+        const res = await api.get(`/child/games/${id}/scores`);
+        setBestScore(res.best_score || 0);
+        setLastScore(res.last_score || 0);
+        // Sync to localStorage as cache
+        localStorage.setItem(`${id}-best`, String(res.best_score || 0));
+        localStorage.setItem(`${id}-last`, String(res.last_score || 0));
+        return;
+      } catch (err) {
+        console.warn("Could not fetch scores from backend, using localStorage:", err.message);
+      }
+    }
+
+    // Fallback to localStorage
     const savedBest = localStorage.getItem(`${id}-best`);
     const savedLast = localStorage.getItem(`${id}-last`);
     if (savedBest) setBestScore(parseInt(savedBest));
@@ -60,15 +79,8 @@ const ChallengeDetails = () => {
   // Handle returning from game with results
   useEffect(() => {
     if (location.state?.gameResults) {
-      const { lastScore: newLast, bestScore: newBest } = location.state.gameResults;
-
-      setLastScore(newLast);
-      localStorage.setItem(`${id}-last`, newLast.toString());
-
-      if (newBest > bestScore) {
-        setBestScore(newBest);
-        localStorage.setItem(`${id}-best`, newBest.toString());
-      }
+      // Re-fetch scores from backend to get the accurate best/last
+      loadScores();
 
       // Read coins from localStorage (already synced by GameSwitcher from server)
       const serverCoins = parseInt(localStorage.getItem("totalCoins") || "0");

@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import logoImg from "../../assets/logo_s.png";
 
+
 const navItems = [
   { path: "/admin", icon: LayoutDashboard, label: "Overview", end: true },
   { path: "/admin/users", icon: Users, label: "User Management", end: false },
@@ -26,7 +27,7 @@ const navItems = [
 
 ];
 
-const AdminSidebar = ({ onClose }) => {
+const AdminSidebar = ({ onClose , onProfileClick }) => {
   const navigate = useNavigate();
 
   // Get real admin info from localStorage
@@ -122,7 +123,7 @@ const AdminSidebar = ({ onClose }) => {
         </button>
       </div>
 
-      <div className="sidebar-footer">
+      <div className="sidebar-footer" onClick={onProfileClick} style={{ cursor: 'pointer' }}>
         <div className="sidebar-avatar">{adminInitial}</div>
         <div className="sidebar-footer-info">
           <p>{adminName}</p>

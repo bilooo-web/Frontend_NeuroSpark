@@ -19,13 +19,6 @@ import Modal from "../components/admin/Modal";
 import adminService from "../services/adminService";
 import gameRegistry from "../data/gameRegistry";
 
-const difficultyBadge = {
-  easy: "badge-success",
-  medium: "badge-accent",
-  hard: "badge-destructive",
-  expert: "badge-info",
-};
-
 const typeBadge = {
   cognitive: "badge-primary",
   focus: "badge-info",
@@ -50,11 +43,10 @@ const AdminGames = () => {
   const [formErrors, setFormErrors] = useState({});
   const [formLoading, setFormLoading] = useState(false);
 
-  const [gameStats, setGameStats] = useState({ total: 0, active: 0, totalSessions: 0, avgScore: 0 });
+  const [gameStats, setGameStats] = useState({ total: 0, active: 0, totalSessions: 0, avgScore: 0, overallAvgDuration: 0 });
 
   useEffect(() => {
     fetchGames();
-    fetchGameStats();
   }, []);
 
   const fetchGames = async (page = 1) => {
@@ -70,6 +62,18 @@ const AdminGames = () => {
         from: gamesData.from,
         to: gamesData.to,
       });
+      // Update stats from the games response
+      const gamesList = gamesData.data || [];
+      const totalSess = gamesList.reduce((sum, g) => sum + (g.total_sessions || 0), 0);
+      const avgScores = gamesList.filter(g => g.computed_avg_score > 0);
+      const avgScoreVal = avgScores.length > 0 ? (avgScores.reduce((sum, g) => sum + g.computed_avg_score, 0) / avgScores.length).toFixed(1) : 0;
+      setGameStats({
+        total: gamesData.total || gamesList.length,
+        active: gamesList.filter((g) => g.is_active).length,
+        totalSessions: totalSess,
+        avgScore: avgScoreVal,
+        overallAvgDuration: res.overall_avg_duration || 0,
+      });
     } catch (err) {
       console.error("Failed to fetch games:", err);
     } finally {
@@ -77,25 +81,7 @@ const AdminGames = () => {
     }
   };
 
-  const fetchGameStats = async () => {
-    try {
-      const metrics = await adminService.getSystemMetrics();
-      const perf = metrics?.performance_stats || {};
-      setGameStats({
-        total: perf.total_games || 0,
-        active: perf.active_games || 0,
-        totalSessions: perf.total_game_sessions || 0,
-        avgScore: perf.avg_game_score || 0,
-      });
-    } catch { /* silent */ }
-  };
-
-  const computedStats = {
-    total: games.length || gameStats.total,
-    active: games.filter((g) => g.is_active).length || gameStats.active,
-    totalSessions: gameStats.totalSessions,
-    avgScore: gameStats.avgScore,
-  };
+  const computedStats = gameStats;
 
   const filteredGames = games.filter((g) => {
     const matchSearch = !search || g.name?.toLowerCase().includes(search.toLowerCase());
@@ -106,10 +92,8 @@ const AdminGames = () => {
   const defaultFormData = () => ({
     name: "",
     game_slug: "",
-    difficulty_level: "easy",
     type: "cognitive",
     description: "",
-    avg_duration: "",
     reward_coins: "",
     is_active: true,
   });
@@ -120,19 +104,42 @@ const AdminGames = () => {
     setAddModal(true);
   };
 
+  // Check if slug is already used by another game
+  const isSlugDuplicate = (slug, excludeGameId = null) => {
+    return games.some((g) => g.game_slug === slug && g.id !== excludeGameId);
+  };
+
   const handleAddGame = async () => {
     setFormLoading(true);
     setFormErrors({});
+
+    // Frontend slug duplicate check
+    if (isSlugDuplicate(formData.game_slug)) {
+      setFormErrors({ game_slug: "This game logic (slug) is already used by another game. Each slug must be unique." });
+      setFormLoading(false);
+      return;
+    }
+
+    // Validate reward_coins is positive
+    if (!formData.reward_coins || parseInt(formData.reward_coins) < 1) {
+      setFormErrors({ reward_coins: "Reward coins must be a positive number (1 or more)." });
+      setFormLoading(false);
+      return;
+    }
+
     try {
       const payload = {
-        ...formData,
-        avg_duration: parseInt(formData.avg_duration),
+        name: formData.name,
+        game_slug: formData.game_slug,
+        type: formData.type,
+        description: formData.description,
         reward_coins: parseInt(formData.reward_coins),
         is_active: formData.is_active === true || formData.is_active === "true",
       };
       await adminService.createGame(payload);
       setAddModal(false);
       fetchGames(pagination.current_page);
+      fetchGameStats();
     } catch (err) {
       if (err.data?.errors) setFormErrors(err.data.errors);
       else setFormErrors({ general: err.message });
@@ -145,10 +152,8 @@ const AdminGames = () => {
     setFormData({
       name: game.name || "",
       game_slug: game.game_slug || "",
-      difficulty_level: game.difficulty_level || "easy",
       type: game.type || "cognitive",
       description: game.description || "",
-      avg_duration: game.avg_duration || "",
       reward_coins: game.reward_coins || "",
       is_active: game.is_active,
     });
@@ -159,20 +164,27 @@ const AdminGames = () => {
   const handleEditGame = async () => {
     setFormLoading(true);
     setFormErrors({});
+
+    // Frontend slug duplicate check (exclude current game)
+    if (isSlugDuplicate(formData.game_slug, editModal.game?.id)) {
+      setFormErrors({ game_slug: "This game logic (slug) is already used by another game. Each slug must be unique." });
+      setFormLoading(false);
+      return;
+    }
+
     try {
       const payload = {
         name: formData.name,
         game_slug: formData.game_slug,
-        difficulty_level: formData.difficulty_level,
         type: formData.type,
         description: formData.description,
-        avg_duration: parseInt(formData.avg_duration),
         reward_coins: parseInt(formData.reward_coins),
         is_active: formData.is_active === true || formData.is_active === "true",
       };
       await adminService.updateGame(editModal.game.id, payload);
       setEditModal({ open: false, game: null });
       fetchGames(pagination.current_page);
+      fetchGameStats();
     } catch (err) {
       if (err.data?.errors) setFormErrors(err.data.errors);
       else setFormErrors({ general: err.message });
@@ -187,6 +199,7 @@ const AdminGames = () => {
       await adminService.deleteGame(deleteModal.game.id);
       setDeleteModal({ open: false, game: null });
       fetchGames(pagination.current_page);
+      fetchGameStats();
     } catch (err) {
       alert(err.data?.message || err.message || "Failed to delete game");
     } finally {
@@ -213,44 +226,74 @@ const AdminGames = () => {
   );
 
   // Game slug dropdown — reads from gameRegistry.js
-  const renderSlugField = () => (
-    <div className="form-group" style={{ marginBottom: 14 }}>
-      <label>Game Logic (Frontend Component)</label>
-      <select
-        className="form-select"
-        value={formData.game_slug || ""}
-        onChange={(e) => setFormData({ ...formData, game_slug: e.target.value })}
-      >
-        <option value="">— Select game logic —</option>
-        {gameRegistry.map((g) => (
-          <option key={g.slug} value={g.slug}>{g.label} ({g.slug})</option>
-        ))}
-      </select>
-      {formErrors.game_slug && (
-        <p style={{ color: "var(--destructive)", fontSize: 12, marginTop: 4 }}>
-          {Array.isArray(formErrors.game_slug) ? formErrors.game_slug[0] : formErrors.game_slug}
+  const renderSlugField = () => {
+    const usedSlugs = games
+      .filter((g) => g.id !== editModal.game?.id)
+      .map((g) => g.game_slug);
+
+    return (
+      <div className="form-group" style={{ marginBottom: 14 }}>
+        <label>Game Logic (Frontend Component)</label>
+        <select
+          className="form-select"
+          value={formData.game_slug || ""}
+          onChange={(e) => setFormData({ ...formData, game_slug: e.target.value })}
+        >
+          <option value="">— Select game logic —</option>
+          {gameRegistry.map((g) => {
+            const isUsed = usedSlugs.includes(g.slug);
+            return (
+              <option key={g.slug} value={g.slug} disabled={isUsed}>
+                {g.label} ({g.slug}){isUsed ? " — Already used" : ""}
+              </option>
+            );
+          })}
+        </select>
+        {formErrors.game_slug && (
+          <p style={{ color: "var(--destructive)", fontSize: 12, marginTop: 4 }}>
+            {Array.isArray(formErrors.game_slug) ? formErrors.game_slug[0] : formErrors.game_slug}
+          </p>
+        )}
+        <p className="text-muted" style={{ fontSize: 11, marginTop: 4 }}>
+          Each game logic can only be linked to one game. Already-used slugs are disabled.
         </p>
-      )}
-      <p className="text-muted" style={{ fontSize: 11, marginTop: 4 }}>
-        This links the admin game to the frontend game component. When a new game is coded, its slug appears here automatically.
-      </p>
-    </div>
-  );
+      </div>
+    );
+  };
 
   const gameFormFields = () => (
     <>
       {formErrors.general && <p style={{ color: "var(--destructive)", fontSize: 13, marginBottom: 12 }}>{formErrors.general}</p>}
       {renderField("Game Name", "name")}
       {renderSlugField()}
-      {renderField("Difficulty Level", "difficulty_level", "text", [
-        { value: "easy", label: "Easy" }, { value: "medium", label: "Medium" }, { value: "hard", label: "Hard" }, { value: "expert", label: "Expert" },
-      ])}
       {renderField("Type", "type", "text", [
         { value: "cognitive", label: "Cognitive" }, { value: "focus", label: "Focus" }, { value: "memory", label: "Memory" }, { value: "emotional", label: "Emotional" }, { value: "organizational", label: "Organizational" },
       ])}
       {renderField("Description", "description", "textarea")}
-      {renderField("Avg Duration (seconds)", "avg_duration", "number")}
-      {renderField("Reward Coins", "reward_coins", "number")}
+      <div className="form-group" style={{ marginBottom: 14 }}>
+        <label>Reward Coins</label>
+        <input
+          className="form-input"
+          type="number"
+          min="1"
+          value={formData.reward_coins ?? ""}
+          onChange={(e) => {
+            const val = e.target.value;
+            if (val === "" || parseInt(val) >= 1) {
+              setFormData({ ...formData, reward_coins: val });
+            }
+          }}
+          placeholder="Reward Coins (must be positive)"
+        />
+        {formErrors.reward_coins && (
+          <p style={{ color: "var(--destructive)", fontSize: 12, marginTop: 4 }}>
+            {Array.isArray(formErrors.reward_coins) ? formErrors.reward_coins[0] : formErrors.reward_coins}
+          </p>
+        )}
+        <p className="text-muted" style={{ fontSize: 11, marginTop: 4 }}>
+          Must be a positive number (1 or more). Coins are awarded to children proportionally based on their score.
+        </p>
+      </div>
       {renderField("Active", "is_active", "text", [{ value: true, label: "Active" }, { value: false, label: "Inactive" }])}
     </>
   );
@@ -298,6 +341,13 @@ const AdminGames = () => {
             <div className="admin-summary-card-value">{computedStats.avgScore}%</div>
           </div>
         </div>
+        <div className="admin-summary-card">
+          <div className="admin-summary-card-icon primary"><Clock style={{ height: 22, width: 22 }} /></div>
+          <div className="admin-summary-card-content">
+            <div className="admin-summary-card-label">Overall Avg Duration</div>
+            <div className="admin-summary-card-value">{computedStats.overallAvgDuration > 0 ? `${computedStats.overallAvgDuration}s` : "—"}</div>
+          </div>
+        </div>
       </div>
 
       {/* Filters */}
@@ -328,7 +378,6 @@ const AdminGames = () => {
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div className="entity-card-title">{game.name}</div>
                   <div className="entity-card-badges">
-                    <span className={`badge ${difficultyBadge[game.difficulty_level] || "badge-muted"}`}>{game.difficulty_level}</span>
                     <span className={`badge ${typeBadge[game.type] || "badge-muted"}`}>{game.type}</span>
                     {game.game_slug && (
                       <span className="badge badge-info" style={{ display: "inline-flex", alignItems: "center", gap: 3, fontSize: 10 }}>
@@ -344,9 +393,10 @@ const AdminGames = () => {
                 {game.description?.slice(0, 100)}{game.description?.length > 100 ? "..." : ""}
               </p>
               <div className="entity-card-stats">
-                <div className="entity-card-stat"><div className="entity-card-stat-label">Duration</div><div className="entity-card-stat-value">{game.avg_duration}s</div></div>
+                <div className="entity-card-stat"><div className="entity-card-stat-label">Avg Duration</div><div className="entity-card-stat-value">{game.avg_duration > 0 ? `${game.avg_duration}s` : "—"}</div></div>
+                <div className="entity-card-stat"><div className="entity-card-stat-label">Avg Score</div><div className="entity-card-stat-value">{game.computed_avg_score > 0 ? `${game.computed_avg_score}%` : "—"}</div></div>
+                <div className="entity-card-stat"><div className="entity-card-stat-label">Sessions</div><div className="entity-card-stat-value">{game.total_sessions || 0}</div></div>
                 <div className="entity-card-stat"><div className="entity-card-stat-label">Coins</div><div className="entity-card-stat-value accent">{game.reward_coins}</div></div>
-                <div className="entity-card-stat"><div className="entity-card-stat-label">Status</div><div className="entity-card-stat-value">{game.is_active ? "Active" : "Inactive"}</div></div>
               </div>
               <div className="entity-card-footer">
                 <div className="entity-card-meta"><Clock style={{ height: 12, width: 12 }} />{game.created_at ? new Date(game.created_at).toLocaleDateString() : "—"}</div>
@@ -383,14 +433,45 @@ const AdminGames = () => {
       <Modal open={viewModal.open} onClose={() => setViewModal({ open: false, game: null })} title="Game Details">
         {viewModal.game && (
           <div>
-            <div className="modal-field"><div className="modal-field-label">Name</div><div className="modal-field-value">{viewModal.game.name}</div></div>
-            <div className="modal-field"><div className="modal-field-label">Game Logic (Slug)</div><div className="modal-field-value"><span className="badge badge-info">{viewModal.game.game_slug || "Not linked"}</span></div></div>
-            <div className="modal-field"><div className="modal-field-label">Difficulty</div><div className="modal-field-value"><span className={`badge ${difficultyBadge[viewModal.game.difficulty_level]}`}>{viewModal.game.difficulty_level}</span></div></div>
-            <div className="modal-field"><div className="modal-field-label">Type</div><div className="modal-field-value"><span className={`badge ${typeBadge[viewModal.game.type]}`}>{viewModal.game.type}</span></div></div>
-            <div className="modal-field"><div className="modal-field-label">Description</div><div className="modal-field-value">{viewModal.game.description || "—"}</div></div>
-            <div className="modal-field"><div className="modal-field-label">Avg Duration</div><div className="modal-field-value">{viewModal.game.avg_duration}s</div></div>
-            <div className="modal-field"><div className="modal-field-label">Reward Coins</div><div className="modal-field-value">{viewModal.game.reward_coins}</div></div>
-            <div className="modal-field"><div className="modal-field-label">Status</div><div className="modal-field-value"><span className={`badge ${viewModal.game.is_active ? "badge-success" : "badge-muted"}`}>{viewModal.game.is_active ? "Active" : "Inactive"}</span></div></div>
+            {/* Game header */}
+            <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 20, padding: "16px", background: "var(--muted)", borderRadius: 12 }}>
+              <div style={{ width: 52, height: 52, borderRadius: 12, background: "linear-gradient(135deg, #6c5ce7, #00b894)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                <Gamepad2 style={{ height: 26, width: 26, color: "#fff" }} />
+              </div>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: 17, fontWeight: 700, color: "var(--foreground)" }}>{viewModal.game.name}</div>
+                <div style={{ display: "flex", gap: 6, marginTop: 6, flexWrap: "wrap" }}>
+                  <span className={`badge ${typeBadge[viewModal.game.type]}`}>{viewModal.game.type}</span>
+                  <span className="badge badge-info" style={{ display: "inline-flex", alignItems: "center", gap: 3, fontSize: 10 }}>
+                    <Link2 style={{ height: 10, width: 10 }} />
+                    {viewModal.game.game_slug || "Not linked"}
+                  </span>
+                  <span className={`badge ${viewModal.game.is_active ? "badge-success" : "badge-muted"}`}>{viewModal.game.is_active ? "Active" : "Inactive"}</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Performance stats grid */}
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12, marginBottom: 20 }}>
+              <div style={{ textAlign: "center", padding: "14px 8px", background: "var(--muted)", borderRadius: 10 }}>
+                <div style={{ fontSize: 20, fontWeight: 800, color: "var(--primary)" }}>{viewModal.game.avg_duration > 0 ? `${viewModal.game.avg_duration}s` : "—"}</div>
+                <div style={{ fontSize: 11, color: "var(--muted-foreground)", marginTop: 2 }}>Avg Duration</div>
+              </div>
+              <div style={{ textAlign: "center", padding: "14px 8px", background: "var(--muted)", borderRadius: 10 }}>
+                <div style={{ fontSize: 20, fontWeight: 800, color: "#00b894" }}>{viewModal.game.computed_avg_score > 0 ? `${viewModal.game.computed_avg_score}%` : "—"}</div>
+                <div style={{ fontSize: 11, color: "var(--muted-foreground)", marginTop: 2 }}>Avg Score</div>
+              </div>
+              <div style={{ textAlign: "center", padding: "14px 8px", background: "var(--muted)", borderRadius: 10 }}>
+                <div style={{ fontSize: 20, fontWeight: 800, color: "#6c5ce7" }}>{viewModal.game.total_sessions || 0}</div>
+                <div style={{ fontSize: 11, color: "var(--muted-foreground)", marginTop: 2 }}>Sessions</div>
+              </div>
+            </div>
+
+            {/* Details */}
+            <div style={{ fontSize: 12, fontWeight: 600, color: "var(--muted-foreground)", textTransform: "uppercase", letterSpacing: 1, marginBottom: 8 }}>Details</div>
+            <div className="modal-field"><div className="modal-field-label">Description</div><div className="modal-field-value" style={{ lineHeight: 1.6 }}>{viewModal.game.description || "—"}</div></div>
+            <div className="modal-field"><div className="modal-field-label">Reward Coins</div><div className="modal-field-value" style={{ display: "flex", alignItems: "center", gap: 4 }}><Coins style={{ height: 14, width: 14, color: "#e6a014" }} /> <span style={{ fontWeight: 700, color: "#e6a014" }}>{viewModal.game.reward_coins}</span> per game</div></div>
+            <div className="modal-field"><div className="modal-field-label">Created</div><div className="modal-field-value">{viewModal.game.created_at ? new Date(viewModal.game.created_at).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" }) : "—"}</div></div>
           </div>
         )}
       </Modal>

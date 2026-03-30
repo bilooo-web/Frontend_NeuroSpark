@@ -403,7 +403,7 @@ const MemoryPadlocksGame = ({
         const goSu = accuracy>=80?"You are a memory superstar!":accuracy>=60?"Your brain is getting stronger!":accuracy>=40?"Every round makes you better!":"You showed up and tried — that's what matters!";
         const bgGrad = 'linear-gradient(135deg, #8BE3D8, #6BC5B8)';
         
-        const coinsEarned = Math.max(1, Math.floor(totalCorrect * 1.5));
+        const coinsEarned = earnedCoins || 0;
         
         return (
           <div className="fn-gameover-screen" style={{
@@ -557,4 +557,3 @@ const MemoryPadlocksGame = ({
 };
 
 export default MemoryPadlocksGame;
-

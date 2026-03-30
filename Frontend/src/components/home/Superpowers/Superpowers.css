@@ -170,3 +170,63 @@
   margin-top: 50px; 
   width: 100%;
 }
+
+@media (max-width: 1024px) {
+  .superpowers {
+    max-height: none;
+    padding: 60px 40px;
+  }
+  .superpowers-container {
+    flex-direction: column;
+    align-items: center;
+    gap: 40px;
+  }
+  .superpowers-content {
+    margin-left: 0;
+    text-align: center;
+    max-width: 100%;
+  }
+  .superpowers-grid {
+    margin-right: 0;
+    justify-content: center;
+  }
+  .scroll-column {
+    height: 400px;
+  }
+}
+
+@media (max-width: 768px) {
+  .superpowers {
+    padding: 40px 20px;
+  }
+  .superpowers-content h2 {
+    font-size: 32px;
+  }
+  .superpowers-content p {
+    font-size: 14px;
+  }
+  .superpowers-grid {
+    gap: 15px;
+    height: 400px;
+  }
+  .scroll-column {
+    width: 30%;
+  }
+  .power-card {
+    padding: 40px 10px 15px 10px;
+    min-height: 70px;
+  }
+  .power-card p {
+    font-size: 14px;
+    margin-top: 30px;
+  }
+  .icon-box {
+    width: 50px;
+    height: 60px;
+    top: -20px;
+  }
+  .icon-box img {
+    width: 40px;
+    height: 40px;
+  }
+}

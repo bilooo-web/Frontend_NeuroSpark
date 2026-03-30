@@ -143,3 +143,51 @@
 .about-wave-white path {
   animation: waveDeform2 7s ease-in-out infinite;
 }
+
+@media (max-width: 1024px) {
+  .about-hero {
+    padding: 50px 40px 0;
+  }
+  .about-hero-content {
+    flex-direction: column;
+    text-align: center;
+    gap: 40px;
+  }
+  .about-paper {
+    margin-left: 0;
+    margin-top: 0;
+    width: 100%;
+    max-width: 500px;
+  }
+  .about-hero-image {
+    margin-right: 0;
+  }
+  .about-wave-wrapper {
+    width: 100vw;
+    margin-left: -40px;
+  }
+}
+
+@media (max-width: 768px) {
+  .about-hero {
+    padding: 40px 20px 0;
+  }
+  .paper-text h2 {
+    font-size: 32px;
+  }
+  .paper-text p {
+    font-size: 15px;
+  }
+  .about-paper {
+    width: 100%;
+  }
+  .paper-text {
+    padding: 40px 30px;
+  }
+  .about-hero-image img {
+    max-width: 100%;
+  }
+  .about-wave-wrapper {
+    margin-left: -20px;
+  }
+}

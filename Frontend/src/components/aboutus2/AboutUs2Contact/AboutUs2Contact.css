@@ -285,3 +285,54 @@
 .social-icons img:hover {
   transform: scale(1.1);
 }
+
+@media (max-width: 1024px) {
+  .aboutus2-contact-section {
+    padding: 60px 40px 80px;
+  }
+  .contact-main-flex {
+    flex-direction: column;
+    align-items: center;
+    gap: 40px;
+  }
+  .contact-left-side, .contact-right-side {
+    max-width: 100%;
+    width: 100%;
+  }
+  .contact-form-card {
+    padding: 40px 30px;
+  }
+  .clouds-container {
+    height: 300px;
+  }
+  .cloud-large {
+    width: 380px;
+    left: 10%;
+  }
+  .cloud-small {
+    width: 200px;
+  }
+}
+
+@media (max-width: 768px) {
+  .aboutus2-contact-section {
+    padding: 40px 20px 60px;
+  }
+  .section-main-title {
+    font-size: 32px;
+    margin-bottom: 40px;
+  }
+  .contact-form-title {
+    font-size: 26px;
+  }
+  .clouds-container {
+    display: none;
+  }
+  .social-content {
+    flex-direction: column;
+    gap: 20px;
+  }
+  .social-label {
+    font-size: 24px;
+  }
+}

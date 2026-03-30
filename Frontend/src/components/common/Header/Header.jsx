@@ -19,6 +19,7 @@ function Header({ totalCoins }) {
   const [unreadCount, setUnreadCount] = useState(0);
   const [showNotifPanel, setShowNotifPanel] = useState(false);
   const [selectedNotif, setSelectedNotif] = useState(null);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const notifRef = useRef(null);
 
   const readCoins = () => { const v = parseInt(localStorage.getItem('totalCoins') || '0', 10); return isNaN(v) ? 0 : v; };
@@ -142,14 +143,17 @@ function Header({ totalCoins }) {
   return (
     <header className="header">
       <div className="header-container">
-        <div className="logo" onClick={() => guardedNavigate('/home')}><img src={logo_s} alt="NeuroSpark" /></div>
-        <nav className="nav">
-          <NavLink to="/home" className={isHomeActive() ? 'active' : ''} end onClick={(e) => { e.preventDefault(); guardedNavigate('/home'); }}>Home</NavLink>
-          <NavLink to="/challenges" className={({ isActive }) => isActive ? 'active' : ''} onClick={(e) => { e.preventDefault(); guardedNavigate('/challenges'); }}>Challenges</NavLink>
-          <NavLink to="/spark-city" className={({ isActive }) => isActive ? 'active' : ''} onClick={(e) => { e.preventDefault(); guardedNavigate('/spark-city'); }}>Spark City</NavLink>
-          <NavLink to="/customization" className={({ isActive }) => isActive ? 'active' : ''} onClick={(e) => { e.preventDefault(); guardedNavigate('/customization'); }}>Customization</NavLink>
-          <NavLink to="/homework" className={({ isActive }) => isActive ? 'active' : ''} onClick={(e) => { e.preventDefault(); guardedNavigate('/homework'); }}>Homework</NavLink>
-          <NavLink to="/about" className={({ isActive }) => isActive ? 'active' : ''} onClick={(e) => { e.preventDefault(); guardedNavigate('/about'); }}>About Us</NavLink>
+        <div className="logo" onClick={() => navigate('/home')}><img src={logo_s} alt="NeuroSpark" /></div>
+        <button className="hamburger-btn" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
+          {isMobileMenuOpen ? '✕' : '☰'}
+        </button>
+        <nav className={`nav ${isMobileMenuOpen ? 'mobile-open' : ''}`}>
+          <NavLink to="/home" className={isHomeActive() ? 'active' : ''} end onClick={() => setIsMobileMenuOpen(false)}>Home</NavLink>
+          <NavLink to="/challenges" className={({ isActive }) => isActive ? 'active' : ''} onClick={() => setIsMobileMenuOpen(false)}>Challenges</NavLink>
+          <NavLink to="/spark-city" className={({ isActive }) => isActive ? 'active' : ''} onClick={() => setIsMobileMenuOpen(false)}>Spark City</NavLink>
+          <NavLink to="/customization" className={({ isActive }) => isActive ? 'active' : ''} onClick={() => setIsMobileMenuOpen(false)}>Customization</NavLink>
+          <NavLink to="/homework" className={({ isActive }) => isActive ? 'active' : ''} onClick={() => setIsMobileMenuOpen(false)}>Homework</NavLink>
+          <NavLink to="/about" className={({ isActive }) => isActive ? 'active' : ''} onClick={() => setIsMobileMenuOpen(false)}>About Us</NavLink>
         </nav>
         <div className="header-right">
           {user ? (<>

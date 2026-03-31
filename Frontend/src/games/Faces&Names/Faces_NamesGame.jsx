@@ -165,14 +165,14 @@ export default function FacesNamesGame({
   const totalFacesRef = useRef(0);
   const incorrectAttemptsRef = useRef(0);
   const totalAttemptsRef = useRef(0);
+  const completedRoundsRef = useRef(0);
   const videoRef = useRef(null);
   const breathingIntervalRef = useRef(null);
   const breathingAudioCtxRef = useRef(null);
 
-  useEffect(()=>{
-    totalCorrectRef.current=totalCorrect;
-    totalFacesRef.current=totalFaces;
-  },[totalCorrect, totalFaces]);
+  // NOTE: totalCorrectRef and totalFacesRef are now updated DIRECTLY 
+  // in the assignment-check useEffect (not via state→useEffect→ref) 
+  // to avoid stale ref bugs when endGame fires from timer callback.
 
   // Listen for coin updates from parent
   useEffect(() => {
@@ -213,11 +213,13 @@ export default function FacesNamesGame({
     if (screen === 'gameover' || screen === 'intro') return;
     if (paused) {
       if (pauseStartTime.current) { 
-        totalPausedTime.current += Date.now()-pauseStartTime.current; 
+        const pausedDuration = Date.now()-pauseStartTime.current;
+        totalPausedTime.current += pausedDuration; 
+        // Shift lastActionTime forward by paused duration so next RT isn't inflated
+        lastActionTime.current += pausedDuration;
         pauseStartTime.current=null; 
       }
       lastActivityTime.current=Date.now(); 
-      lastActionTime.current=Date.now();
       setPaused(false);
       if (screen==="recall") setIsTimerPaused(false);
     } else {
@@ -516,7 +518,17 @@ export default function FacesNamesGame({
     const tc = totalCorrectRef.current, tf = totalFacesRef.current;
     
     const accuracy = tf>0 ? Math.round((tc/tf)*100) : 0;
-    const score = accuracy;
+    
+    // Score calculation:
+    // - Accuracy base: accuracy * 0.6 (max 60 pts) — primary skill measure
+    // - Progression bonus: 5 pts per COMPLETED round, capped at 30 (max 30 pts)
+    // - Efficiency bonus: +10 if accuracy >= 80% (max 10 pts)
+    // Total capped at 100
+    const completed = completedRoundsRef.current;
+    const accuracyBase = Math.round(accuracy * 0.6);
+    const progressionBonus = Math.min(completed * 5, 30);
+    const efficiencyBonus = accuracy >= 80 ? 10 : 0;
+    const score = Math.min(accuracyBase + progressionBonus + efficiencyBonus, 100);
     
     const rts = responseTimes.current;
     const avgRT = rts.length>0 ? Math.round(rts.reduce((a,b)=>a+b,0)/rts.length) : 0;
@@ -525,7 +537,7 @@ export default function FacesNamesGame({
     if (rts.length > 1) { 
       const mean = rts.reduce((a,b)=>a+b,0)/rts.length;
       const sq = rts.map(v => Math.pow(v - mean, 2)); 
-      rtVar = Math.round(Math.sqrt(sq.reduce((a,b)=>a+b,0)/rts.length)); 
+      rtVar = Math.round(Math.sqrt(sq.reduce((a,b)=>a+b,0)/(rts.length - 1))); 
     }
 
     const totalAttempts = totalAttemptsRef.current;
@@ -601,7 +613,7 @@ export default function FacesNamesGame({
     
     const now = Date.now();
     const rt = now - lastActionTime.current;
-    if (rt >= 100 && rt <= 60000) {
+    if (rt >= 500 && rt <= 60000) {
       responseTimes.current.push(rt);
     }
     lastActionTime.current = now;
@@ -642,10 +654,14 @@ export default function FacesNamesGame({
     
     setFeedback(fb); 
     setRoundScore({correct,total:faces.length});
+    // Update refs DIRECTLY for accurate endGame analytics (state may be stale in timer callbacks)
+    totalCorrectRef.current += correct;
+    totalFacesRef.current += faces.length;
     setTotalCorrect(c=>c+correct); 
     setTotalFaces(t=>t+faces.length);
     
     setTimeout(()=>{
+      completedRoundsRef.current += 1; // Round fully completed
       setScreen("flash");
       setIsTimerPaused(true);
       flashTimeout.current=setTimeout(()=>{
@@ -666,6 +682,9 @@ export default function FacesNamesGame({
     inactivityCount.current=0; 
     incorrectAttemptsRef.current = 0;
     totalAttemptsRef.current = 0;
+    completedRoundsRef.current = 0;
+    totalCorrectRef.current = 0;
+    totalFacesRef.current = 0;
     lastActivityTime.current=Date.now(); 
     lastActionTime.current=Date.now();
     setTotalCorrect(0);
@@ -681,8 +700,16 @@ export default function FacesNamesGame({
   };
 
   const goBack = () => {
-    const accuracy = totalFaces>0 ? Math.round((totalCorrect/totalFaces)*100) : 0;
-    navigateBack?.({ score: accuracy }, earnedCoins);
+    // Use refs for accurate values (state may be stale)
+    const tc = totalCorrectRef.current;
+    const tf = totalFacesRef.current;
+    const accuracy = tf>0 ? Math.round((tc/tf)*100) : 0;
+    const completed = completedRoundsRef.current;
+    const accuracyBase = Math.round(accuracy * 0.6);
+    const progressionBonus = Math.min(completed * 5, 30);
+    const efficiencyBonus = accuracy >= 80 ? 10 : 0;
+    const score = Math.min(accuracyBase + progressionBonus + efficiencyBonus, 100);
+    navigateBack?.({ score }, earnedCoins);
   };
 
   const sessionPct = (sessionLeft/SESSION_DURATION)*100;

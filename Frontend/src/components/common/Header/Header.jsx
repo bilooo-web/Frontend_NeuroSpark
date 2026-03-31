@@ -143,7 +143,7 @@ function Header({ totalCoins }) {
   return (
     <header className="header">
       <div className="header-container">
-        <div className="logo" onClick={() => navigate('/home')}><img src={logo_s} alt="NeuroSpark" /></div>
+        <div className="logo" onClick={() => guardedNavigate('/home')}><img src={logo_s} alt="NeuroSpark" /></div>
         <button className="hamburger-btn" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
           {isMobileMenuOpen ? '✕' : '☰'}
         </button>

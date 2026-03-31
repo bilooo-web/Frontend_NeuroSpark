@@ -82,18 +82,39 @@ const GameSwitcher = () => {
     return () => window.removeEventListener('popstate', handlePopState);
   }, [id, sessionId, loading]);
 
-  // Intercept Header navigation (logo, nav links, dashboard, logout)
+  // Intercept all Header link clicks during active game
   useEffect(() => {
+    const handleLinkClick = (e) => {
+      if (!gameActiveRef.current || gameFinishedRef.current) return;
+
+      // Find closest <a> tag
+      const link = e.target.closest('a[href]');
+      if (!link) return;
+
+      const href = link.getAttribute('href');
+      // Only intercept internal navigation, not external links
+      if (href && href.startsWith('/') && !href.includes('/play')) {
+        e.preventDefault();
+        e.stopPropagation();
+        setShowLeavePopup(true);
+        setPendingNavigation(href);
+      }
+    };
+
+    // Intercept header-navigate custom events (logo, dashboard, logout)
     const handleHeaderNavigate = (e) => {
       if (!gameActiveRef.current || gameFinishedRef.current) return;
-      // Cancel the navigation — GameSwitcher will handle it
       e.preventDefault();
       setShowLeavePopup(true);
       setPendingNavigation(e.detail?.path || '/');
     };
 
+    document.addEventListener('click', handleLinkClick, true);
     window.addEventListener('header-navigate', handleHeaderNavigate);
-    return () => window.removeEventListener('header-navigate', handleHeaderNavigate);
+    return () => {
+      document.removeEventListener('click', handleLinkClick, true);
+      window.removeEventListener('header-navigate', handleHeaderNavigate);
+    };
   }, []);
 
   // Handle confirmed leave

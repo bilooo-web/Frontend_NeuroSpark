@@ -89,11 +89,12 @@ export default function PairOfCards({
   const totalFlipsRef = useRef(0);
   const roundIndexRef = useRef(0);
   const incorrectFlipsRef = useRef(0);
+  const completedRoundsRef = useRef(0);
 
   cardsRef.current = cards;
-  useEffect(()=>{totalMatchedRef.current=totalMatched;},[totalMatched]);
-  useEffect(()=>{movesRef.current=moves;},[moves]);
-  useEffect(()=>{totalFlipsRef.current=totalFlips;},[totalFlips]);
+  // NOTE: totalMatchedRef, totalFlipsRef, movesRef are now updated 
+  // DIRECTLY in handlers (not via useEffect) to avoid stale ref bugs.
+  // These useEffects are kept only for roundIndexRef which is not used in endGame timing-critical path.
   useEffect(()=>{roundIndexRef.current=roundIndex;},[roundIndex]);
 
   useEffect(() => {
@@ -134,11 +135,13 @@ export default function PairOfCards({
     if (screen === 'gameover') return;
     if (paused) {
       if (pauseStartTime.current) { 
-        totalPausedTime.current += Date.now() - pauseStartTime.current; 
+        const pausedDuration = Date.now() - pauseStartTime.current;
+        totalPausedTime.current += pausedDuration;
+        // Shift lastFlipTime forward by paused duration so next RT isn't inflated
+        lastFlipTime.current += pausedDuration;
         pauseStartTime.current = null; 
       }
       lastActivityTime.current = Date.now(); 
-      lastFlipTime.current = Date.now(); 
       setPaused(false);
     } else { 
       pauseStartTime.current = Date.now(); 
@@ -235,7 +238,17 @@ export default function PairOfCards({
     const totalMoves = Math.ceil(flips / 2);
     
     const accuracy = totalMoves > 0 ? Math.min(Math.round((matched / totalMoves) * 100), 100) : 0;
-    const score = accuracy;
+    
+    // Score calculation:
+    // - Accuracy base: accuracy * 0.6 (max 60 pts) — primary skill measure
+    // - Progression bonus: 5 pts per COMPLETED round, capped at 30 (max 30 pts)
+    // - Efficiency bonus: +10 if accuracy >= 80% (max 10 pts)
+    // Total capped at 100
+    const completed = completedRoundsRef.current;
+    const accuracyBase = Math.round(accuracy * 0.6);
+    const progressionBonus = Math.min(completed * 5, 30);
+    const efficiencyBonus = accuracy >= 80 ? 10 : 0;
+    const score = Math.min(accuracyBase + progressionBonus + efficiencyBonus, 100);
     
     const incorrectAttempts = Math.max(totalMoves - matched, 0);
     
@@ -246,7 +259,7 @@ export default function PairOfCards({
     if (rts.length > 1) { 
       const mean = rts.reduce((a,b) => a+b, 0) / rts.length;
       const sq = rts.map(v => Math.pow(v - mean, 2)); 
-      rtVar = Math.round(Math.sqrt(sq.reduce((a,b) => a+b, 0) / rts.length)); 
+      rtVar = Math.round(Math.sqrt(sq.reduce((a,b) => a+b, 0) / (rts.length - 1))); 
     }
 
     if (onGameComplete) {
@@ -280,6 +293,8 @@ export default function PairOfCards({
     audioUnlockedRef.current = true;
     lastActivityTime.current = Date.now();
 
+    // Update both state (for UI) and ref (for analytics) simultaneously
+    totalFlipsRef.current += 1;
     setTotalFlips(prev => prev + 1);
 
     const newFlipped = [...flipped, idx];
@@ -289,17 +304,21 @@ export default function PairOfCards({
     if (newFlipped.length === 2) {
       const now = Date.now();
       const rt = now - lastFlipTime.current;
-      if (rt >= 100 && rt <= 60000) {
+      if (rt >= 500 && rt <= 60000) {
         responseTimes.current.push(rt);
       }
       lastFlipTime.current = now;
 
+      // Update both state and ref for moves
+      movesRef.current += 1;
       setLocked(true); 
       setMoves(m => m + 1);
       const [a,b] = newFlipped;
       
       setTimeout(() => {
         if (cardsRef.current[a].emoji === cardsRef.current[b].emoji) {
+          // Update ref directly for matched count
+          totalMatchedRef.current += 1;
           playCorrectSound();
           showCelebration();
           setCards(p => p.map((c,i) => i===a||i===b ? {...c,state:'matched'} : c));
@@ -307,6 +326,7 @@ export default function PairOfCards({
             const nr = rm+1;
             setTotalMatched(tm => tm+1);
             if (nr === getRoundConfig(roundIdxRef.current).pairs) {
+              completedRoundsRef.current += 1;
               playLevelCompleteSound();
               setTimeout(() => { 
                 setScreen('flash'); 
@@ -346,6 +366,10 @@ export default function PairOfCards({
     responseTimes.current=[]; 
     inactivityCount.current=0; 
     incorrectFlipsRef.current = 0;
+    completedRoundsRef.current = 0;
+    totalMatchedRef.current = 0;
+    totalFlipsRef.current = 0;
+    movesRef.current = 0;
     lastActivityTime.current=Date.now(); 
     lastFlipTime.current=Date.now();
     setTotalMatched(0); 
@@ -361,9 +385,17 @@ export default function PairOfCards({
   };
 
   const goBack = () => {
-    const totalMoves = Math.ceil((totalFlips || 1) / 2);
-    const accuracy = totalMoves > 0 ? Math.min(Math.round((totalMatched / totalMoves) * 100), 100) : 0;
-    navigateBack?.({ score: accuracy }, earnedCoins);
+    // Use refs for accurate values (state may be stale)
+    const flips = totalFlipsRef.current;
+    const matched = totalMatchedRef.current;
+    const totalMoves = Math.ceil((flips || 1) / 2);
+    const acc = totalMoves > 0 ? Math.min(Math.round((matched / totalMoves) * 100), 100) : 0;
+    const completed = completedRoundsRef.current;
+    const accuracyBase = Math.round(acc * 0.6);
+    const progressionBonus = Math.min(completed * 5, 30);
+    const efficiencyBonus = acc >= 80 ? 10 : 0;
+    const score = Math.min(accuracyBase + progressionBonus + efficiencyBonus, 100);
+    navigateBack?.({ score }, earnedCoins);
   };
 
   const sessionPct = (sessionLeft / SESSION_DURATION) * 100;

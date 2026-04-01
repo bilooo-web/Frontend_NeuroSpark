@@ -541,7 +541,10 @@ export default function FacesNamesGame({
     }
 
     const totalAttempts = totalAttemptsRef.current;
-    const incorrectAttempts = Math.max(totalAttempts - tc, 0);
+    // Use incorrectAttemptsRef directly — it only counts CONFIRMED wrong answers
+    // from completed rounds. Computing (totalAttempts - tc) would incorrectly 
+    // count unfinished-round drops as "incorrect".
+    const incorrectAttempts = incorrectAttemptsRef.current;
 
     if (onGameComplete) {
       const result = await onGameComplete({

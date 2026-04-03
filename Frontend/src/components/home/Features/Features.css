@@ -143,3 +143,69 @@
   left: 0;
   top: 0;
 }
+
+@media (max-width: 1024px) {
+  .features {
+    padding: 80px 40px 40px;
+  }
+  .features-container h2 {
+    font-size: 32px;
+    margin-top: -30px;
+  }
+  .features-visual {
+    width: 100%;
+    height: auto;
+    min-height: 400px;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .paper-img {
+    display: none; /* Hide background decorative paper on smaller screens to reduce clutter */
+  }
+  .cloud {
+    position: relative;
+    top: auto;
+    bottom: auto;
+    left: auto;
+    right: auto;
+    margin: 10px;
+    transform: none;
+    animation: none;
+  }
+  .cloud img {
+    width: 200px;
+  }
+  .cloud span {
+    font-size: 14px;
+  }
+  .star-1_b, .star-2_b {
+    display: none;
+  }
+  .features-wave {
+    width: 100vw;
+    margin-left: -40px;
+  }
+}
+
+@media (max-width: 768px) {
+  .features {
+    padding: 60px 20px 20px;
+  }
+  .features-container h2 {
+    font-size: 28px;
+    margin-top: -10px;
+  }
+  .features-visual {
+    min-height: auto;
+  }
+  .cloud img {
+    width: 150px;
+  }
+  .cloud span {
+    font-size: 12px;
+  }
+  .features-wave {
+    margin-left: -20px;
+  }
+}

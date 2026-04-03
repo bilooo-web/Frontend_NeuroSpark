@@ -377,12 +377,22 @@
     transform: translate(-50%, -50%);
 }
 
-@media (max-width: 768px) {
-    .signin-modal-content {
+@media (max-width: 1024px) {
+    .signin-modal-container { padding: 0; border: none; }
+    .signin-modal-content, .content-signin, .content-signup {
         flex-direction: column;
     }
-    .visual-side {
-        display: none;
+    .modal-side.visual-side {
+        width: 100%;
+        height: 250px;
+        min-height: 250px;
+        flex: none;
+        order: -1;
+        border-radius: 35px 35px 0 0;
+        display: flex;
+    }
+    .duck-video, .signup-video {
+        border-radius: 35px 35px 0 0;
     }
     .form-side {
         width: 100%;

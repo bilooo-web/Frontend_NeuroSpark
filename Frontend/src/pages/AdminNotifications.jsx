@@ -40,6 +40,8 @@ const AdminNotifications = () => {
   // Notification history
   const [notifications, setNotifications] = useState([]);
   const [notifLoading, setNotifLoading] = useState(true);
+  const [notifStats, setNotifStats] = useState({ total_sent: 0, total_broadcast: 0, total_direct: 0 });
+  const [notifFilter, setNotifFilter] = useState("all");
 
   // Compose modal
   const [composeModal, setComposeModal] = useState(false);
@@ -82,11 +84,14 @@ const AdminNotifications = () => {
     }
   };
 
-  const fetchNotifications = async () => {
+  const fetchNotifications = async (filter = notifFilter) => {
     try {
       setNotifLoading(true);
-      const res = await adminService.getNotifications();
+      const params = {};
+      if (filter !== "all") params.filter = filter;
+      const res = await adminService.getNotifications(params);
       setNotifications(res.notifications || res.data || []);
+      if (res.stats) setNotifStats(res.stats);
     } catch (err) {
       console.error("Failed to fetch notifications:", err);
       setNotifications([]);
@@ -115,12 +120,14 @@ const AdminNotifications = () => {
     try {
       await adminService.broadcastNotification(composeData);
       setComposeSuccess(true);
-      fetchNotifications();
-      setTimeout(() => {
+      // Wait a moment then refresh and close
+      setTimeout(async () => {
+        await fetchNotifications("all");
+        setNotifFilter("all");
         setComposeModal(false);
         setComposeSuccess(false);
         setComposeData({ title: "", message: "", type: "info", target: "all", target_role: "all" });
-      }, 1500);
+      }, 1200);
     } catch (err) {
       alert(err.data?.message || err.message || "Failed to send notification");
     } finally {
@@ -153,6 +160,43 @@ const AdminNotifications = () => {
       </div>
 
       {/* Stats */}
+      <div className="grid-3">
+        <div className="glass-card">
+          <div className="mini-stat">
+            <div className="mini-stat-icon primary">
+              <Bell style={{ height: 20, width: 20 }} />
+            </div>
+            <div>
+              <div className="mini-stat-label">Total Sent</div>
+              <div className="mini-stat-value">{notifStats.total_sent}</div>
+            </div>
+          </div>
+        </div>
+        <div className="glass-card">
+          <div className="mini-stat">
+            <div className="mini-stat-icon accent">
+              <Megaphone style={{ height: 20, width: 20 }} />
+            </div>
+            <div>
+              <div className="mini-stat-label">Broadcast</div>
+              <div className="mini-stat-value">{notifStats.total_broadcast}</div>
+            </div>
+          </div>
+        </div>
+        <div className="glass-card">
+          <div className="mini-stat">
+            <div className="mini-stat-icon success">
+              <Send style={{ height: 20, width: 20 }} />
+            </div>
+            <div>
+              <div className="mini-stat-label">Direct</div>
+              <div className="mini-stat-value">{notifStats.total_direct}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Invitation Stats */}
       <div className="grid-3">
         <div className="glass-card">
           <div className="mini-stat">
@@ -205,55 +249,90 @@ const AdminNotifications = () => {
 
       {/* ===== SENT NOTIFICATIONS TAB ===== */}
       {activeTab === "notifications" && (
-        <div className="glass-card" style={{ padding: 0 }}>
-          {notifLoading ? (
-            <div style={{ textAlign: "center", padding: 48 }}>
-              <div className="admin-spinner" />
-            </div>
-          ) : notifications.length === 0 ? (
-            <div className="empty-state" style={{ padding: 48 }}>
-              <Bell style={{ height: 40, width: 40 }} />
-              <p>No notifications sent yet</p>
-              <p className="text-xs text-muted" style={{ marginTop: 4 }}>Use the "Broadcast Notification" button or send from User Management</p>
-            </div>
-          ) : (
-            <div className="data-table-wrapper">
-              <table className="data-table">
-                <thead>
-                  <tr>
-                    <th>Title</th>
-                    <th className="th-hide-md">Type</th>
-                    <th className="th-hide-md">Target</th>
-                    <th className="th-hide-lg">Sent At</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {notifications.map((n, i) => (
-                    <tr key={n.id || i}>
-                      <td>
-                        <div>
-                          <p className="font-medium" style={{ color: "var(--foreground)" }}>{n.title}</p>
-                          <p className="text-xs text-muted" style={{ marginTop: 2 }}>
-                            {n.message?.slice(0, 80)}{n.message?.length > 80 ? "..." : ""}
-                          </p>
-                        </div>
-                      </td>
-                      <td className="td-hide-md">
-                        <span className={`badge ${typeBadge[n.type] || "badge-muted"}`}>{n.type}</span>
-                      </td>
-                      <td className="td-hide-md text-muted text-sm">
-                        {n.target_user?.full_name || n.target_role || "All Users"}
-                      </td>
-                      <td className="td-hide-lg text-muted text-sm">
-                        {n.created_at ? new Date(n.created_at).toLocaleString() : "—"}
-                      </td>
+        <>
+          {/* Filter buttons */}
+          <div className="filter-group" style={{ marginBottom: 16, gap: 8 }}>
+            {[
+              { id: "all", label: `All (${notifStats.total_sent || 0})`, icon: Bell },
+              { id: "broadcast", label: `Broadcast (${notifStats.total_broadcast || 0})`, icon: Megaphone },
+              { id: "direct", label: `Direct (${notifStats.total_direct || 0})`, icon: Send },
+            ].map((f) => (
+              <button
+                key={f.id}
+                className={`filter-btn ${notifFilter === f.id ? "active" : ""}`}
+                onClick={() => { setNotifFilter(f.id); fetchNotifications(f.id); }}
+                style={{ display: "inline-flex", alignItems: "center", gap: 6 }}
+              >
+                <f.icon style={{ height: 13, width: 13 }} />
+                {f.label}
+              </button>
+            ))}
+          </div>
+
+          <div className="glass-card" style={{ padding: 0 }}>
+            {notifLoading ? (
+              <div style={{ textAlign: "center", padding: 48 }}>
+                <div className="admin-spinner" />
+              </div>
+            ) : notifications.length === 0 ? (
+              <div className="empty-state" style={{ padding: 48 }}>
+                <Bell style={{ height: 40, width: 40 }} />
+                <p>No notifications sent yet</p>
+                <p className="text-xs text-muted" style={{ marginTop: 4 }}>Use the "Broadcast Notification" button or send from User Management</p>
+              </div>
+            ) : (
+              <div className="data-table-wrapper">
+                <table className="data-table">
+                  <thead>
+                    <tr>
+                      <th>Title</th>
+                      <th className="th-hide-md">Type</th>
+                      <th>Delivery</th>
+                      <th className="th-hide-md">Sent By</th>
+                      <th className="th-hide-lg">Sent At</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </div>
+                  </thead>
+                  <tbody>
+                    {notifications.map((n, i) => (
+                      <tr key={n.id || i}>
+                        <td>
+                          <div>
+                            <p className="font-medium" style={{ color: "var(--foreground)" }}>{n.title}</p>
+                            <p className="text-xs text-muted" style={{ marginTop: 2 }}>
+                              {n.message?.slice(0, 80)}{n.message?.length > 80 ? "..." : ""}
+                            </p>
+                          </div>
+                        </td>
+                        <td className="td-hide-md">
+                          <span className={`badge ${typeBadge[n.type] || "badge-muted"}`}>{n.type}</span>
+                        </td>
+                        <td>
+                          <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                            <span className={`badge ${n.is_broadcast ? "badge-accent" : "badge-primary"}`} style={{ fontSize: 10 }}>
+                              {n.is_broadcast ? "Broadcast" : "Direct"}
+                            </span>
+                            <span className="text-muted text-xs">
+                              {n.is_broadcast
+                                ? (n.target_role === "all" ? "All Users" : (n.target_role ? n.target_role.charAt(0).toUpperCase() + n.target_role.slice(1) + "s" : "All Users"))
+                                : (n.target_user?.full_name || "Unknown")
+                              }
+                            </span>
+                          </div>
+                        </td>
+                        <td className="td-hide-md text-muted text-sm">
+                          {n.sender_name || n.sender?.full_name || "System"}
+                        </td>
+                        <td className="td-hide-lg text-muted text-sm">
+                          {n.created_at ? new Date(n.created_at).toLocaleString() : "—"}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        </>
       )}
 
       {/* ===== INVITATIONS TAB ===== */}

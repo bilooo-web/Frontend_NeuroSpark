@@ -32,6 +32,8 @@ const COLORS = ["#00a896", "#e6a014", "#3282dc", "#28a764", "#dc3232"];
 const AdminDashboard = () => {
   const [stats, setStats] = useState(null);
   const [metrics, setMetrics] = useState(null);
+  const [weeklyGrowth, setWeeklyGrowth] = useState([]);
+  const [perfOverview, setPerfOverview] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -47,6 +49,8 @@ const AdminDashboard = () => {
         adminService.getSystemMetrics(),
       ]);
       setStats(dashRes.stats);
+      setWeeklyGrowth(dashRes.weekly_user_growth || []);
+      setPerfOverview(dashRes.performance_overview || null);
       setMetrics(metricsRes);
     } catch (err) {
       console.error("Dashboard fetch error:", err);
@@ -81,15 +85,12 @@ const AdminDashboard = () => {
     );
   }
 
-  const userGrowthData = metrics?.user_metrics
-    ? [...metrics.user_metrics].reverse().map((m) => ({
-        month: m.month,
-        Guardians: parseInt(m.guardians),
-        Children: parseInt(m.children),
-        Admins: parseInt(m.admins),
-        Total: parseInt(m.total),
-      }))
-    : [];
+  const userGrowthData = weeklyGrowth.map((w) => ({
+    week: w.week,
+    Guardians: parseInt(w.guardians || 0),
+    Children: parseInt(w.children || 0),
+    Total: parseInt(w.total || 0),
+  }));
 
   const gameSessionData = metrics?.game_metrics
     ? [...metrics.game_metrics].reverse().map((m) => ({
@@ -140,22 +141,22 @@ const AdminDashboard = () => {
       </div>
 
       <div className="grid-4">
-        <StatCard title="Total Users" value={stats?.total_users || 0} icon={Users} variant="primary" trend={{ value: stats?.active_users_today || 0, label: "new today" }} delay={0} />
-        <StatCard title="Children" value={stats?.total_children || 0} icon={Baby} variant="info" delay={100} />
-        <StatCard title="Guardians" value={stats?.total_guardians || 0} icon={ShieldCheck} variant="success" trend={{ value: stats?.total_parents || 0, label: `parents, ${stats?.total_therapists || 0} therapists` }} delay={200} />
-        <StatCard title="Total Coins" value={(stats?.total_coins_distributed || 0).toLocaleString()} icon={Coins} variant="accent" delay={300} />
+        <StatCard title="Total Users" value={stats?.total_users || 0} icon={Users} variant="primary" trend={{ value: stats?.user_growth_percent ?? 0, label: "vs last week" }} delay={0} />
+        <StatCard title="Children" value={stats?.total_children || 0} icon={Baby} variant="info" trend={{ value: stats?.children_growth_percent ?? 0, label: "vs last week" }} delay={100} />
+        <StatCard title="Guardians" value={stats?.total_guardians || 0} icon={ShieldCheck} variant="success" trend={{ value: stats?.guardians_growth_percent ?? 0, label: `${stats?.total_parents || 0} parents, ${stats?.total_therapists || 0} therapists` }} delay={200} />
+        <StatCard title="Total Coins" value={(stats?.total_coins_distributed || 0).toLocaleString()} icon={Coins} variant="accent" trend={{ value: stats?.coins_growth_percent ?? 0, label: "vs last week" }} delay={300} />
       </div>
 
       <div className="grid-4">
-        <StatCard title="Total Games" value={stats?.total_games || 0} icon={Gamepad2} delay={400} />
-        <StatCard title="Game Sessions" value={stats?.total_game_sessions || 0} icon={Activity} delay={500} />
-        <StatCard title="Voice Instructions" value={stats?.total_voice_instructions || 0} icon={BookOpen} delay={600} />
-        <StatCard title="Voice Attempts" value={stats?.total_voice_attempts || 0} icon={TrendingUp} delay={700} />
+        <StatCard title="Total Games" value={stats?.total_games || 0} icon={Gamepad2} trend={{ value: stats?.games_growth_percent ?? 0, label: "vs last week" }} delay={400} />
+        <StatCard title="Game Sessions" value={stats?.total_game_sessions || 0} icon={Activity} trend={{ value: stats?.sessions_growth_percent ?? 0, label: "vs last week" }} delay={500} />
+        <StatCard title="Voice Instructions" value={stats?.total_voice_instructions || 0} icon={BookOpen} trend={{ value: stats?.vi_growth_percent ?? 0, label: "vs last week" }} delay={600} />
+        <StatCard title="Voice Attempts" value={stats?.total_voice_attempts || 0} icon={TrendingUp} trend={{ value: stats?.voice_growth_percent ?? 0, label: "vs last week" }} delay={700} />
       </div>
 
       <div className="grid-charts">
         <div className="glass-card chart-card">
-          <h3>User Growth (Monthly)</h3>
+          <h3>User Growth (Weekly)</h3>
           {userGrowthData.length > 0 ? (
             <ResponsiveContainer width="100%" height={280}>
               <AreaChart data={userGrowthData}>
@@ -170,8 +171,8 @@ const AdminDashboard = () => {
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.06)" />
-                <XAxis dataKey="month" tick={{ fontSize: 12, fill: "#888" }} />
-                <YAxis tick={{ fontSize: 12, fill: "#888" }} />
+                <XAxis dataKey="week" tick={{ fontSize: 12, fill: "#888" }} />
+                <YAxis tick={{ fontSize: 12, fill: "#888" }} allowDecimals={false} />
                 <Tooltip contentStyle={{ borderRadius: 8, border: "1px solid #e5e7eb" }} />
                 <Legend />
                 <Area type="monotone" dataKey="Guardians" stroke="#00a896" strokeWidth={2} fill="url(#colorGuardians)" />
@@ -190,7 +191,7 @@ const AdminDashboard = () => {
               <BarChart data={gameSessionData}>
                 <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.06)" />
                 <XAxis dataKey="day" tick={{ fontSize: 11, fill: "#888" }} />
-                <YAxis tick={{ fontSize: 12, fill: "#888" }} />
+                <YAxis tick={{ fontSize: 12, fill: "#888" }} allowDecimals={false} />
                 <Tooltip contentStyle={{ borderRadius: 8, border: "1px solid #e5e7eb" }} />
                 <Bar dataKey="Sessions" fill="#00a896" radius={[4, 4, 0, 0]} />
               </BarChart>
@@ -213,7 +214,7 @@ const AdminDashboard = () => {
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.06)" />
                 <XAxis dataKey="day" tick={{ fontSize: 11, fill: "#888" }} />
-                <YAxis tick={{ fontSize: 12, fill: "#888" }} />
+                <YAxis tick={{ fontSize: 12, fill: "#888" }} allowDecimals={false} />
                 <Tooltip contentStyle={{ borderRadius: 8, border: "1px solid #e5e7eb" }} />
                 <Area type="monotone" dataKey="Attempts" stroke="#e6a014" strokeWidth={2} fill="url(#colorAccuracy)" />
               </AreaChart>
@@ -277,14 +278,14 @@ const AdminDashboard = () => {
         </div>
       </div>
 
-      {metrics?.performance_stats && (
+      {perfOverview && (
         <div className="glass-card chart-card">
           <h3>Performance Overview</h3>
           <div className="grid-4" style={{ marginTop: 16 }}>
-            <div className="report-kpi"><div className="report-kpi-value">{metrics.performance_stats.avg_game_score}</div><div className="report-kpi-label">Avg Game Score</div></div>
-            <div className="report-kpi"><div className="report-kpi-value">{metrics.performance_stats.avg_voice_accuracy}%</div><div className="report-kpi-label">Avg Voice Accuracy</div></div>
-            <div className="report-kpi"><div className="report-kpi-value">{metrics.performance_stats.avg_voice_pronunciation}%</div><div className="report-kpi-label">Avg Pronunciation</div></div>
-            <div className="report-kpi"><div className="report-kpi-value">{(metrics.performance_stats.total_coins_earned || 0).toLocaleString()}</div><div className="report-kpi-label">Total Coins Earned</div></div>
+            <div className="report-kpi"><div className="report-kpi-value">{perfOverview.avg_game_score ?? 0}%</div><div className="report-kpi-label">Avg Game Score</div></div>
+            <div className="report-kpi"><div className="report-kpi-value">{perfOverview.avg_voice_accuracy ?? 0}%</div><div className="report-kpi-label">Avg Voice Accuracy</div></div>
+            <div className="report-kpi"><div className="report-kpi-value">{perfOverview.avg_voice_pronunciation ?? 0}%</div><div className="report-kpi-label">Avg Pronunciation</div></div>
+            <div className="report-kpi"><div className="report-kpi-value">{(perfOverview.total_coins_earned || 0).toLocaleString()}</div><div className="report-kpi-label">Total Coins Earned</div></div>
           </div>
         </div>
       )}

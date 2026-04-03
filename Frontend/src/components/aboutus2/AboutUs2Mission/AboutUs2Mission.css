@@ -167,3 +167,47 @@
     transform: scale(1.08) rotate(1deg);
   }
 }
+
+@media (max-width: 1024px) {
+  .mission-section {
+    padding: 80px 0;
+    margin-bottom: -150px;
+  }
+  .mission-three-guys {
+    right: 0px;
+    width: 200px;
+    opacity: 0.3;
+    z-index: 1;
+  }
+  .mission-four-lamps {
+    left: 0px;
+    width: 200px;
+    opacity: 0.3;
+    z-index: 1;
+  }
+  .mission-text-with-shine {
+    padding: 40px 30px;
+  }
+}
+
+@media (max-width: 768px) {
+  .mission-section {
+    padding: 60px 0;
+    margin-bottom: -80px;
+  }
+  .mission-text-container h2 {
+    font-size: 32px;
+  }
+  .mission-paragraph p {
+    font-size: 15px;
+  }
+  .mission-three-guys, .mission-four-lamps {
+    display: none;
+  }
+  .mission-text-with-shine {
+    padding: 30px 20px;
+  }
+  .mission-content {
+    padding: 0 20px;
+  }
+}

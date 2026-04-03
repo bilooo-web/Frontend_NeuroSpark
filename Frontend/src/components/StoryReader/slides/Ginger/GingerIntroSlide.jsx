@@ -1,13 +1,17 @@
-import "./Ginger2Slide.css";
+import "./GingerIntroSlide.css";
 import "../../ReadingStyles.css";
 import { useState, useEffect, useRef } from "react";
 
-import giraffeBoots   from "../../../../assets/stories/ginger/girafee-boots.png";
+import giraffe       from "../../../../assets/stories/ginger/giraffe-big.png";
+import giraffeSmall  from "../../../../assets/stories/ginger/giraffe-small.png";
 import giraffePortrait from "../../../../assets/stories/ginger/giraffe-portrait.png";
-import speakerOff     from "../../../../assets/giraffe-speaker-off.png";
-import speakerOn      from "../../../../assets/giraffe-speaker-on.png";
+import tree          from "../../../../assets/stories/ginger/tree.png";
+import animals       from "../../../../assets/stories/ginger/animals.png";
+import speakerOff    from "../../../../assets/giraffe-speaker-off.png";
+import speakerOn     from "../../../../assets/giraffe-speaker-on.png";
 
-const Ginger2Slide = ({
+
+const GingerIntroSlide = ({
   text,
   onPageComplete,
   pageNumber,
@@ -21,12 +25,12 @@ const Ginger2Slide = ({
   onSpeakingChange,
   onStatsUpdate,
 }) => {
-  const [isSpeaking, setIsSpeaking]   = useState(false);
-  const isPausedRef                   = useRef(false);
-  const utteranceRef                  = useRef(null);
-  const speakerClicksRef              = useRef(0);
-  const wordClicksRef                 = useRef(0);
-  const clickedWordsRef               = useRef([]);
+  const [isSpeaking, setIsSpeaking] = useState(false);
+  const isPausedRef      = useRef(false);
+  const utteranceRef     = useRef(null);
+  const speakerClicksRef = useRef(0);
+  const wordClicksRef    = useRef(0);
+  const clickedWordsRef  = useRef([]);
 
   useEffect(() => {
     speakerClicksRef.current = 0;
@@ -140,10 +144,13 @@ const Ginger2Slide = ({
   const progressPercentage = totalWords > 0 ? (correctCount / totalWords) * 100 : 0;
 
   return (
-    <div className="ginger-scene2">
+    <div className="ginger-scene">
 
-      <img src={giraffeBoots}   className="giraffe-boots"   alt="giraffe with boots" />
+      <img src={tree}           className="tree"            alt="tree" />
+      <img src={animals}        className="animals"         alt="animals" />
+      <img src={giraffeSmall}   className="giraffe-small"   alt="small giraffe" />
       <img src={giraffePortrait} className="giraffe-portrait" alt="giraffe portrait" />
+      <img src={giraffe}        className="giraffe-big"     alt="giraffe" />
 
       <div className="giraffe-speaker-wrapper1" onClick={handleSpeakerClick}>
         <img
@@ -166,7 +173,10 @@ const Ginger2Slide = ({
             </span>
           </div>
           <div className="progress-bar1">
-            <div className="progress-fill1" style={{ width: `${progressPercentage}%` }} />
+            <div
+              className="progress-fill1"
+              style={{ width: `${progressPercentage}%` }}
+            />
           </div>
         </div>
       </div>
@@ -174,4 +184,4 @@ const Ginger2Slide = ({
   );
 };
 
-export default Ginger2Slide;
+export default GingerIntroSlide;

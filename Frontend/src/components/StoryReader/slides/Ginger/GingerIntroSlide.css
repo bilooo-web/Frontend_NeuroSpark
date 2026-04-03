@@ -1,24 +1,58 @@
-.ginger-scene4 {
+.ginger-scene {
   background-color: #9AD0EE;
   position: relative;
   width: 100%;
   height: 100vh;
-  background-image: url('../../../../assets/stories/ginger/background4.png');
+  background-image: url('../../../../assets/stories/ginger/background.png');
   background-size: cover;
   background-repeat: no-repeat;
 }
 
-
-.both {
+.giraffe {
   position: absolute;
-  margin-top: 420px;
+  bottom: 7%;
   left: 5%;
-  width: 500px;
+  width: 280px;
+  height: auto;
+  z-index: 3;
+}
+
+.tree{
+  position: absolute;
+  margin-top: 160px;
+  left: 8%;
+  width: 380px;
+  height: auto;
+  z-index: 3;
+}
+
+.giraffe-big {
+  position: absolute;
+  margin-top: 200px;
+  left: 27%;
+  width: 295px;
   height: auto;
   z-index: 4;
 }
 
-.giraffe-portrait {
+.giraffe-small {
+  position: absolute;
+  margin-top: 420px;
+  left: 17%;
+  width: 200px;
+  height: auto;
+  z-index: 4;
+}
+
+.animals {
+  position: absolute;
+  margin-top: 500px;
+  right: 82%;
+  width: 300px;
+  height: auto;
+  z-index: 2;
+}
+.giraffe-portrait{
   position: absolute;
   margin-top: -30px;
   margin-left: 1170px;
@@ -26,11 +60,9 @@
   height: auto;
   z-index: 2;
 }
-
-.giraffe-speaker-wrapper {
-  position: absolute;
-  bottom: 8%;
-  right: 3%;
+.giraffe-speaker-wrapper1 {
+  margin-top: 400px;
+  margin-left: 1300px;
   z-index: 6;
   display: flex;
   flex-direction: column;
@@ -39,14 +71,14 @@
   cursor: pointer;
 }
 
-.giraffe-speaker {
-  width: 90px;
+.giraffe-speaker1 {
+  width: 260px;   
   height: auto;
   transition: transform 0.2s ease, filter 0.2s ease;
   filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2));
 }
 
-.speaker-label {
+.speaker-label1 {
   font-size: 13px;
   font-weight: 700;
   color: white;
@@ -54,18 +86,16 @@
   padding: 3px 10px;
   border-radius: 20px;
   white-space: nowrap;
-  letter-spacing: 0.3px;
 }
 
-.giraffe-speaker-wrapper:hover .giraffe-speaker {
+.giraffe-speaker-wrapper1:hover .giraffe-speaker1 {
   transform: scale(1.1);
   filter: drop-shadow(0 6px 14px rgba(0, 0, 0, 0.3));
 }
 
-.giraffe-speaker-wrapper:active .giraffe-speaker {
+.giraffe-speaker-wrapper1:active .giraffe-speaker1 {
   transform: scale(0.95);
 }
-
 .story-text-container {
   position: absolute;
   top: 12%;
@@ -75,7 +105,7 @@
 }
 
 .story-text-box {
-  background: rgba(255, 255, 255, 0.95);
+  background: white;
   padding: 25px 35px;
   border-radius: 20px;
   font-size: 24px;
@@ -108,17 +138,18 @@
 
 .reading-progress {
   width: 100%;
-  max-width: 100%;
+  max-width: 100%;   
   margin-top: 10px;
   z-index: 100;
 }
-
+ 
 .progress-header {
   display: flex;
   justify-content: flex-end;
   margin-bottom: 5px;
+  margin-right: 550px;
 }
-
+ 
 .progress-words-label {
   font-size: 13px;
   font-weight: 700;
@@ -127,18 +158,18 @@
   padding: 2px 10px;
   border-radius: 20px;
 }
-
-.reading-progress .progress-bar {
-  width: 100%;
+.progress-bar1{
+  width: 580px;
+}
+.reading-progress .progress-bar1 {
   height: 12px;
   background: #e0e0e0;
   border-radius: 99px;
   overflow: hidden;
   box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.15);
 }
-
-.reading-progress .progress-fill {
-  height: 100%;
+ 
+.reading-progress .progress-fill1 {
   background: linear-gradient(90deg, #f97316, #22c55e);
   border-radius: 99px;
   transition: width 0.4s ease;
@@ -146,11 +177,12 @@
 
 .reading-word {
   display: inline-block;
-  cursor: pointer;
   transition: all 0.2s ease;
 }
 
-.reading-word.word-pending  { color: #666; }
+.reading-word.word-pending {
+  color: #666;
+}
 
 .reading-word.word-current {
   color: #007bff;
@@ -161,21 +193,27 @@
   animation: gentlePulse 1.5s infinite;
 }
 
-.reading-word.word-correct  { color: #28a745; font-weight: 500; }
+.reading-word.word-correct {
+  color: #28a745;
+  font-weight: 500;
+}
 
 .reading-word.word-incorrect {
   color: #dc3545;
   text-decoration: line-through wavy #dc3545;
 }
 
-.reading-word:hover {
-  background-color: rgba(255, 235, 59, 0.4);
-  border-radius: 4px;
-  transform: scale(1.05);
-}
-
 @keyframes gentlePulse {
   0%   { opacity: 1; }
   50%  { opacity: 0.8; }
   100% { opacity: 1; }
+}
+.reading-word {
+  cursor: pointer;
+}
+
+.reading-word:hover {
+  background-color: rgba(255, 235, 59, 0.4);
+  border-radius: 4px;
+  transform: scale(1.05);
 }

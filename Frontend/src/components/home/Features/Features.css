@@ -172,12 +172,17 @@
     margin: 10px;
     transform: none;
     animation: none;
+    width: 200px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
   }
   .cloud img {
-    width: 200px;
+    width: 100%;
   }
   .cloud span {
     font-size: 14px;
+    width: 80%;
   }
   .star-1_b, .star-2_b {
     display: none;

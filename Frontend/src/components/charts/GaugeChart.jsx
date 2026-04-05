@@ -7,8 +7,8 @@ const GaugeChart = ({ value, label, color = '#7C3AED', size = 120, interpretatio
   const offset = circumference - (clampedValue / 100) * circumference;
 
   return (
-    <div className="nt-gauge-wrap">
-      <div className="nt-gauge-ring" style={{ width: size, height: size }}>
+    <div className="ptd-gauge-wrap">
+      <div className="ptd-gauge-ring" style={{ width: size, height: size }}>
         <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
           <circle cx={size / 2} cy={size / 2} r={radius} fill="none" stroke="#E8EAF0" strokeWidth="8" />
           <circle
@@ -18,12 +18,12 @@ const GaugeChart = ({ value, label, color = '#7C3AED', size = 120, interpretatio
             style={{ transition: 'stroke-dashoffset 1s ease-out' }}
           />
         </svg>
-        <div className="nt-gauge-center">
-          <span className="nt-gauge-value" style={{ fontSize: size * 0.22, color }}>{clampedValue}</span>
+        <div className="ptd-gauge-center">
+          <span className="ptd-gauge-value" style={{ fontSize: size * 0.22, color }}>{clampedValue}</span>
         </div>
       </div>
-      <span className="nt-gauge-label">{label}</span>
-      {interpretation && <span className="nt-gauge-interpretation">{interpretation}</span>}
+      <span className="ptd-gauge-label">{label}</span>
+      {interpretation && <span className="ptd-gauge-interpretation">{interpretation}</span>}
     </div>
   );
 };

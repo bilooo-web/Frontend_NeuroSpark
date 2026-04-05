@@ -79,9 +79,9 @@ const Sidebar = () => {
   };
 
   const sidebarContent = (
-    <div className="nt-sidebar">
+    <div className="ptd-sidebar">
       {/* Logo */}
-      <div className="nt-sidebar-logo">
+      <div className="ptd-sidebar-logo">
         <img
           src="/src/assets/logo_s.png"
           alt="logo"
@@ -90,29 +90,29 @@ const Sidebar = () => {
       </div>
 
       {/* Nav items */}
-      <div className="nt-sidebar-nav">
-        <span className="nt-sidebar-section-label">Menu</span>
+      <div className="ptd-sidebar-nav">
+        <span className="ptd-sidebar-section-label">Menu</span>
         {mainNav.map((item) => (
           <button
             key={item.path}
             onClick={() => handleNav(item.path)}
-            className={`nt-sidebar-item ${location.pathname === item.path ? 'active' : ''}`}
+            className={`ptd-sidebar-item ${location.pathname === item.path ? 'active' : ''}`}
           >
             {item.icon}
             {item.label}
             {item.badge > 0 && (
-              <span className="nt-sidebar-badge">{item.badge}</span>
+              <span className="ptd-sidebar-badge">{item.badge}</span>
             )}
           </button>
         ))}
       </div>
 
       {/* Footer */}
-      <div className="nt-sidebar-footer">
+      <div className="ptd-sidebar-footer">
 
         {/* Logout */}
         <button
-          className="nt-sidebar-home"
+          className="ptd-sidebar-home"
           onClick={handleLogout}
           disabled={loggingOut}
           style={{ color: '#ef4444', marginBottom: 4 }}
@@ -123,16 +123,16 @@ const Sidebar = () => {
 
         {/* Back home */}
         <button
-          className="nt-sidebar-home"
+          className="ptd-sidebar-home"
           onClick={() => handleNav('/')}
         >
           <Home size={18} /> Go Back Home
         </button>
 
         {/* User card */}
-        <div className="nt-sidebar-user">
+        <div className="ptd-sidebar-user">
           <div
-            className="nt-sidebar-user-avatar"
+            className="ptd-sidebar-user-avatar"
             style={{ overflow: 'hidden', background: profilePhoto ? 'transparent' : undefined }}
           >
             {profilePhoto ? (
@@ -145,9 +145,9 @@ const Sidebar = () => {
               initials
             )}
           </div>
-          <div className="nt-sidebar-user-info">
-            <div className="nt-sidebar-user-name">{fullName}</div>
-            <div className="nt-sidebar-user-role">Therapist</div>
+          <div className="ptd-sidebar-user-info">
+            <div className="ptd-sidebar-user-name">{fullName}</div>
+            <div className="ptd-sidebar-user-role">Therapist</div>
           </div>
         </div>
 
@@ -157,23 +157,23 @@ const Sidebar = () => {
 
   return (
     <>
-      <button className="nt-mobile-menu-btn" onClick={() => setMobileOpen(true)}>
+      <button className="ptd-mobile-menu-btn" onClick={() => setMobileOpen(true)}>
         <Menu size={22} />
       </button>
 
       {mobileOpen && (
         <>
-          <div className="nt-mobile-overlay" onClick={() => setMobileOpen(false)} />
-          <div className="nt-mobile-sidebar">
+          <div className="ptd-mobile-overlay" onClick={() => setMobileOpen(false)} />
+          <div className="ptd-mobile-sidebar">
             {sidebarContent}
-            <button className="nt-mobile-close" onClick={() => setMobileOpen(false)}>
+            <button className="ptd-mobile-close" onClick={() => setMobileOpen(false)}>
               <X size={18} />
             </button>
           </div>
         </>
       )}
 
-      <div className="nt-sidebar-wrapper">
+      <div className="ptd-sidebar-wrapper">
         {sidebarContent}
       </div>
     </>

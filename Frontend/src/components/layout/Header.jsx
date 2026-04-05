@@ -101,28 +101,28 @@ const Header = () => {
   };
 
   return (
-    <header className="nt-header">
-      <div className="nt-header-left">
-        <h1 className="nt-header-title">Dashboard</h1>
-        <div className="nt-header-search">
+    <header className="ptd-header">
+      <div className="ptd-header-left">
+        <h1 className="ptd-header-title">Dashboard</h1>
+        <div className="ptd-header-search">
           <Search size={18} />
           <input type="text" placeholder="Search children, sessions..." />
         </div>
       </div>
 
-      <div className="nt-header-right">
+      <div className="ptd-header-right">
 
         {/* Notifications bell */}
         <div ref={notifRef} style={{ position: 'relative' }}>
           <button
-            className="nt-header-icon-btn"
+            className="ptd-header-icon-btn"
             onClick={() => setShowNotifications((v) => !v)}
             style={{ position: 'relative' }}
           >
             <Bell size={18} />
             {unreadCount > 0 && (
               <span
-                className="nt-header-notification-dot"
+                className="ptd-header-notification-dot"
                 style={{
                   position: 'absolute', top: 2, right: 2,
                   background: '#ef4444', color: '#fff',
@@ -216,16 +216,16 @@ const Header = () => {
         {/* Profile avatar with dropdown */}
         <div ref={profileRef} style={{ position: 'relative' }}>
           <div
-            className="nt-header-user"
+            className="ptd-header-user"
             onClick={() => setShowProfileMenu((v) => !v)}
             style={{ cursor: 'pointer' }}
           >
-            <div className="nt-header-user-info">
-              <div className="nt-header-user-name">{fullName}</div>
-              <div className="nt-header-user-role">Therapist</div>
+            <div className="ptd-header-user-info">
+              <div className="ptd-header-user-name">{fullName}</div>
+              <div className="ptd-header-user-role">Therapist</div>
             </div>
             <div
-              className="nt-header-user-avatar"
+              className="ptd-header-user-avatar"
               style={{
                 overflow: 'hidden',
                 background: profilePhoto ? 'transparent' : undefined,

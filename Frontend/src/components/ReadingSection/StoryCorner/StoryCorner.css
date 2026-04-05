@@ -18,9 +18,9 @@
   text-align: center;
   border-radius: 48px 48px 48px 48px; 
   margin-top: 10px;
-  max-width: 600px;
+  max-width: 650px;
   width: 100%;
-  padding: 3rem 4rem;
+  padding: 3rem 6rem;
   box-shadow: 0 20px 30px rgba(0, 0, 0, 0.05);
   z-index: 10;
   position: relative;
@@ -62,8 +62,8 @@
 }
 
 .character.duck {
-  left: 2%;
-  top: 13%;
+  left: -20px;
+  top: 15%;
   width: 130px;
 }
 
@@ -75,8 +75,8 @@
 }
 
 .character.yellow {
-  right: 11%;
-  top: -13%;
+  right: -20px;
+  top: -10%;
   width: 110px;
 }
 
@@ -94,17 +94,23 @@
 /* Tablet (768px - 1024px) */
 @media (max-width: 1024px) {
   .content-card {
-    padding: 3rem 4rem; /* Keep robust desktop padding to prevent text from sprawling to edges */
-    max-width: 550px;
+    padding: 3rem 4rem; 
+    max-width: 500px; /* Narrower card to stay clear of ducks */
+  }
+  .character.duck {
+    left: -40px;
+  }
+  .character.yellow {
+    right: -40px;
   }
   .character.duck img {
-    width: 220px;
+    width: 200px;
   }
   .character.yellow img {
-    width: 220px;
+    width: 200px;
   }
   .story-bg-shape {
-    width: 60%;
+    width: 70%;
   }
 }
 

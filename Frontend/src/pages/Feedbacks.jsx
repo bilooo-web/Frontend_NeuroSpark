@@ -138,12 +138,12 @@ const Feedbacks = () => {
   };
 
   const renderStars = (count, interactive = false, setter = null) => (
-    <div className="nt-stars" style={{ marginBottom: interactive ? 12 : 4 }}>
+    <div className="ptd-stars" style={{ marginBottom: interactive ? 12 : 4 }}>
       {[1, 2, 3, 4, 5].map(star => (
         <button
           key={star}
           type="button"
-          className={`nt-star ${star <= count ? 'filled' : 'empty'}`}
+          className={`ptd-star ${star <= count ? 'filled' : 'empty'}`}
           onClick={() => setter && setter(star)}
           style={!interactive ? { cursor: 'default', width: 18, height: 18 } : {}}
           disabled={!interactive}
@@ -156,10 +156,10 @@ const Feedbacks = () => {
 
   return (
     <DashboardLayout>
-      <div className="nt-page-header">
+      <div className="ptd-page-header">
         <div>
-          <div className="nt-page-title">Feedbacks</div>
-          <div className="nt-page-subtitle">
+          <div className="ptd-page-title">Feedbacks</div>
+          <div className="ptd-page-subtitle">
             Share your thoughts about therapy sessions and track sentiment analysis
           </div>
         </div>
@@ -168,7 +168,7 @@ const Feedbacks = () => {
       {/* Sentiment Result Toast */}
       {sentimentResult && (
         <div 
-          className="nt-sentiment-toast"
+          className="ptd-sentiment-toast"
           style={{
             backgroundColor: sentimentResult.result === 'positive' ? '#4caf50' :
                            sentimentResult.result === 'negative' ? '#f44336' : '#ff9800',
@@ -217,18 +217,18 @@ const Feedbacks = () => {
 
       {/* Error Message */}
       {error && (
-        <div className="nt-error-message" style={{ marginBottom: '20px' }}>
+        <div className="ptd-error-message" style={{ marginBottom: '20px' }}>
           {error}
         </div>
       )}
 
       {/* Add new feedback */}
-      <div className="nt-feedback-card">
-        <div className="nt-feedback-header">📝 New Feedback</div>
+      <div className="ptd-feedback-card">
+        <div className="ptd-feedback-header">📝 New Feedback</div>
         {renderStars(newRating, true, setNewRating)}
-        <div className="nt-feedback-row">
+        <div className="ptd-feedback-row">
           <textarea
-            className="nt-textarea"
+            className="ptd-textarea"
             placeholder="Write your feedback about a session..."
             value={newText}
             onChange={e => setNewText(e.target.value)}
@@ -236,7 +236,7 @@ const Feedbacks = () => {
             disabled={submitting}
           />
           <button 
-            className="nt-feedback-submit" 
+            className="ptd-feedback-submit" 
             onClick={addFeedback}
             disabled={submitting}
           >
@@ -246,9 +246,9 @@ const Feedbacks = () => {
       </div>
 
       {/* Feedback list */}
-      <div className="nt-card">
-        <div className="nt-card-header">
-          <span className="nt-card-title">
+      <div className="ptd-card">
+        <div className="ptd-card-header">
+          <span className="ptd-card-title">
             <MessageSquare style={{ width: 18, height: 18, display: 'inline', marginRight: 8, verticalAlign: 'middle' }} />
             Your Feedback History ({feedbacks.length})
           </span>
@@ -256,33 +256,33 @@ const Feedbacks = () => {
 
         {loading ? (
           <div style={{ textAlign: 'center', padding: 48 }}>
-            <div className="nt-spinner" />
+            <div className="ptd-spinner" />
           </div>
         ) : feedbacks.length === 0 ? (
-          <div className="nt-empty-state">No feedbacks yet. Add your first one above!</div>
+          <div className="ptd-empty-state">No feedbacks yet. Add your first one above!</div>
         ) : (
           feedbacks.map(fb => (
-            <div key={fb.id} className="nt-feedback-item">
+            <div key={fb.id} className="ptd-feedback-item">
               <div style={{ flex: 1 }}>
                 {editingId === fb.id ? (
                   <>
                     {renderStars(editRating, true, setEditRating)}
                     <textarea
-                      className="nt-textarea"
+                      className="ptd-textarea"
                       value={editText}
                       onChange={e => setEditText(e.target.value)}
                       style={{ minHeight: 60, marginBottom: 8 }}
                     />
                     <div style={{ display: 'flex', gap: 8 }}>
                       <button 
-                        className="nt-btn nt-btn-primary" 
+                        className="ptd-btn ptd-btn-primary" 
                         style={{ padding: '6px 14px', fontSize: 13 }} 
                         onClick={() => saveEdit(fb.id)}
                       >
                         Save
                       </button>
                       <button 
-                        className="nt-btn nt-btn-outline" 
+                        className="ptd-btn ptd-btn-outline" 
                         style={{ padding: '6px 14px', fontSize: 13 }} 
                         onClick={() => setEditingId(null)}
                       >
@@ -301,7 +301,7 @@ const Feedbacks = () => {
                         const bg = color + '20';
                         const emoji = s === 'positive' ? '😊' : s === 'negative' ? '😞' : '😐';
                         return (
-                          <span className="nt-sentiment-badge" style={{
+                          <span className="ptd-sentiment-badge" style={{
                             backgroundColor: bg, color,
                             padding: '2px 8px', borderRadius: '12px', fontSize: '12px',
                             display: 'inline-flex', alignItems: 'center', gap: '4px'
@@ -311,21 +311,13 @@ const Feedbacks = () => {
                         );
                       })()}
                     </div>
-                    <div className="nt-feedback-item-text">{fb.text}</div>
-                    <div className="nt-feedback-item-meta">
+                    <div className="ptd-feedback-item-text">{fb.text}</div>
+                    <div className="ptd-feedback-item-meta">
                       {fb.time_ago || fb.created_at}
-                      {/*
-                      {fb.sentiment_score && (
-                       
-                        <span style={{ marginLeft: '10px', opacity: 0.7 }}>
-                          Score: {(fb.sentiment_score * 100).toFixed(1)}%
-                        </span>
-                       
-                      )} */}
                     </div>
-                    <div className="nt-feedback-item-actions">
+                    <div className="ptd-feedback-item-actions">
                       <button 
-                        className="nt-btn nt-btn-outline" 
+                        className="ptd-btn ptd-btn-outline" 
                         style={{ padding: '4px 10px', fontSize: 12 }} 
                         onClick={() => startEdit(fb)}
                       >
@@ -335,14 +327,14 @@ const Feedbacks = () => {
                         <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                           <span style={{ fontSize: 12, color: '#f44336' }}>Sure?</span>
                           <button
-                            className="nt-btn nt-btn-danger"
+                            className="ptd-btn ptd-btn-danger"
                             style={{ padding: '4px 10px', fontSize: 12 }}
                             onClick={() => deleteFeedback(fb.id)}
                           >
                             Yes, delete
                           </button>
                           <button
-                            className="nt-btn nt-btn-outline"
+                            className="ptd-btn ptd-btn-outline"
                             style={{ padding: '4px 10px', fontSize: 12 }}
                             onClick={() => setConfirmDeleteId(null)}
                           >
@@ -351,7 +343,7 @@ const Feedbacks = () => {
                         </span>
                       ) : (
                         <button 
-                          className="nt-btn nt-btn-danger" 
+                          className="ptd-btn ptd-btn-danger" 
                           style={{ padding: '4px 10px', fontSize: 12 }} 
                           onClick={() => deleteFeedback(fb.id)}
                         >

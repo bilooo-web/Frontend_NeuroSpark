@@ -8,8 +8,8 @@ const MiniGauge = ({ value, label, color }) => {
   const offset = circumference - (value / 100) * circumference;
 
   return (
-    <div className="nt-mini-gauge">
-      <div className="nt-mini-gauge-ring">
+    <div className="ptd-mini-gauge">
+      <div className="ptd-mini-gauge-ring">
         <svg width="52" height="52" viewBox="0 0 52 52">
           <circle cx="26" cy="26" r={radius} fill="none" stroke="#D4E8DC" strokeWidth="4" />
           <circle
@@ -21,9 +21,9 @@ const MiniGauge = ({ value, label, color }) => {
             style={{ transition: 'stroke-dashoffset 0.8s ease' }}
           />
         </svg>
-        <span className="nt-mini-gauge-value">{value}</span>
+        <span className="ptd-mini-gauge-value">{value}</span>
       </div>
-      <span className="nt-mini-gauge-label">{label}</span>
+      <span className="ptd-mini-gauge-label">{label}</span>
     </div>
   );
 };
@@ -100,37 +100,37 @@ const ChildCard = ({ child, showActions = true }) => {
     val >= 75 ? '#22C55E' : val >= 50 ? '#F59E0B' : '#EF4444';
 
   return (
-    <div className="nt-child-card" onClick={() => navigate(`/guardian/children/${child.id}`)}>
-      <div className="nt-child-card-header">
-        <div className="nt-child-avatar">{initials}</div>
+    <div className="ptd-child-card" onClick={() => navigate(`/guardian/children/${child.id}`)}>
+      <div className="ptd-child-card-header">
+        <div className="ptd-child-avatar">{initials}</div>
         <div>
-          <div className="nt-child-name">{name}</div>
-          <div className="nt-child-meta">Age {age} · Active {lastActive}</div>
+          <div className="ptd-child-name">{name}</div>
+          <div className="ptd-child-meta">Age {age} · Active {lastActive}</div>
         </div>
       </div>
 
-      <div className="nt-child-scores">
+      <div className="ptd-child-scores">
         <MiniGauge value={attentionScore} label="Attention" color={getGaugeColor(attentionScore)} />
         <MiniGauge value={impulsivityScore} label="Impulse" color={getGaugeColor(100 - impulsivityScore)} />
         <MiniGauge value={consistencyScore} label="Consist." color={getGaugeColor(consistencyScore)} />
       </div>
 
-      <div className="nt-child-stats">
-        <div className="nt-child-stat">
+      <div className="ptd-child-stats">
+        <div className="ptd-child-stat">
           <Coins style={{ color: '#F59E0B' }} /> {coins}
         </div>
-        <div className="nt-child-stat">
+        <div className="ptd-child-stat">
           <Gamepad2 style={{ color: '#22C55E' }} /> {gamesPlayed}
         </div>
-        <div className="nt-child-stat">
+        <div className="ptd-child-stat">
           <Mic style={{ color: '#3B82F6' }} /> {voiceAttempts}
         </div>
       </div>
 
       {showActions && (
-        <div className="nt-child-actions">
+        <div className="ptd-child-actions">
           <button 
-            className="nt-child-action-btn primary" 
+            className="ptd-child-action-btn primary" 
             onClick={e => { 
               e.stopPropagation(); 
               navigate(`/guardian/children/${child.id}`); 
@@ -139,7 +139,7 @@ const ChildCard = ({ child, showActions = true }) => {
             View Insights
           </button>
           <button 
-            className="nt-child-action-btn secondary" 
+            className="ptd-child-action-btn secondary" 
             onClick={e => { 
               e.stopPropagation(); 
               navigate(`/guardian/children/${child.id}?tab=anomalies`); 

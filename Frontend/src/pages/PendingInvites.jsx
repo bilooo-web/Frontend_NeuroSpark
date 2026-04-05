@@ -70,7 +70,7 @@ const PendingInvites = () => {
     return (
       <DashboardLayout>
         <div style={{ textAlign: 'center', padding: 48 }}>
-          <div className="nt-spinner" />
+          <div className="ptd-spinner" />
         </div>
       </DashboardLayout>
     );
@@ -78,38 +78,38 @@ const PendingInvites = () => {
 
   return (
     <DashboardLayout>
-      <div className="nt-page-header">
+      <div className="ptd-page-header">
         <div>
-          <div className="nt-page-title">Pending Invites</div>
-          <div className="nt-page-subtitle">Invitations from parents to connect with their children</div>
+          <div className="ptd-page-title">Pending Invites</div>
+          <div className="ptd-page-subtitle">Invitations from parents to connect with their children</div>
         </div>
       </div>
 
       {error && (
-        <div className="nt-error-message" style={{ marginBottom: 16 }}>
+        <div className="ptd-error-message" style={{ marginBottom: 16 }}>
           {error}
         </div>
       )}
 
       {invites.length === 0 ? (
-        <div className="nt-card nt-empty-state">No pending invites.</div>
+        <div className="ptd-card ptd-empty-state">No pending invites.</div>
       ) : (
-        <div className="nt-space-y-4">
+        <div className="ptd-space-y-4">
           {invites.map(invite => (
-            <div key={invite.id} className="nt-card" style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-              <div className="nt-stat-icon pink"><Mail /></div>
+            <div key={invite.id} className="ptd-card" style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+              <div className="ptd-stat-icon pink"><Mail /></div>
               <div style={{ flex: 1 }}>
-                <div style={{ fontWeight: 700, fontSize: 14, color: 'var(--nt-text-primary)' }}>
+                <div style={{ fontWeight: 700, fontSize: 14, color: 'var(--ptd-text-primary)' }}>
                   {invite.guardian?.user?.full_name || invite.parent_name || 'Unknown Parent'}
                 </div>
-                <div style={{ fontSize: 13, color: 'var(--nt-text-secondary)' }}>
+                <div style={{ fontSize: 13, color: 'var(--ptd-text-secondary)' }}>
                   Wants to connect child: <strong>{invite.child?.user?.full_name || invite.child_name}</strong> · 
                   Sent {new Date(invite.created_at).toLocaleDateString()}
                 </div>
               </div>
               <div style={{ display: 'flex', gap: 8 }}>
                 <button 
-                  className="nt-btn nt-btn-primary" 
+                  className="ptd-btn ptd-btn-primary" 
                   style={{ padding: '8px 16px' }}
                   onClick={() => handleAccept(invite.id)}
                   disabled={processing === invite.id}
@@ -117,7 +117,7 @@ const PendingInvites = () => {
                   <Check /> {processing === invite.id ? 'Accepting...' : 'Accept'}
                 </button>
                 <button 
-                  className="nt-btn nt-btn-outline" 
+                  className="ptd-btn ptd-btn-outline" 
                   style={{ padding: '8px 16px' }}
                   onClick={() => handleReject(invite.id)}
                   disabled={processing === invite.id}

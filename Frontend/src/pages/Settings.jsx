@@ -160,8 +160,8 @@ const Settings = () => {
 
   // ── section helper ──
   const Section = ({ icon, title, children, danger }) => (
-    <div className="nt-settings-section" style={danger ? { borderColor: 'rgba(239,68,68,0.2)' } : {}}>
-      <div className="nt-settings-section-title" style={danger ? { color: '#ef4444' } : {}}>
+    <div className="ptd-settings-section" style={danger ? { borderColor: 'rgba(239,68,68,0.2)' } : {}}>
+      <div className="ptd-settings-section-title" style={danger ? { color: '#ef4444' } : {}}>
         {icon} {title}
       </div>
       {children}
@@ -169,10 +169,10 @@ const Settings = () => {
   );
 
   const Row = ({ label, desc, action }) => (
-    <div className="nt-settings-row">
+    <div className="ptd-settings-row">
       <div>
-        <div className="nt-settings-row-label">{label}</div>
-        {desc && <div className="nt-settings-row-desc">{desc}</div>}
+        <div className="ptd-settings-row-label">{label}</div>
+        {desc && <div className="ptd-settings-row-desc">{desc}</div>}
       </div>
       {action}
     </div>
@@ -182,19 +182,19 @@ const Settings = () => {
     <DashboardLayout>
       {toast && <Toast msg={toast.msg} type={toast.type} />}
 
-      <div className="nt-page-header">
+      <div className="ptd-page-header">
         <div>
-          <div className="nt-page-title">Settings</div>
-          <div className="nt-page-subtitle">Manage your profile, security, and preferences</div>
+          <div className="ptd-page-title">Settings</div>
+          <div className="ptd-page-subtitle">Manage your profile, security, and preferences</div>
         </div>
       </div>
 
       {/* Profile card */}
-      <div className="nt-profile-card">
+      <div className="ptd-profile-card">
         {/* Avatar with upload */}
         <div style={{ position: 'relative', flexShrink: 0 }}>
           <div
-            className="nt-profile-avatar-lg"
+            className="ptd-profile-avatar-lg"
             style={{
               overflow: 'hidden',
               background: profilePhoto ? 'transparent' : undefined,
@@ -237,9 +237,9 @@ const Settings = () => {
         </div>
 
         <div>
-          <div className="nt-profile-name">{fullName || 'Therapist'}</div>
-          <div className="nt-profile-role">🩺 Therapist</div>
-          <div className="nt-profile-email">{email}</div>
+          <div className="ptd-profile-name">{fullName || 'Therapist'}</div>
+          <div className="ptd-profile-role">🩺 Therapist</div>
+          <div className="ptd-profile-email">{email}</div>
           {profilePhoto && (
             <button
               onClick={() => { setProfilePhoto(null); localStorage.removeItem('profilePhoto'); }}
@@ -254,15 +254,15 @@ const Settings = () => {
         </div>
       </div>
 
-      <div className="nt-settings-grid">
+      <div className="ptd-settings-grid">
 
         {/* ── Profile ── */}
         <Section icon={<User />} title="Profile Information">
-          <div className="nt-space-y-4">
+          <div className="ptd-space-y-4">
             <div>
-              <label className="nt-label">Full Name</label>
+              <label className="ptd-label">Full Name</label>
               <input
-                className="nt-input"
+                className="ptd-input"
                 value={fullName}
                 disabled
                 style={{ opacity: 0.6, cursor: 'not-allowed' }}
@@ -273,43 +273,43 @@ const Settings = () => {
               </div>
             </div>
             <div>
-              <label className="nt-label">Email Address</label>
+              <label className="ptd-label">Email Address</label>
               <input
-                className="nt-input"
+                className="ptd-input"
                 value={email}
                 disabled
                 style={{ opacity: 0.6, cursor: 'not-allowed' }}
               />
             </div>
             <div>
-              <label className="nt-label">Username</label>
+              <label className="ptd-label">Username</label>
               <input
-                className="nt-input"
+                className="ptd-input"
                 value={user?.username || ''}
                 disabled
                 style={{ opacity: 0.6, cursor: 'not-allowed' }}
               />
             </div>
             <div>
-              <label className="nt-label">Phone Number</label>
+              <label className="ptd-label">Phone Number</label>
               <input
-                className="nt-input"
+                className="ptd-input"
                 value={profileForm.phone_number}
                 onChange={(e) => setProfileForm({ ...profileForm, phone_number: e.target.value })}
                 placeholder="+1 (555) 000-0000"
               />
             </div>
             <div>
-              <label className="nt-label">Guardian Type</label>
+              <label className="ptd-label">Guardian Type</label>
               <input
-                className="nt-input"
+                className="ptd-input"
                 value={user?.guardian?.guardian_type || 'therapist'}
                 disabled
                 style={{ opacity: 0.6, cursor: 'not-allowed', textTransform: 'capitalize' }}
               />
             </div>
             <button
-              className="nt-btn nt-btn-primary"
+              className="ptd-btn ptd-btn-primary"
               onClick={handleSaveProfile}
               disabled={savingProfile}
             >
@@ -325,7 +325,7 @@ const Settings = () => {
             desc="Update your account password"
             action={
               <button
-                className="nt-btn nt-btn-outline"
+                className="ptd-btn ptd-btn-outline"
                 style={{ padding: '6px 14px', fontSize: 13 }}
                 onClick={() => setShowPasswordForm((v) => !v)}
               >
@@ -340,28 +340,28 @@ const Settings = () => {
               padding: '16px', marginTop: 8, display: 'flex', flexDirection: 'column', gap: 10,
             }}>
               <input
-                className="nt-input"
+                className="ptd-input"
                 type="password"
                 placeholder="Current password"
                 value={passwordForm.current}
                 onChange={(e) => setPasswordForm({ ...passwordForm, current: e.target.value })}
               />
               <input
-                className="nt-input"
+                className="ptd-input"
                 type="password"
                 placeholder="New password (min 8 chars)"
                 value={passwordForm.newPass}
                 onChange={(e) => setPasswordForm({ ...passwordForm, newPass: e.target.value })}
               />
               <input
-                className="nt-input"
+                className="ptd-input"
                 type="password"
                 placeholder="Confirm new password"
                 value={passwordForm.confirm}
                 onChange={(e) => setPasswordForm({ ...passwordForm, confirm: e.target.value })}
               />
               <button
-                className="nt-btn nt-btn-primary"
+                className="ptd-btn ptd-btn-primary"
                 onClick={handleSavePassword}
                 disabled={savingPassword}
                 style={{ alignSelf: 'flex-start' }}
@@ -418,7 +418,7 @@ const Settings = () => {
           />
           <div style={{ marginTop: 12 }}>
             <button
-              className="nt-btn nt-btn-primary"
+              className="ptd-btn ptd-btn-primary"
               onClick={handleSaveNotifs}
               disabled={savingNotifs}
             >
@@ -448,7 +448,7 @@ const Settings = () => {
             desc="Permanently remove your data and access"
             action={
               <button
-                className="nt-btn nt-btn-danger"
+                className="ptd-btn ptd-btn-danger"
                 style={{ padding: '6px 14px', fontSize: 13 }}
                 onClick={() => {
                   if (window.confirm('Are you sure? This cannot be undone.')) {

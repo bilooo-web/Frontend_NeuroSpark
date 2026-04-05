@@ -41,7 +41,7 @@ const Anomalies = () => {
     return (
       <DashboardLayout>
         <div style={{ textAlign: 'center', padding: 48 }}>
-          <div className="nt-spinner" />
+          <div className="ptd-spinner" />
         </div>
       </DashboardLayout>
     );
@@ -49,28 +49,28 @@ const Anomalies = () => {
 
   return (
     <DashboardLayout>
-      <div className="nt-page-header">
+      <div className="ptd-page-header">
         <div>
-          <div className="nt-page-title">Anomalies</div>
-          <div className="nt-page-subtitle">All flagged sessions across your patients</div>
+          <div className="ptd-page-title">Anomalies</div>
+          <div className="ptd-page-subtitle">All flagged sessions across your patients</div>
         </div>
       </div>
 
       {error && (
-        <div className="nt-error-message" style={{ marginBottom: 16 }}>
+        <div className="ptd-error-message" style={{ marginBottom: 16 }}>
           {error}
         </div>
       )}
 
-      <div className="nt-card" style={{ marginBottom: 24 }}>
-        <div className="nt-card-header">
-          <span className="nt-card-title">Flagged Sessions</span>
+      <div className="ptd-card" style={{ marginBottom: 24 }}>
+        <div className="ptd-card-header">
+          <span className="ptd-card-title">Flagged Sessions</span>
         </div>
         {anomalies.length === 0 ? (
-          <div className="nt-empty-state">No anomalies detected.</div>
+          <div className="ptd-empty-state">No anomalies detected.</div>
         ) : (
           <div style={{ overflowX: 'auto' }}>
-            <table className="nt-table">
+            <table className="ptd-table">
               <thead>
                 <tr>
                   <th>Child</th>
@@ -87,13 +87,13 @@ const Anomalies = () => {
                     <td>{a.played_at || a.date}</td>
                     <td>{a.reason}</td>
                     <td>
-                      <span className={`nt-badge ${a.severity || 'medium'}`}>
+                      <span className={`ptd-badge ${a.severity || 'medium'}`}>
                         {a.severity || 'medium'}
                       </span>
                     </td>
                     <td>
                       <button 
-                        className="nt-anomaly-action"
+                        className="ptd-anomaly-action"
                         onClick={() => navigate(`/guardian/children/${a.child_id}?tab=anomalies`)}
                       >
                         Review

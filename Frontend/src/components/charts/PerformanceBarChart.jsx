@@ -3,11 +3,11 @@ import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Toolti
 
 const PerformanceBarChart = ({ data, title, color }) => {
   return (
-    <div className="nt-card">
-      <div className="nt-card-header">
-        <span className="nt-card-title">{title}</span>
+    <div className="ptd-card">
+      <div className="ptd-card-header">
+        <span className="ptd-card-title">{title}</span>
       </div>
-      <div className="nt-chart-container">
+      <div className="ptd-chart-container">
         <ResponsiveContainer width="100%" height="100%">
           <BarChart data={data} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
             <defs>

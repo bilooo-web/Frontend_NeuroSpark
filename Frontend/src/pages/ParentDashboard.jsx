@@ -109,14 +109,14 @@ const ParentDashboard = () => {
   if (isLoading) {
     return (
       <DashboardLayout>
-        <div className="nt-dashboard-skeleton">
-          <div className="nt-skeleton-header" />
-          <div className="nt-stats-grid">
-            {[1, 2, 3, 4].map(i => <div key={i} className="nt-skeleton-card" />)}
+        <div className="ptd-dashboard-skeleton">
+          <div className="ptd-skeleton-header" />
+          <div className="ptd-stats-grid">
+            {[1, 2, 3, 4].map(i => <div key={i} className="ptd-skeleton-card" />)}
           </div>
-          <div className="nt-content-grid">
-            <div className="nt-skeleton-chart" />
-            <div className="nt-skeleton-sidebar" />
+          <div className="ptd-content-grid">
+            <div className="ptd-skeleton-chart" />
+            <div className="ptd-skeleton-sidebar" />
           </div>
         </div>
       </DashboardLayout>
@@ -130,11 +130,11 @@ const ParentDashboard = () => {
     <DashboardLayout>
 
       {/* ── Welcome Banner ─────────────────────────────────────────────────── */}
-      <div className="nt-doctor-welcome">
-        <div className="nt-doctor-emoji" style={{ fontSize: 48 }}>👋</div>
-        <div className="nt-doctor-content">
-          <div className="nt-doctor-title">Welcome back, {firstName}!</div>
-          <div className="nt-doctor-text">
+      <div className="ptd-doctor-welcome">
+        <div className="ptd-doctor-emoji" style={{ fontSize: 48 }}>👋</div>
+        <div className="ptd-doctor-content">
+          <div className="ptd-doctor-title">Welcome back, {firstName}!</div>
+          <div className="ptd-doctor-text">
             {hasChildren
               ? `You have ${data.stats.totalChildren} ${data.stats.totalChildren === 1 ? 'child' : 'children'} linked. Keep track of their progress below.`
               : "You haven't linked any children yet. Get started by linking your first child!"}
@@ -173,18 +173,18 @@ const ParentDashboard = () => {
 
       {/* ── No-children CTA ────────────────────────────────────────────────── */}
       {!hasChildren && (
-        <div className="nt-card" style={{
+        <div className="ptd-card" style={{
           textAlign: 'center', padding: '40px 20px', marginBottom: '24px'
         }}>
           <div style={{ fontSize: 56, marginBottom: 12 }}>👶</div>
-          <div style={{ fontWeight: 700, fontSize: 18, marginBottom: 8, color: 'var(--nt-text-primary)' }}>
+          <div style={{ fontWeight: 700, fontSize: 18, marginBottom: 8, color: 'var(--ptd-text-primary)' }}>
             Link your first child
           </div>
-          <p style={{ color: 'var(--nt-text-secondary)', marginBottom: 20, maxWidth: 380, margin: '0 auto 20px' }}>
+          <p style={{ color: 'var(--ptd-text-secondary)', marginBottom: 20, maxWidth: 380, margin: '0 auto 20px' }}>
             Connect your child's account to start tracking their learning progress, game performance, and more.
           </p>
           <button
-            className="nt-btn nt-btn-primary"
+            className="ptd-btn ptd-btn-primary"
             onClick={() => navigate('/guardian/children')}
           >
             <UserPlus size={16} /> Link a Child
@@ -194,7 +194,7 @@ const ParentDashboard = () => {
 
       {/* ── Stats Grid (only when children exist) ──────────────────────────── */}
       {hasChildren && (
-        <div className="nt-stats-grid">
+        <div className="ptd-stats-grid">
           <StatsCard
             title="Children"
             value={data.stats.totalChildren}
@@ -224,32 +224,32 @@ const ParentDashboard = () => {
 
       {/* ── Main content grid ──────────────────────────────────────────────── */}
       {hasChildren && (
-        <div className="nt-content-grid">
-          <div className="nt-content-left">
-            <div className="nt-card">
-              <div className="nt-card-header">
-                <span className="nt-card-title">Connect with a Therapist</span>
-                <button className="nt-card-action" onClick={() => navigate('/guardian/therapists')}>
+        <div className="ptd-content-grid">
+          <div className="ptd-content-left">
+            <div className="ptd-card">
+              <div className="ptd-card-header">
+                <span className="ptd-card-title">Connect with a Therapist</span>
+                <button className="ptd-card-action" onClick={() => navigate('/guardian/therapists')}>
                   Find Therapists
                 </button>
               </div>
-              <div className="nt-empty-state" style={{ textAlign: 'center', padding: '20px' }}>
+              <div className="ptd-empty-state" style={{ textAlign: 'center', padding: '20px' }}>
                 <p>Invite a therapist to monitor your child's progress.</p>
               </div>
             </div>
 
             {/* Children cards */}
-            <div className="nt-card">
-              <div className="nt-card-header">
-                <span className="nt-card-title">Your Children</span>
+            <div className="ptd-card">
+              <div className="ptd-card-header">
+                <span className="ptd-card-title">Your Children</span>
                 <button
-                  className="nt-card-action"
+                  className="ptd-card-action"
                   onClick={() => navigate('/guardian/children')}
                 >
                   Manage all
                 </button>
               </div>
-              <div className="nt-children-grid">
+              <div className="ptd-children-grid">
                 {data.children.slice(0, 4).map(child => (
                   <ChildCard key={child.id} child={child} showActions={true} />
                 ))}
@@ -258,9 +258,9 @@ const ParentDashboard = () => {
 
             {/* Recent Activity */}
             {data.activities.length > 0 && (
-              <div className="nt-card">
-                <div className="nt-card-header">
-                  <span className="nt-card-title">Recent Activity</span>
+              <div className="ptd-card">
+                <div className="ptd-card-header">
+                  <span className="ptd-card-title">Recent Activity</span>
                 </div>
                 <div>
                   {data.activities.slice(0, 6).map((activity, idx) => (
@@ -270,7 +270,7 @@ const ParentDashboard = () => {
                         display: 'flex', alignItems: 'center', gap: 12,
                         padding: '12px 0',
                         borderBottom: idx < Math.min(data.activities.length, 6) - 1
-                          ? '1px solid var(--nt-border)' : 'none'
+                          ? '1px solid var(--ptd-border)' : 'none'
                       }}
                     >
                       <div style={{
@@ -282,16 +282,16 @@ const ParentDashboard = () => {
                         {activity.type === 'game' ? '🎮' : '🎤'}
                       </div>
                       <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ fontWeight: 600, fontSize: 13, color: 'var(--nt-text-primary)' }}>
+                        <div style={{ fontWeight: 600, fontSize: 13, color: 'var(--ptd-text-primary)' }}>
                           {activity.child_name}
                         </div>
-                        <div style={{ fontSize: 12, color: 'var(--nt-text-secondary)', marginTop: 1 }}>
+                        <div style={{ fontSize: 12, color: 'var(--ptd-text-secondary)', marginTop: 1 }}>
                           {activity.type === 'game'
                             ? `Played ${activity.game_name} · Score ${activity.score ?? '—'}`
                             : `Voice exercise · ${activity.accuracy ?? '—'}% accuracy`}
                         </div>
                       </div>
-                      <div style={{ fontSize: 11, color: 'var(--nt-text-secondary)', whiteSpace: 'nowrap' }}>
+                      <div style={{ fontSize: 11, color: 'var(--ptd-text-secondary)', whiteSpace: 'nowrap' }}>
                         {activity.time
                           ? new Date(activity.time).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
                           : ''}
@@ -303,9 +303,9 @@ const ParentDashboard = () => {
             )}
 
             {/* Per-child performance summary */}
-            <div className="nt-card">
-              <div className="nt-card-header">
-                <span className="nt-card-title">Performance Overview</span>
+            <div className="ptd-card">
+              <div className="ptd-card-header">
+                <span className="ptd-card-title">Performance Overview</span>
               </div>
               {data.children.map((child, idx) => {
                 const perf = Math.round(child.recent_performance || 0);
@@ -315,16 +315,16 @@ const ParentDashboard = () => {
                     key={child.id}
                     style={{
                       padding: '14px 0',
-                      borderBottom: idx < data.children.length - 1 ? '1px solid var(--nt-border)' : 'none'
+                      borderBottom: idx < data.children.length - 1 ? '1px solid var(--ptd-border)' : 'none'
                     }}
                   >
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
                       <div>
                         {/* backend sends child.name = child.user.full_name from getDashboardOverview */}
-                        <span style={{ fontWeight: 600, fontSize: 14, color: 'var(--nt-text-primary)' }}>
+                        <span style={{ fontWeight: 600, fontSize: 14, color: 'var(--ptd-text-primary)' }}>
                           {child.name || child.user?.full_name || 'Unknown'}
                         </span>
-                        <span style={{ fontSize: 12, color: 'var(--nt-text-secondary)', marginLeft: 8 }}>
+                        <span style={{ fontSize: 12, color: 'var(--ptd-text-secondary)', marginLeft: 8 }}>
                           {child.last_activity && child.last_activity !== 'No recent activity'
                             ? `Active ${child.last_activity}`
                             : 'No recent activity'}
@@ -336,7 +336,7 @@ const ParentDashboard = () => {
                     </div>
                     {/* Progress bar */}
                     <div style={{
-                      height: 6, background: 'var(--nt-border)',
+                      height: 6, background: 'var(--ptd-border)',
                       borderRadius: 3, overflow: 'hidden'
                     }}>
                       <div style={{
@@ -346,13 +346,13 @@ const ParentDashboard = () => {
                       }} />
                     </div>
                     <div style={{ display: 'flex', gap: 16, marginTop: 6 }}>
-                      <span style={{ fontSize: 11, color: 'var(--nt-text-secondary)' }}>
+                      <span style={{ fontSize: 11, color: 'var(--ptd-text-secondary)' }}>
                         🎮 {child.games_played || 0} games
                       </span>
-                      <span style={{ fontSize: 11, color: 'var(--nt-text-secondary)' }}>
+                      <span style={{ fontSize: 11, color: 'var(--ptd-text-secondary)' }}>
                         🎤 {child.voice_attempts || 0} voice sessions
                       </span>
-                      <span style={{ fontSize: 11, color: 'var(--nt-text-secondary)' }}>
+                      <span style={{ fontSize: 11, color: 'var(--ptd-text-secondary)' }}>
                         🪙 {child.total_coins || 0} coins
                       </span>
                     </div>
@@ -366,14 +366,14 @@ const ParentDashboard = () => {
       )}
 
       {/* ── Feedback Section (always visible) ─────────────────────────────── */}
-      <div className="nt-feedback-card" style={{ marginTop: hasChildren ? 0 : 8 }}>
-        <div className="nt-feedback-header">📝 Share Your Feedback</div>
-        <div className="nt-stars">
+      <div className="ptd-feedback-card" style={{ marginTop: hasChildren ? 0 : 8 }}>
+        <div className="ptd-feedback-header">📝 Share Your Feedback</div>
+        <div className="ptd-stars">
           {[1, 2, 3, 4, 5].map(star => (
             <button
               key={star}
               type="button"
-              className={`nt-star ${star <= rating ? 'filled' : 'empty'}`}
+              className={`ptd-star ${star <= rating ? 'filled' : 'empty'}`}
               onClick={() => setRating(star)}
               disabled={submitting}
             >
@@ -381,14 +381,14 @@ const ParentDashboard = () => {
             </button>
           ))}
           {rating > 0 && (
-            <span style={{ fontSize: 13, color: 'var(--nt-text-secondary)', marginLeft: 8, alignSelf: 'center' }}>
+            <span style={{ fontSize: 13, color: 'var(--ptd-text-secondary)', marginLeft: 8, alignSelf: 'center' }}>
               {rating === 5 ? 'Excellent!' : rating === 4 ? 'Great' : rating === 3 ? 'Good' : rating === 2 ? 'Fair' : 'Poor'}
             </span>
           )}
         </div>
-        <div className="nt-feedback-row">
+        <div className="ptd-feedback-row">
           <textarea
-            className="nt-textarea"
+            className="ptd-textarea"
             placeholder="How has your child been doing? Share your thoughts about the platform..."
             value={feedback}
             onChange={e => setFeedback(e.target.value)}
@@ -396,7 +396,7 @@ const ParentDashboard = () => {
             disabled={submitting}
           />
           <button
-            className="nt-feedback-submit"
+            className="ptd-feedback-submit"
             onClick={handleFeedbackSubmit}
             disabled={submitting}
           >

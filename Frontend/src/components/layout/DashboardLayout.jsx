@@ -4,11 +4,11 @@ import Sidebar from './Sidebar';
 
 const DashboardLayout = ({ children }) => {
   return (
-    <div className="nt-app">
+    <div className="ptd-app">
       <Sidebar />
-      <div className="nt-main-wrapper">
+      <div className="ptd-main-wrapper">
         <Header />
-        <div className="nt-main-content">
+        <div className="ptd-main-content">
           {children}
         </div>
       </div>

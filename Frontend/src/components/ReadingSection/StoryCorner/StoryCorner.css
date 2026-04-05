@@ -86,3 +86,56 @@
   display: block;
   filter: drop-shadow(0 8px 12px rgba(0,0,0,0.08));
 }
+
+/* =========================================
+   RESPONSIVE DESIGN (Tablet & Mobile)
+   ========================================= */
+
+/* Tablet (768px - 1024px) */
+@media (max-width: 1024px) {
+  .content-card {
+    padding: 3rem 4rem; /* Keep robust desktop padding to prevent text from sprawling to edges */
+    max-width: 550px;
+  }
+  .character.duck img {
+    width: 220px;
+  }
+  .character.yellow img {
+    width: 220px;
+  }
+  .story-bg-shape {
+    width: 60%;
+  }
+}
+
+/* Mobile (< 768px) */
+@media (max-width: 767px) {
+  .content-card {
+    padding: 2rem 1.5rem;
+    margin-top: 50px;
+  }
+  .text-section h1 {
+    font-size: 28px;
+  }
+  .text-section p {
+    font-size: 1rem;
+  }
+  .story-bg-shape {
+    width: 80%;
+    height: 70%;
+  }
+  .character.duck {
+    left: 2%;
+    top: -5%;
+  }
+  .character.duck img {
+    width: 120px;
+  }
+  .character.yellow {
+    right: 2%;
+    top: -5%;
+  }
+  .character.yellow img {
+    width: 120px;
+  }
+}

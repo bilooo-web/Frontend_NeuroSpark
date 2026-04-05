@@ -202,3 +202,42 @@
   height: auto;
   max-height: 120px;
 }
+
+/* =========================================
+   RESPONSIVE DESIGN (Tablet & Mobile)
+   ========================================= */
+
+/* Tablet (768px - 1024px) */
+@media (max-width: 1024px) {
+  .books-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    max-width: 900px;
+    width: 95%;
+  }
+  .duck-left, .duck-right {
+    width: 120px;
+  }
+  .centered-title {
+    font-size: 2.2rem;
+  }
+}
+
+/* Mobile (< 768px) */
+@media (max-width: 767px) {
+  .books-grid {
+    grid-template-columns: repeat(1, 1fr) !important;
+    gap: 30px;
+    width: 100%;
+    padding: 0 20px;
+  }
+  .duck-left, .duck-right {
+    display: none; /* Hide decorative elements to maximize content space */
+  }
+  .centered-title {
+    font-size: 1.8rem;
+    margin-top: 40px;
+  }
+  .book-cover {
+    height: 240px;
+  }
+}

@@ -184,3 +184,42 @@
   justify-content: center;
   padding: 0 10px;
 }
+
+/* =========================================
+   RESPONSIVE DESIGN (Tablet & Mobile)
+   ========================================= */
+
+/* Tablet (768px - 1024px) */
+@media (max-width: 1024px) {
+  .challenges-grid {
+    gap: 60px 20px;
+  }
+  .challenge-wrapper {
+    flex: 0 0 45%;
+  }
+  .challenges-title {
+    font-size: 38px;
+  }
+}
+
+/* Mobile (< 768px) */
+@media (max-width: 767px) {
+  .challenges-title {
+    font-size: 28px;
+    margin-bottom: 30px;
+  }
+  .challenges-subtitle {
+    font-size: 16px;
+    margin-bottom: 30px;
+    padding: 0 15px;
+  }
+  .challenges-grid {
+    gap: 50px 0;
+  }
+  .challenge-wrapper {
+    flex: 0 0 100%;
+  }
+  .challenge-card {
+    max-width: 320px;
+  }
+}

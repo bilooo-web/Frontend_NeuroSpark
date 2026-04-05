@@ -10,44 +10,45 @@ import characterPink from "../../../assets/character-pink.png";
 const ChallengesHero = () => {
   return (
     <section className="challenges-hero">
-      <img src={bluePaper} alt="" className="hero-paper" />
-      
-      <img src={direction} alt="" className="hero-direction" />
-      
-      <div className="hero-content">
-        <img src={shine} alt="" className="hero-shine" />
-        <h1>
-          Let's Learn, Play, and <br />
-          <span>Focus Together</span>
-        </h1>
-        <p>
-          This is your space to read, explore fun activities,
-          and learn step by step at your own pace.
-        </p>
-      </div>
-      
-      <div className="characters-container">
-        <img 
-          src={characterOrange} 
-          alt="Orange character" 
-          className="character character-orange" 
-        />
-        <img 
-          src={characterBlue} 
-          alt="Blue character" 
-          className="character character-blue" 
-        />
-        <img 
-          src={characterYellow} 
-          alt="Yellow character" 
-          className="character character-yellow" 
-        />
-        <img 
-          src={characterPink} 
-          alt="Pink character" 
-          className="character character-pink" 
-        />
+      <div className="hero-scale-wrapper">
+        <img src={bluePaper} alt="" className="hero-paper" />
         
+        <img src={direction} alt="" className="hero-direction" />
+        
+        <div className="hero-content">
+          <img src={shine} alt="" className="hero-shine" />
+          <h1>
+            Let's Learn, Play, and <br />
+            <span>Focus Together</span>
+          </h1>
+          <p>
+            This is your space to read, explore fun activities,
+            and learn step by step at your own pace.
+          </p>
+        </div>
+        
+        <div className="characters-container">
+          <img 
+            src={characterOrange} 
+            alt="Orange character" 
+            className="character character-orange" 
+          />
+          <img 
+            src={characterBlue} 
+            alt="Blue character" 
+            className="character character-blue" 
+          />
+          <img 
+            src={characterYellow} 
+            alt="Yellow character" 
+            className="character character-yellow" 
+          />
+          <img 
+            src={characterPink} 
+            alt="Pink character" 
+            className="character character-pink" 
+          />
+        </div>
       </div>
       
       <div className="challenges-wave">

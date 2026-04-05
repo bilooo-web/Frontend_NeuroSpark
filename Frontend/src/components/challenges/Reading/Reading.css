@@ -335,3 +335,72 @@
   animation: reading-waveMove 15s linear infinite;
   opacity: 0.7;
 }
+
+/* =========================================
+   RESPONSIVE DESIGN (Tablet & Mobile)
+   ========================================= */
+
+/* Tablet (768px - 1024px) */
+@media (max-width: 1024px) {
+  .reading-stamp-shape {
+    transform: scale(0.85);
+    margin-top: -20px;
+  }
+  .reading-girl {
+    width: 220px;
+    left: 65%;
+  }
+  .reading-books {
+    width: 120px;
+  }
+  .reading-ticket img {
+    width: 180px;
+  }
+  .reading-ticket h2 {
+    font-size: 16px;
+  }
+  .reading-cloud-0 { width: 140px; margin-left: 0; }
+  .reading-cloud-1 { width: 140px; margin-left: 100px; }
+  .reading-cloud-2 { width: 200px; right: 8%; }
+  .reading-cloud-3 { width: 140px; left: 65%; }
+  
+  .reading-star-0 { right: 85%; }
+  .reading-star-2 { left: 85%; }
+}
+
+/* Mobile (< 768px) */
+@media (max-width: 767px) {
+  .reading-section {
+    padding: 100px 0;
+    margin-bottom: -80px;
+  }
+  
+  .reading-stamp-shape {
+    transform: scale(0.5);
+    margin-top: -150px;
+    margin-bottom: -150px;
+  }
+
+  .stamp-content h3 {
+    font-size: 28px; /* Counter-scale inside parent */
+  }
+  
+  .stamp-content p {
+    font-size: 16px; 
+    line-height: 1.4;
+  }
+  
+  .reading-cloud-button {
+    transform: scale(1.4); /* Make it bigger for touch */
+  }
+
+  .reading-girl, 
+  .reading-books, 
+  .reading-book-character,
+  .reading-cloud-0,
+  .reading-cloud-1,
+  .reading-cloud-2,
+  .reading-cloud-3 {
+    display: none; /* Hide heavy decorative elements on mobile */
+  }
+}

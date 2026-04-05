@@ -28,7 +28,8 @@ const PendingInvites = () => {
       setLoading(true);
       const response = await guardianService.getPendingInvites();
       console.log('Invites:', JSON.stringify(response));
-      setInvites(response.data?.pending_invites || response.data || []);
+      // api.js unwraps HTTP body, so response IS { pending_invites: [...] } directly
+      setInvites(response.pending_invites || response.data || []);
     } catch (err) {
       setError('Failed to load invites');
       console.error(err);

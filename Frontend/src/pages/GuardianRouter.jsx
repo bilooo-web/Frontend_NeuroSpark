@@ -9,6 +9,8 @@ import Settings from '../pages/Settings';
 import Feedbacks from './Feedbacks';
 import Anomalies from '../pages/Anomalies';
 import PendingInvites from '../pages/PendingInvites';
+// TODO: Create AvailableTherapists component for parent users to find and invite therapists
+// import AvailableTherapists from '../pages/AvailableTherapists';
 
 const GuardianRouter = ({ guardianType: guardianTypeProp }) => {
   const { user } = useApp();
@@ -66,6 +68,7 @@ const GuardianRouter = ({ guardianType: guardianTypeProp }) => {
       <Route path="/children/:id" element={<ChildDetail />} />
       <Route path="/settings" element={<Settings />} />
       <Route path="/feedbacks" element={<Feedbacks />} />
+      <Route path="/children/:id" element={<ChildDetail />} />         // common
       
       {/* Therapist-only routes */}
       {guardianType === 'therapist' && (
@@ -78,7 +81,7 @@ const GuardianRouter = ({ guardianType: guardianTypeProp }) => {
       {/* Parent-only routes (if any) */}
       {guardianType === 'parent' && (
         <>
-          {/* Add parent-specific routes here */}
+          {/* TODO: <Route path="/therapists" element={<AvailableTherapists />} /> */}
         </>
       )}
       

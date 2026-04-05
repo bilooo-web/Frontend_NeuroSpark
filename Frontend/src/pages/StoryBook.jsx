@@ -6,6 +6,8 @@ import GingerIntroSlide from "../components/StoryReader/slides/Ginger/GingerIntr
 import Ginger2Slide from "../components/StoryReader/slides/Ginger/Ginger2Slide";
 import Ginger3Slide from "../components/StoryReader/slides/Ginger/Ginger3Slide";
 import Ginger4Slide from "../components/StoryReader/slides/Ginger/Ginger4Slide";
+import voiceService from "../services/voiceService";
+import { useApp } from "../context/AppContext";
 import micIcon from "../assets/mic.png";
 import noMicIcon from "../assets/no-mic.png";
 import "./StoryBook.css";
@@ -14,11 +16,14 @@ const StoryBook = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const story = stories[id];
+  const { user } = useApp();
 
   const [pageIndex, setPageIndex] = useState(0);
   const [showFeedback, setShowFeedback] = useState(false);
-  const [pageSummaries, setPageSummaries] = useState([]); 
-  const [isTTSSpeaking, setIsTTSSpeaking] = useState(false); 
+  const [pageSummaries, setPageSummaries] = useState([]);
+  const [isTTSSpeaking, setIsTTSSpeaking] = useState(false);
+  const [submitStatus, setSubmitStatus] = useState(null); // 'loading', 'success', 'error'
+  const [submitError, setSubmitError] = useState(null);
   const startTimeRef = useRef(0);
   useEffect(() => {
     startTimeRef.current = Date.now();
@@ -42,6 +47,50 @@ const StoryBook = () => {
     resetRef.current = reset;
     setExpectedTextRef.current = setExpectedText;
   }, [reset, setExpectedText]);
+
+  // Submit voice attempt to backend
+  const submitVoiceAttempt = async (sessionData) => {
+    if (!user?.child_id) {
+      console.warn('⚠️ Child ID not available in user context');
+      return;
+    }
+
+    setSubmitStatus('loading');
+    setSubmitError(null);
+
+    try {
+      const voiceData = {
+        voice_instruction_id: parseInt(id),
+        child_id: user.child_id,
+        accuracy_score: Math.round(sessionData.overallScore * 100),
+        total_words: sessionData.totalWords,
+        incorrect_words: sessionData.incorrectCount,
+        duration: sessionData.totalTime,
+        coins_earned: sessionData.coinsEarned || 0,
+      };
+
+      console.log('📤 Submitting voice attempt:', voiceData);
+      await voiceService.submitVoiceAttempt(voiceData);
+
+      setSubmitStatus('success');
+      console.log('✅ Voice attempt saved successfully');
+
+      // Clear status after 2 seconds
+      setTimeout(() => {
+        setSubmitStatus(null);
+      }, 2000);
+    } catch (error) {
+      console.error('❌ Failed to submit voice attempt:', error);
+      setSubmitError(error.message || 'Failed to save voice attempt');
+      setSubmitStatus('error');
+
+      // Clear error after 3 seconds
+      setTimeout(() => {
+        setSubmitStatus(null);
+        setSubmitError(null);
+      }, 3000);
+    }
+  };
 
   const currentPageRef = useRef("");
   const isPageFreshRef = useRef(true);
@@ -320,6 +369,18 @@ const StoryBook = () => {
             pageSummaries: allSummaries,
           }));
 
+          // Calculate coins earned (1 coin per correct word, min 5)
+          const coinsEarned = Math.max(5, allCorrect.length);
+
+          // Submit voice attempt to backend
+          submitVoiceAttempt({
+            overallScore,
+            totalWords,
+            incorrectCount: allIncorrect.length,
+            totalTime,
+            coinsEarned,
+          });
+
           return allSummaries;
         });
       } catch (e) {}
@@ -390,6 +451,15 @@ const StoryBook = () => {
       )}
 
       {error && <div className="error-overlay">⚠️ {error}</div>}
+
+      {submitStatus && (
+        <div className={`voice-submit-status ${submitStatus}`}>
+          {submitStatus === 'loading' && '⏳ Saving your reading...'}
+          {submitStatus === 'success' && '✅ Reading saved!'}
+          {submitStatus === 'error' && `❌ ${submitError}`}
+        </div>
+      )}
+
       <div className="global-mic-control">
         <button
           className={`global-mic-btn ${isListening ? "listening" : ""} ${isTTSSpeaking ? "disabled" : ""}`}

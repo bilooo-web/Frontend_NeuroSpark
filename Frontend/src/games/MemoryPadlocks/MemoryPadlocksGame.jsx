@@ -118,7 +118,10 @@ const MemoryPadlocksGame = ({
     if (isGameOver) return;
     if (paused) {
       if (pauseStartTime.current) {
-        totalPausedTime.current += Date.now() - pauseStartTime.current;
+        const pausedDuration = Date.now() - pauseStartTime.current;
+        totalPausedTime.current += pausedDuration;
+        // Shift lastInputTime forward so next RT isn't inflated by pause duration
+        lastInputTime.current += pausedDuration;
         pauseStartTime.current = null;
       }
       lastActivityTime.current = Date.now();
@@ -219,7 +222,7 @@ const MemoryPadlocksGame = ({
     if (rts.length > 1) {
       const mean = rts.reduce((a, b) => a + b, 0) / rts.length;
       const sqDiffs = rts.map(v => Math.pow(v - mean, 2));
-      rtVar = Math.round(Math.sqrt(sqDiffs.reduce((a, b) => a + b, 0) / rts.length));
+      rtVar = Math.round(Math.sqrt(sqDiffs.reduce((a, b) => a + b, 0) / (rts.length - 1)));
     }
 
     // incorrect_attempts = total checks - correct levels
@@ -253,7 +256,8 @@ const MemoryPadlocksGame = ({
     
     // Only track activity time for inactivity detection (NOT response times)
     lastActivityTime.current = Date.now();
-    lastInputTime.current = Date.now();
+    // NOTE: Do NOT update lastInputTime here — dial changes are mechanical actions,
+    // not decisions. RT should measure time between Check presses (decision points).
     
     const newInputs = [...userInputs];
     newInputs[origIdx] = (newInputs[origIdx] + delta + 10) % 10;
@@ -268,12 +272,16 @@ const MemoryPadlocksGame = ({
     lastActivityTime.current = Date.now();
     totalChecks.current += 1;
     
-    // Record response time: time from match phase start (first check) or from last check
+    // Record response time: time between decision points (Check presses)
+    // First check of a level: time from match phase start to first Check
+    // Subsequent checks: time from previous Check to this Check
     const now = Date.now();
     if (matchPhaseStart.current) {
-      const rt = now - (responseTimes.current.length === 0 ? matchPhaseStart.current : lastInputTime.current);
-      // Only record meaningful response times (100ms - 60s)
-      if (rt >= 100 && rt <= 60000) {
+      const anchor = responseTimes.current.length === 0 ? matchPhaseStart.current : lastInputTime.current;
+      const rt = now - anchor;
+      // Only record meaningful response times (500ms - 60s)
+      // 500ms minimum filters out accidental double-taps
+      if (rt >= 500 && rt <= 60000) {
         responseTimes.current.push(rt);
       }
     }
@@ -403,7 +411,7 @@ const MemoryPadlocksGame = ({
         const goSu = accuracy>=80?"You are a memory superstar!":accuracy>=60?"Your brain is getting stronger!":accuracy>=40?"Every round makes you better!":"You showed up and tried — that's what matters!";
         const bgGrad = 'linear-gradient(135deg, #8BE3D8, #6BC5B8)';
         
-        const coinsEarned = Math.max(1, Math.floor(totalCorrect * 1.5));
+        const coinsEarned = earnedCoins || 0;
         
         return (
           <div className="fn-gameover-screen" style={{
@@ -557,4 +565,3 @@ const MemoryPadlocksGame = ({
 };
 
 export default MemoryPadlocksGame;
-

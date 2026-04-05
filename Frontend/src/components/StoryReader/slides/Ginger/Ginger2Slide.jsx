@@ -1,147 +1,174 @@
 import "./Ginger2Slide.css";
 import "../../ReadingStyles.css";
 import { useState, useEffect, useRef } from "react";
-import micOn from "../../../../assets/mic.png";
-import micOff from "../../../../assets/no-mic.png";
-import useSpeechRecognition from "../../../../hooks/useSpeechRecognition";
-import { prepareSentence, getReadingProgress } from "../../../../utils/textProcessor";
 
-// Use public URLs for images
-const giraffeBig = "/images/ginger/girafee-boots.png";
-const giraffeportrait = "/images/ginger/giraffe-portrait.png";
+import giraffeBoots   from "../../../../assets/stories/ginger/girafee-boots.png";
+import giraffePortrait from "../../../../assets/stories/ginger/giraffe-portrait.png";
+import speakerOff     from "../../../../assets/giraffe-speaker-off.png";
+import speakerOn      from "../../../../assets/giraffe-speaker-on.png";
 
 const Ginger2Slide = ({
   text,
   onPageComplete,
   pageNumber,
-  totalPages
+  totalPages,
+  isListening,
+  transcript,
+  error,
+  currentWordIndex,
+  wordStatuses,
+  targetWords,
+  onSpeakingChange,
+  onStatsUpdate,
 }) => {
-  const { isListening, transcript, error, toggleListening } = useSpeechRecognition();
-  const [progress, setProgress] = useState(-1);
-  const [targetWords, setTargetWords] = useState([]);
-  const [isComplete, setIsComplete] = useState(false);
-  const timerRef = useRef(null);
+  const [isSpeaking, setIsSpeaking]   = useState(false);
+  const isPausedRef                   = useRef(false);
+  const utteranceRef                  = useRef(null);
+  const speakerClicksRef              = useRef(0);
+  const wordClicksRef                 = useRef(0);
+  const clickedWordsRef               = useRef([]);
 
-  // Prepare target words when text changes
   useEffect(() => {
-    console.log("Ginger2Slide - Page loaded with text:", text);
-    const words = prepareSentence(text);
-    setTargetWords(words);
-    setProgress(-1);
-    setIsComplete(false);
-    
-    if (timerRef.current) {
-      clearTimeout(timerRef.current);
-    }
+    speakerClicksRef.current = 0;
+    wordClicksRef.current    = 0;
+    clickedWordsRef.current  = [];
+    return () => {
+      window.speechSynthesis.cancel();
+      isPausedRef.current = false;
+      setIsSpeaking(false);
+    };
   }, [text]);
 
-  // Update progress when transcript changes
   useEffect(() => {
-    if (transcript && targetWords.length > 0 && !isComplete) {
-      const newProgress = getReadingProgress(targetWords, transcript, progress);
-      
-      if (newProgress > progress) {
-        console.log(`Ginger2Slide - Progress updated: ${progress} -> ${newProgress}`);
-        setProgress(newProgress);
-        
-        // Check if page is complete (all words read)
-        if (newProgress === targetWords.length - 1) {
-          console.log("🎉 GINGER2SLIDE PAGE COMPLETE! All words read!");
-          setIsComplete(true);
-          
-          if (onPageComplete) {
-            console.log("Ginger2Slide - Calling onPageComplete");
-            onPageComplete();
-          }
-        }
-      }
-    }
-  }, [transcript, targetWords, progress, isComplete, onPageComplete]);
+    const noop = () => {};
+    window.speechSynthesis.addEventListener('voiceschanged', noop);
+    return () => window.speechSynthesis.removeEventListener('voiceschanged', noop);
+  }, []);
 
-  // Calculate progress percentage
-  const progressPercentage = targetWords.length > 0 
-    ? ((progress + 1) / targetWords.length) * 100 
-    : 0;
-
-  // Render text with highlighting
-  const renderHighlightedText = () => {
-    if (!text) return null;
-    
-    const words = text.split(' ');
-    
-    return words.map((word, index) => {
-      let className = 'word-pending';
-      if (index <= progress) {
-        className = 'word-correct';
-      } else if (index === progress + 1 && isListening) {
-        className = 'word-current';
-      }
-      
-      return (
-        <span key={index} className={`reading-word ${className}`}>
-          {word}{' '}
-        </span>
-      );
-    });
+  const getFemaleVoice = () => {
+    const voices = window.speechSynthesis.getVoices();
+    return (
+      voices.find(v => v.lang === 'en-US' && /female|woman|girl|samantha|karen|victoria|zira|susan|lisa/i.test(v.name)) ||
+      voices.find(v => v.lang === 'en-US' && !v.name.toLowerCase().includes('google us english')) ||
+      voices.find(v => v.lang.startsWith('en'))
+    );
   };
+
+  const handleSpeakerClick = () => {
+    if (isSpeaking) {
+      window.speechSynthesis.pause();
+      isPausedRef.current = true;
+      setIsSpeaking(false);
+      onSpeakingChange?.(false);
+      return;
+    }
+    if (isPausedRef.current) {
+      window.speechSynthesis.resume();
+      isPausedRef.current = false;
+      setIsSpeaking(true);
+      onSpeakingChange?.(true);
+      return;
+    }
+    speakerClicksRef.current += 1;
+    onStatsUpdate?.({ speakerClicks: speakerClicksRef.current, wordClicks: wordClicksRef.current, clickedWords: [...clickedWordsRef.current] });
+    window.speechSynthesis.cancel();
+    const utterance   = new SpeechSynthesisUtterance(text);
+    utterance.lang    = 'en-US';
+    utterance.rate    = 0.85;
+    utterance.pitch   = 1.4;
+    const voice = getFemaleVoice();
+    if (voice) utterance.voice = voice;
+    utterance.onstart = () => { setIsSpeaking(true);  onSpeakingChange?.(true);  };
+    utterance.onend   = () => { isPausedRef.current = false; setIsSpeaking(false); onSpeakingChange?.(false); };
+    utterance.onerror = () => { isPausedRef.current = false; setIsSpeaking(false); onSpeakingChange?.(false); };
+    utteranceRef.current = utterance;
+    window.speechSynthesis.speak(utterance);
+    setIsSpeaking(true);
+  };
+
+  const handleWordClick = (word) => {
+    const clean = word.replace(/[.,!?;:"""''']/g, '').trim();
+    if (!clean) return;
+    wordClicksRef.current += 1;
+    clickedWordsRef.current.push(clean.toLowerCase());
+    onStatsUpdate?.({ speakerClicks: speakerClicksRef.current, wordClicks: wordClicksRef.current, clickedWords: [...clickedWordsRef.current] });
+    window.speechSynthesis.cancel();
+    isPausedRef.current = false;
+    setIsSpeaking(false);
+    onSpeakingChange?.(false);
+    const utterance = new SpeechSynthesisUtterance(clean);
+    utterance.lang  = 'en-US';
+    utterance.rate  = 0.8;
+    utterance.pitch = 1.4;
+    const voice = getFemaleVoice();
+    if (voice) utterance.voice = voice;
+    window.speechSynthesis.speak(utterance);
+  };
+
+  const renderTextWithHighlighting = () => {
+    if (!text) return null;
+    const words = text.split(' ');
+    return (
+      <p>
+        {words.map((word, index) => {
+          let wordClass = 'reading-word';
+          if (wordStatuses && wordStatuses[index]) {
+            wordClass += ` word-${wordStatuses[index]}`;
+          } else if (index === currentWordIndex && isListening) {
+            wordClass += ' word-current';
+          } else {
+            wordClass += ' word-pending';
+          }
+          return (
+            <span
+              key={index}
+              className={wordClass}
+              onClick={() => handleWordClick(word)}
+              style={{ cursor: 'pointer' }}
+              title={`Click to hear "${word}"`}
+            >
+              {word}{' '}
+            </span>
+          );
+        })}
+      </p>
+    );
+  };
+
+  const totalWords         = targetWords ? targetWords.length : 0;
+  const correctCount       = wordStatuses ? wordStatuses.filter(s => s === 'correct').length : 0;
+  const progressPercentage = totalWords > 0 ? (correctCount / totalWords) * 100 : 0;
 
   return (
     <div className="ginger-scene2">
-      <div className="stars-bg" />
 
-      <img src={giraffeBig} className="giraffe-big2" alt="giraffe" />
-      <img src={giraffeportrait} className="giraffe-portrait" alt="giraffe portrait" />
+      <img src={giraffeBoots}   className="giraffe-boots"   alt="giraffe with boots" />
+      <img src={giraffePortrait} className="giraffe-portrait" alt="giraffe portrait" />
+
+      <div className="giraffe-speaker-wrapper1" onClick={handleSpeakerClick}>
+        <img
+          src={isSpeaking ? speakerOn : speakerOff}
+          className="giraffe-speaker1"
+          alt={isSpeaking ? "Stop reading" : "Read aloud"}
+        />
+      </div>
 
       <div className="story-text-container">
         <div className={`story-text-box ${isListening ? 'listening' : ''}`}>
-          <p>{renderHighlightedText()}</p>
+          {renderTextWithHighlighting()}
+          <div className="page-indicator">Page {pageNumber} of {totalPages}</div>
         </div>
-        
-        {/* Live transcript */}
-        {isListening && transcript && (
-          <div className="live-transcript-mini">
-            <small>🎤 {transcript}</small>
-          </div>
-        )}
-        
-        {/* Completion message */}
-        {isComplete && (
-          <div className="completion-message">
-            ⭐ Great job! {pageNumber < totalPages ? 'Moving to next page...' : 'You finished the story! 🎉'}
-          </div>
-        )}
-        
-        {/* Progress bar */}
-        <div className="reading-progress">
-          <div>Progress: {progress + 1} / {targetWords.length} words</div>
-          <div className="progress-bar">
-            <div 
-              className="progress-fill" 
-              style={{ width: `${progressPercentage}%` }}
-            />
-          </div>
-        </div>
-        
-        {/* Error message */}
-        {error && (
-          <div className="error-mini">
-            ⚠️ {error}
-          </div>
-        )}
-      </div>
 
-      {/* Mic button */}
-      <div className="mic-control">
-        <button 
-          className={`mic-btn ${isListening ? 'listening' : ''}`}
-          onClick={toggleListening}
-          aria-label={isListening ? "Stop listening" : "Start listening"}
-        >
-          <img 
-            src={isListening ? micOn : micOff} 
-      alt={isListening ? "Stop" : "Start"} 
-          />
-        </button>
+        <div className="reading-progress">
+          <div className="progress-header">
+            <span className="progress-words-label">
+              {correctCount} / {totalWords} words read
+            </span>
+          </div>
+          <div className="progress-bar1">
+            <div className="progress-fill1" style={{ width: `${progressPercentage}%` }} />
+          </div>
+        </div>
       </div>
     </div>
   );

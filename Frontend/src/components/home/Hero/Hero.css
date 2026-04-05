@@ -182,3 +182,110 @@
     transform: translateY(5px) translateX(-5px);
   }
 }
+
+@media (max-width: 1024px) {
+  .hero {
+    padding: 60px 40px;
+  }
+  .hero-container {
+    flex-direction: column;
+    text-align: center;
+  }
+  .hero-text h1 {
+    font-size: 38px;
+    margin-left: 0;
+    justify-content: center;
+  }
+  .hero-text p {
+    margin: 20px 0 30px 0;
+    justify-content: center;
+  }
+  .hero-btn {
+    margin-left: 0;
+    margin-bottom: 40px;
+  }
+  .hero-images {
+    width: 100%;
+    height: 400px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  .circle {
+    top: auto;
+    right: auto;
+  }
+  .circle-1 {
+    width: 320px;
+    height: 320px;
+    margin: 0;
+  }
+  .circle-2 {
+    width: 300px;
+    height: 300px;
+    margin-top: -40px;
+    margin-right: 0;
+  }
+  .child-img {
+    margin-left: -50px;
+    margin-top: 20px;
+    width: 220px;
+  }
+  .dinosaur-img {
+    margin-left: 80px;
+    margin-top: -20px;
+    width: 300px;
+  }
+  .brain-img {
+    margin-top: 180px;
+    margin-left: -140px;
+    width: 90px;
+  }
+  .star-1_hero {
+    margin-left: -120px;
+    margin-top: 50px;
+  }
+  .star-2_hero {
+    margin-left: 150px;
+    margin-top: 20px;
+  }
+}
+
+@media (max-width: 768px) {
+  .hero {
+    padding: 40px 20px;
+  }
+  .hero-text h1 {
+    font-size: 32px;
+  }
+  .hero-text p {
+    font-size: 14px;
+  }
+  .hero-btn {
+    padding: 15px 30px;
+  }
+  .hero-images {
+    height: 300px;
+  }
+  .circle-1 {
+    width: 250px;
+    height: 250px;
+  }
+  .circle-2 {
+    width: 230px;
+    height: 230px;
+  }
+  .child-img {
+    width: 180px;
+    margin-left: -40px;
+  }
+  .dinosaur-img {
+    width: 220px;
+    margin-left: 60px;
+  }
+  .brain-img {
+    width: 70px;
+    margin-top: 120px;
+    margin-left: -100px;
+  }
+}

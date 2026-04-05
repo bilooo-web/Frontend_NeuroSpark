@@ -54,7 +54,7 @@ const SafeStories = () => {
 
       <div className="books-grid">
         {bookData.map((book) => (
-          <div key={book.id} className="book-card" onClick={() => navigate(`/story/${book.id}`)}>
+          <div key={book.id} className="book-card" onClick={() => navigate(`/story/${book.id}/intro`)}>
             <img src={book.img} alt={book.title} className="book-cover" />
             <p className="book-title">{book.title}</p>
           </div>

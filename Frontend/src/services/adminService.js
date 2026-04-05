@@ -4,6 +4,18 @@ const adminService = {
   getDashboard() {
     return api.get('/admin/dashboard');
   },
+  // ==================== ADMIN PROFILE ====================
+  updateProfile(data) {
+    return api.put('/admin/profile', data);
+  },
+  // ==================== REPORTS ====================
+  getReportsData() {
+    return api.get('/admin/reports-data');
+  },
+  // ==================== GLOBAL SEARCH ====================
+  globalSearch(q) {
+    return api.get('/admin/search', { q });
+  },
   // ==================== USERS ====================
   getUsers(params = {}) {
     return api.get('/admin/users', params);

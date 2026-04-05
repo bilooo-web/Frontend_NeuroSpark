@@ -1,173 +1,184 @@
 import "./GingerIntroSlide.css";
 import "../../ReadingStyles.css";
 import { useState, useEffect, useRef } from "react";
-import micOn from "../../../../assets/mic.png";
-import micOff from "../../../../assets/no-mic.png";
-import useSpeechRecognition from "../../../../hooks/useSpeechRecognition";
-import { prepareSentence, getReadingProgress } from "../../../../utils/textProcessor";
 
-// Import images directly - let Vite handle the paths
-import giraffeImg from "../../../../assets/stories/ginger/giraffe-big.png";
-import grassImg from "../../../../assets/stories/ginger/grass.png";
+import giraffe       from "../../../../assets/stories/ginger/giraffe-big.png";
+import giraffeSmall  from "../../../../assets/stories/ginger/giraffe-small.png";
+import giraffePortrait from "../../../../assets/stories/ginger/giraffe-portrait.png";
+import tree          from "../../../../assets/stories/ginger/tree.png";
+import animals       from "../../../../assets/stories/ginger/animals.png";
+import speakerOff    from "../../../../assets/giraffe-speaker-off.png";
+import speakerOn     from "../../../../assets/giraffe-speaker-on.png";
+
 
 const GingerIntroSlide = ({
   text,
   onPageComplete,
   pageNumber,
-  totalPages
+  totalPages,
+  isListening,
+  transcript,
+  error,
+  currentWordIndex,
+  wordStatuses,
+  targetWords,
+  onSpeakingChange,
+  onStatsUpdate,
 }) => {
-  const { isListening, transcript, error, toggleListening, resetTranscript } = useSpeechRecognition();
-  const [progress, setProgress] = useState(-1);
-  const [targetWords, setTargetWords] = useState([]);
-  const [isComplete, setIsComplete] = useState(false);
-  const [currentWordIndex, setCurrentWordIndex] = useState(0);
-  const timerRef = useRef(null);
-  const lastTranscriptRef = useRef('');
+  const [isSpeaking, setIsSpeaking] = useState(false);
+  const isPausedRef      = useRef(false);
+  const utteranceRef     = useRef(null);
+  const speakerClicksRef = useRef(0);
+  const wordClicksRef    = useRef(0);
+  const clickedWordsRef  = useRef([]);
 
-  // Clean up when component unmounts
   useEffect(() => {
+    speakerClicksRef.current = 0;
+    wordClicksRef.current    = 0;
+    clickedWordsRef.current  = [];
     return () => {
-      if (isListening) {
-        toggleListening();
-      }
-      if (timerRef.current) {
-        clearTimeout(timerRef.current);
-      }
+      window.speechSynthesis.cancel();
+      isPausedRef.current = false;
+      setIsSpeaking(false);
     };
-  }, [isListening, toggleListening]);
+  }, [text]);
 
-  // Prepare target words when text changes
   useEffect(() => {
-    console.log("📖 Page loaded with text:", text);
-    const words = prepareSentence(text);
-    setTargetWords(words);
-    setProgress(-1);
-    setIsComplete(false);
-    setCurrentWordIndex(0);
-    lastTranscriptRef.current = '';
-    resetTranscript();
-    
-    if (timerRef.current) {
-      clearTimeout(timerRef.current);
-    }
-  }, [text, resetTranscript]);
+    const noop = () => {};
+    window.speechSynthesis.addEventListener('voiceschanged', noop);
+    return () => window.speechSynthesis.removeEventListener('voiceschanged', noop);
+  }, []);
 
-  // Update progress when transcript changes - ONLY when actually speaking
-  useEffect(() => {
-    // Only process if transcript changed and we're listening
-    if (transcript && transcript !== lastTranscriptRef.current && isListening && targetWords.length > 0 && !isComplete) {
-      
-      console.log("\n🎤 New transcript received:", transcript);
-      
-      const newProgress = getReadingProgress(targetWords, transcript, progress);
-      
-      if (newProgress > progress) {
-        console.log(`✅ Progress increased: ${progress} -> ${newProgress}`);
-        setProgress(newProgress);
-        setCurrentWordIndex(newProgress + 1);
-        
-        // Check if page is complete
-        if (newProgress === targetWords.length - 1) {
-          console.log("🎉 PAGE COMPLETE! All words read!");
-          setIsComplete(true);
-          
-          if (onPageComplete) {
-            onPageComplete();
-          }
-        }
-      } else {
-        console.log(`⏸️ Progress unchanged at ${progress}`);
-      }
-      
-      lastTranscriptRef.current = transcript;
-    }
-  }, [transcript, targetWords, progress, isListening, isComplete, onPageComplete]);
-
-  // Calculate progress percentage
-  const progressPercentage = targetWords.length > 0 
-    ? ((progress + 1) / targetWords.length) * 100 
-    : 0;
-
-  // Render text with YELLOW HIGHLIGHTER effect
-  const renderHighlightedText = () => {
-    if (!text) return null;
-    
-    const words = text.split(' ');
-    
-    return words.map((word, index) => {
-      // Determine which words get the yellow highlighter
-      let highlightClass = '';
-      
-      if (index <= progress) {
-        // Words that have been read get yellow background
-        highlightClass = 'word-read';
-      } else if (index === currentWordIndex && isListening) {
-        // Current word to read gets brighter yellow and underline
-        highlightClass = 'word-current';
-      }
-      
-      return (
-        <span key={index} className={`reading-word ${highlightClass}`}>
-          {word}{' '}
-        </span>
-      );
-    });
+  const getFemaleVoice = () => {
+    const voices = window.speechSynthesis.getVoices();
+    return (
+      voices.find(v => v.lang === 'en-US' && /female|woman|girl|samantha|karen|victoria|zira|susan|lisa/i.test(v.name)) ||
+      voices.find(v => v.lang === 'en-US' && !v.name.toLowerCase().includes('google us english')) ||
+      voices.find(v => v.lang.startsWith('en'))
+    );
   };
+
+  const handleSpeakerClick = () => {
+    if (isSpeaking) {
+      window.speechSynthesis.pause();
+      isPausedRef.current = true;
+      setIsSpeaking(false);
+      onSpeakingChange?.(false);
+      return;
+    }
+    if (isPausedRef.current) {
+      window.speechSynthesis.resume();
+      isPausedRef.current = false;
+      setIsSpeaking(true);
+      onSpeakingChange?.(true);
+      return;
+    }
+    speakerClicksRef.current += 1;
+    onStatsUpdate?.({ speakerClicks: speakerClicksRef.current, wordClicks: wordClicksRef.current, clickedWords: [...clickedWordsRef.current] });
+    window.speechSynthesis.cancel();
+    const utterance   = new SpeechSynthesisUtterance(text);
+    utterance.lang    = 'en-US';
+    utterance.rate    = 0.85;
+    utterance.pitch   = 1.4;
+    const voice = getFemaleVoice();
+    if (voice) utterance.voice = voice;
+    utterance.onstart = () => { setIsSpeaking(true);  onSpeakingChange?.(true);  };
+    utterance.onend   = () => { isPausedRef.current = false; setIsSpeaking(false); onSpeakingChange?.(false); };
+    utterance.onerror = () => { isPausedRef.current = false; setIsSpeaking(false); onSpeakingChange?.(false); };
+    utteranceRef.current = utterance;
+    window.speechSynthesis.speak(utterance);
+    setIsSpeaking(true);
+  };
+
+  const handleWordClick = (word) => {
+    const clean = word.replace(/[.,!?;:"""''']/g, '').trim();
+    if (!clean) return;
+    wordClicksRef.current += 1;
+    clickedWordsRef.current.push(clean.toLowerCase());
+    onStatsUpdate?.({ speakerClicks: speakerClicksRef.current, wordClicks: wordClicksRef.current, clickedWords: [...clickedWordsRef.current] });
+    window.speechSynthesis.cancel();
+    isPausedRef.current = false;
+    setIsSpeaking(false);
+    onSpeakingChange?.(false);
+    const utterance = new SpeechSynthesisUtterance(clean);
+    utterance.lang  = 'en-US';
+    utterance.rate  = 0.8;
+    utterance.pitch = 1.4;
+    const voice = getFemaleVoice();
+    if (voice) utterance.voice = voice;
+    window.speechSynthesis.speak(utterance);
+  };
+
+  const renderTextWithHighlighting = () => {
+    if (!text) return null;
+    const words = text.split(' ');
+    return (
+      <p>
+        {words.map((word, index) => {
+          let wordClass = 'reading-word';
+          if (wordStatuses && wordStatuses[index]) {
+            wordClass += ` word-${wordStatuses[index]}`;
+          } else if (index === currentWordIndex && isListening) {
+            wordClass += ' word-current';
+          } else {
+            wordClass += ' word-pending';
+          }
+          return (
+            <span
+              key={index}
+              className={wordClass}
+              onClick={() => handleWordClick(word)}
+              style={{ cursor: 'pointer' }}
+              title={`Click to hear "${word}"`}
+            >
+              {word}{' '}
+            </span>
+          );
+        })}
+      </p>
+    );
+  };
+
+  const totalWords         = targetWords ? targetWords.length : 0;
+  const correctCount       = wordStatuses ? wordStatuses.filter(s => s === 'correct').length : 0;
+  const progressPercentage = totalWords > 0 ? (correctCount / totalWords) * 100 : 0;
 
   return (
     <div className="ginger-scene">
-      <div className="stars-bg" />
-      
-      <img src={grassImg} className="grass" alt="grass" />
-      <img src={giraffeImg} className="giraffe-big" alt="giraffe" />
-      
+
+      <img src={tree}           className="tree"            alt="tree" />
+      <img src={animals}        className="animals"         alt="animals" />
+      <img src={giraffeSmall}   className="giraffe-small"   alt="small giraffe" />
+      <img src={giraffePortrait} className="giraffe-portrait" alt="giraffe portrait" />
+      <img src={giraffe}        className="giraffe-big"     alt="giraffe" />
+
+      <div className="giraffe-speaker-wrapper1" onClick={handleSpeakerClick}>
+        <img
+          src={isSpeaking ? speakerOn : speakerOff}
+          className="giraffe-speaker1"
+          alt={isSpeaking ? "Stop reading" : "Read aloud"}
+        />
+      </div>
+
       <div className="story-text-container">
         <div className={`story-text-box ${isListening ? 'listening' : ''}`}>
-          <p>{renderHighlightedText()}</p>
+          {renderTextWithHighlighting()}
+          <div className="page-indicator">Page {pageNumber} of {totalPages}</div>
         </div>
-        
-        {/* Progress indicator */}
-        <div className="progress-indicator">
-          📖 {progress + 1} of {targetWords.length} words read
-        </div>
-        
-        {/* Progress bar */}
+
         <div className="reading-progress">
-          <div className="progress-bar">
-            <div 
-              className="progress-fill" 
+          <div className="progress-header">
+            <span className="progress-words-label">
+              {correctCount} / {totalWords} words read
+            </span>
+          </div>
+          <div className="progress-bar1">
+            <div
+              className="progress-fill1"
               style={{ width: `${progressPercentage}%` }}
             />
           </div>
         </div>
-        
-        {/* Completion message */}
-        {isComplete && (
-          <div className="completion-message">
-            ⭐ Great job! {pageNumber < totalPages ? 'Moving to next page...' : 'You finished the story! 🎉'}
-          </div>
-        )}
-        
-        {/* Error message */}
-        {error && (
-          <div className="error-mini">
-            ⚠️ {error}
-          </div>
-        )}
-      </div>
-
-      {/* Mic button */}
-      <div className="mic-control">
-        <button 
-          className={`mic-btn ${isListening ? 'listening' : ''}`}
-          onClick={toggleListening}
-          aria-label={isListening ? "Stop listening" : "Start listening"}
-        >
-          <img 
-            src={isListening ? micOn : micOff} 
-            alt={isListening ? "Stop" : "Start"} 
-          />
-        </button>
       </div>
     </div>
   );

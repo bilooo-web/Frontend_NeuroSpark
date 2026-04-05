@@ -1,12 +1,7 @@
-/* ========================================
-   SHARED READING STYLES - YELLOW HIGHLIGHTER THEME
-   ======================================== */
-
-/* Word container */
 .reading-word {
   display: inline-block;
   transition: all 0.2s ease;
-  color: #2c3e50;  /* Dark blue-gray for good contrast */
+  color: #2c3e50;  
   padding: 2px 4px;
   border-radius: 4px;
   font-weight: 400;
@@ -14,31 +9,27 @@
   margin-right: 5px;
 }
 
-/* Words that have been read - yellow highlighter */
 .reading-word.word-read {
-  background-color: #fff9c4;  /* Light yellow highlighter */
-  box-shadow: 0 2px 0 #fbc02d;  /* Yellow underline */
+  background-color: #fff9c4;  
+  box-shadow: 0 2px 0 #fbc02d;  
   transition: background-color 0.3s ease;
-  color: #2c3e50;  /* Keep text dark for readability */
+  color: #2c3e50;  
 }
 
-/* Current word to read - brighter yellow with animation */
 .reading-word.word-current {
-  background-color: #ffeb3b;  /* Bright yellow */
-  box-shadow: 0 3px 0 #f57c00;  /* Orange underline for emphasis */
+  background-color: #ffeb3b;  
+  box-shadow: 0 3px 0 #f57c00;  
   font-weight: 500;
   animation: gentlePulse 1.5s infinite;
-  color: #2c3e50;  /* Keep text dark */
+  color: #2c3e50;  
 }
 
-/* Pending words - no highlight */
 .reading-word.word-pending {
-  color: #666;  /* Gray for pending words */
+  color: #666;  
   background-color: transparent;
   box-shadow: none;
 }
 
-/* For backward compatibility - map old classes to new */
 .reading-word.word-correct {
   background-color: #fff9c4;
   box-shadow: 0 2px 0 #fbc02d;
@@ -53,7 +44,6 @@
   padding: 0 2px;
 }
 
-/* Pulse animation for current word */
 @keyframes gentlePulse {
   0% { 
     opacity: 1; 
@@ -62,7 +52,7 @@
   }
   50% { 
     opacity: 0.9; 
-    background-color: #fff176;  /* Lighter yellow */
+    background-color: #fff176;  
     box-shadow: 0 3px 0 #ff9800;
   }
   100% { 
@@ -72,12 +62,10 @@
   }
 }
 
-/* Listening indicator for text box */
 .story-text-box.listening {
   box-shadow: 0 0 0 3px rgba(255, 107, 107, 0.3), 0 10px 30px rgba(0,0,0,0.15);
 }
 
-/* Live transcript mini */
 .live-transcript-mini {
   margin-top: 12px;
   padding: 8px 16px;
@@ -91,7 +79,6 @@
   box-shadow: 0 2px 8px rgba(25, 118, 210, 0.1);
 }
 
-/* Error message */
 .error-mini {
   margin-top: 12px;
   padding: 10px 16px;
@@ -105,7 +92,6 @@
   box-shadow: 0 2px 8px rgba(198, 40, 40, 0.1);
 }
 
-/* Progress indicator */
 .progress-indicator {
   margin-top: 12px;
   font-size: 16px;
@@ -140,7 +126,6 @@
   box-shadow: 0 1px 3px rgba(76, 175, 80, 0.3);
 }
 
-/* Reading statistics */
 .reading-stats {
   display: flex;
   justify-content: center;
@@ -179,7 +164,6 @@
   border-radius: 20px;
 }
 
-/* Completion message */
 .completion-message {
   margin-top: 20px;
   padding: 15px 20px;
@@ -199,7 +183,6 @@
   50% { transform: scale(1.05); }
 }
 
-/* Encouragement message */
 .encouragement-message {
   margin-top: 10px;
   padding: 10px;
@@ -220,7 +203,6 @@
   100% { opacity: 0; transform: translateY(-10px); }
 }
 
-/* Retry button */
 .retry-btn {
   margin-top: 15px;
   padding: 12px 24px;
@@ -251,7 +233,6 @@
   transform: translateY(0);
 }
 
-/* Practice note */
 .practice-note {
   margin-top: 15px;
   padding: 12px;
@@ -264,7 +245,6 @@
   backdrop-filter: blur(5px);
 }
 
-/* Heard feedback */
 .heard-feedback {
   margin-top: 15px;
   padding: 12px 16px;
@@ -291,7 +271,6 @@
   word-break: break-word;
 }
 
-/* Word count badge */
 .word-count-badge {
   display: inline-block;
   background: #ff6b6b;
@@ -302,32 +281,4 @@
   font-weight: 600;
   margin-left: 10px;
   vertical-align: middle;
-}
-
-/* Responsive adjustments */
-@media (max-width: 768px) {
-  .reading-word {
-    font-size: 18px;
-    line-height: 2;
-  }
-  
-  .story-text-box {
-    padding: 20px;
-    font-size: 20px;
-  }
-  
-  .reading-stats {
-    font-size: 14px;
-    padding: 8px 16px;
-  }
-  
-  .completion-message {
-    font-size: 18px;
-    padding: 12px 16px;
-  }
-  
-  .retry-btn {
-    font-size: 14px;
-    padding: 10px 20px;
-  }
 }

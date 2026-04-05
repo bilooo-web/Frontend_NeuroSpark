@@ -854,15 +854,15 @@
 }
 
 /* Responsive Design */
-@media (max-width: 900px) {
+@media (max-width: 1024px) {
 
     .video-overlay-text h1 {
         font-size: 38px;
     }
 
     .auth-modal-container {
-        padding: 15px;
-        max-height: 98vh;
+        padding: 0;
+        max-height: 95vh;
         width: 90%;
     }
 
@@ -872,8 +872,8 @@
 
     .form-side {
         flex: 1;
-        padding: 15px;
-        width: 70%;
+        padding: 20px;
+        width: 100%;
     }
 
     .signin-form-side, .signup-form-side {

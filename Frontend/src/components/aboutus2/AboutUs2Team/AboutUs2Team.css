@@ -209,3 +209,45 @@
   }
 }
 
+@media (max-width: 1024px) {
+  .team-section {
+    padding: 80px 0 60px;
+  }
+  .team-row {
+    gap: 40px;
+    margin-top: -30px;
+  }
+  .member-image {
+    width: 120px;
+  }
+  .member-name {
+    font-size: 18px;
+  }
+  .team-members-container {
+    gap: 50px;
+    margin-top: 80px;
+  }
+}
+
+@media (max-width: 768px) {
+  .team-section {
+    padding: 60px 0 40px;
+  }
+  .team-title {
+    font-size: 32px;
+  }
+  .team-row {
+    flex-wrap: wrap;
+    gap: 30px;
+    margin-top: 0;
+  }
+  .team-members-container {
+    gap: 40px;
+  }
+  .team-member {
+    width: 45%;
+  }
+  .ragheed-image { margin-top: 0; }
+  .bilal-image { margin-top: 0; }
+}
+

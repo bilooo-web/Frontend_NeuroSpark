@@ -1205,6 +1205,7 @@ const handleResendCode = async () => {
         onBlur={() => handleFieldBlur('email')}
         placeholder="Enter username or email"
         label="Username or Email"
+        autoComplete="username"
         error={fieldErrors.email}
         touched={touchedFields.email}
         disabled={isLoading}
@@ -1311,6 +1312,7 @@ const handleResendCode = async () => {
         onBlur={() => handleFieldBlur('username')}
         placeholder="Choose a username"
         label="Username"
+        autoComplete="username"
         error={fieldErrors.username}
         touched={touchedFields.username}
         disabled={isLoading}
@@ -1455,6 +1457,7 @@ const handleResendCode = async () => {
                 onBlur={() => handleFieldBlur('childUsername')}
                 placeholder="Child's username"
                 label="Child's Username"
+                autoComplete="username"
                 error={fieldErrors.childUsername}
                 touched={touchedFields.childUsername}
                 disabled={isLoading}
@@ -1692,6 +1695,7 @@ const handleResendCode = async () => {
       onBlur={() => handleFieldBlur('resetIdentifier')}
       placeholder="Enter username or email"
       label="Username or Email"
+      autoComplete="username"
       error={fieldErrors.resetIdentifier}
       touched={touchedFields.resetIdentifier}
       disabled={isLoading}

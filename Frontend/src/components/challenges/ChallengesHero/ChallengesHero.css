@@ -256,11 +256,10 @@
 }
 
 /* =========================================
-   RESPONSIVE DESIGN (Tablet & Mobile)
+   RESPONSIVE DESIGN (All screens under 1440px)
    ========================================= */
 
-/* Tablet (768px - 1024px) */
-@media (max-width: 1024px) {
+@media (max-width: 1440px) {
   .challenges-hero {
     overflow: hidden;
   }
@@ -270,12 +269,27 @@
     width: 1440px;
     margin: 0;
     margin-left: calc(50vw - 720px);
-    transform: scale(0.65);
+    transform: scale(0.85);
     transform-origin: top center;
-    margin-bottom: -200px;
+    margin-bottom: -100px;
     height: 600px;
   }
 }
+
+@media (max-width: 1200px) {
+  .hero-scale-wrapper {
+    transform: scale(0.75);
+    margin-bottom: -150px;
+  }
+}
+
+@media (max-width: 1024px) {
+  .hero-scale-wrapper {
+    transform: scale(0.65);
+    margin-bottom: -200px;
+  }
+}
+
 /* Base adjustment for smaller tablets like iPad Mini */
 @media (max-width: 850px) {
   .hero-scale-wrapper {

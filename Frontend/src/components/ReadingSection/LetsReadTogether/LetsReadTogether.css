@@ -238,23 +238,35 @@
 }
 
 /* =========================================
-   RESPONSIVE DESIGN (Tablet & Mobile)
+   RESPONSIVE DESIGN (All screens under 1440px)
    ========================================= */
 
-/* Tablet (768px - 1024px) */
-@media (max-width: 1024px) {
+@media (max-width: 1440px) {
   .lets-read-together {
     overflow: hidden;
   }
   .content-container {
-    max-width: none; /* Override standard constraint to unlock scale */
+    max-width: none;
     width: 1440px;
     margin: 0;
-    margin-left: calc(50vw - 720px); /* Perfectly center the unscaled container */
-    transform: scale(0.65);
+    margin-left: calc(50vw - 720px);
+    transform: scale(0.85);
     transform-origin: top center;
+    margin-bottom: -50px;
+  }
+}
+
+@media (max-width: 1200px) {
+  .content-container {
+    transform: scale(0.75);
+    margin-bottom: -100px;
+  }
+}
+
+@media (max-width: 1024px) {
+  .content-container {
+    transform: scale(0.65);
     margin-bottom: -150px;
-    justify-content: space-between;
   }
 }
 

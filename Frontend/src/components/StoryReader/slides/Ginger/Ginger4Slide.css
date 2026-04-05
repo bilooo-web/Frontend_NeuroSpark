@@ -1,35 +1,71 @@
 .ginger-scene4 {
-   background-color: #9AD0EE;
- position: relative;
+  background-color: #9AD0EE;
+  position: relative;
   width: 100%;
   height: 100vh;
-  overflow: hidden;
   background-image: url('../../../../assets/stories/ginger/background4.png');
   background-size: cover;
   background-repeat: no-repeat;
-  margin-bottom: -80px;
 }
 
-
-.grass{
-    transform: translate(-550px, -150px);
-    width: 100px;
-    z-index: 2;
-}
 
 .both {
-    transform: translate(100px, 320px);
-    width: 550px;
-  
+  position: absolute;
+  margin-top: 420px;
+  left: 5%;
+  width: 500px;
+  height: auto;
+  z-index: 4;
 }
 
-.giraffe-portrait4 {
-    width: 100px;
-  transform: translate(650px, -220px);
+.giraffe-portrait {
+  position: absolute;
+  margin-top: -30px;
+  margin-left: 1170px;
+  width: 100px;
+  height: auto;
+  z-index: 2;
 }
 
+.giraffe-speaker-wrapper {
+  position: absolute;
+  bottom: 8%;
+  right: 3%;
+  z-index: 6;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+}
 
-/* TEXT WHITE DIV */
+.giraffe-speaker {
+  width: 90px;
+  height: auto;
+  transition: transform 0.2s ease, filter 0.2s ease;
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2));
+}
+
+.speaker-label {
+  font-size: 13px;
+  font-weight: 700;
+  color: white;
+  background: rgba(0, 0, 0, 0.45);
+  padding: 3px 10px;
+  border-radius: 20px;
+  white-space: nowrap;
+  letter-spacing: 0.3px;
+}
+
+.giraffe-speaker-wrapper:hover .giraffe-speaker {
+  transform: scale(1.1);
+  filter: drop-shadow(0 6px 14px rgba(0, 0, 0, 0.3));
+}
+
+.giraffe-speaker-wrapper:active .giraffe-speaker {
+  transform: scale(0.95);
+}
+
 .story-text-container {
   position: absolute;
   top: 12%;
@@ -39,143 +75,107 @@
 }
 
 .story-text-box {
-  background-color: white;
+  background: rgba(255, 255, 255, 0.95);
   padding: 25px 35px;
   border-radius: 20px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-  text-align: left;
+  font-size: 24px;
+  line-height: 1.6;
+  max-width: 500px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+  transition: box-shadow 0.3s ease;
 }
 
 .story-text-box p {
-  font-size: 25px;
-  color: #333;
   margin: 0;
-  line-height: 1.7;
-  font-family: 'Arial', sans-serif;
+  line-height: 1.8;
 }
-.reader-controls {
-  position: absolute;
-  bottom: 40px;
+
+.story-text-box.listening {
+  box-shadow: 0 0 0 3px rgba(255, 107, 107, 0.3),
+              0 10px 30px rgba(0, 0, 0, 0.15);
+}
+
+.page-indicator {
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(0, 0, 0, 0.08);
+  font-size: 13px;
+  font-weight: 700;
+  color: #999;
+  text-align: right;
+  letter-spacing: 0.3px;
+}
+
+.reading-progress {
   width: 100%;
+  max-width: 100%;
+  margin-top: 10px;
+  z-index: 100;
+}
+
+.progress-header {
   display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 70px;
+  justify-content: flex-end;
+  margin-bottom: 5px;
 }
 
-/* arrows */
-.nav-img {
-  width: 70px;
-  height: 70px;
+.progress-words-label {
+  font-size: 13px;
+  font-weight: 700;
+  color: #555;
+  background: rgba(255, 255, 255, 0.85);
+  padding: 2px 10px;
+  border-radius: 20px;
+}
+
+.reading-progress .progress-bar {
+  width: 100%;
+  height: 12px;
+  background: #e0e0e0;
+  border-radius: 99px;
+  overflow: hidden;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.15);
+}
+
+.reading-progress .progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #f97316, #22c55e);
+  border-radius: 99px;
+  transition: width 0.4s ease;
+}
+
+.reading-word {
+  display: inline-block;
   cursor: pointer;
-  transition: 0.2s;
+  transition: all 0.2s ease;
 }
 
+.reading-word.word-pending  { color: #666; }
 
-.nav-img.disabled {
-  opacity: 0.25;
-  pointer-events: none;
-}
-.nav-left {
-  transform: translate(-560px, -370px);
-}
-
-.nav-right {
-  transform: translate(530px, -370px);
-}
-/* Fix mic button positioning and prevent movement */
-.mic-control {
-  position: fixed;
-  bottom: 40px;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 1000;
-  pointer-events: auto;
-  /* Add these to prevent movement */
-  transition: none !important;
-  animation: none !important;
+.reading-word.word-current {
+  color: #007bff;
+  font-weight: bold;
+  text-decoration: underline;
+  text-decoration-color: #007bff;
+  text-decoration-thickness: 2px;
+  animation: gentlePulse 1.5s infinite;
 }
 
-.mic-btn {
-  width: 80px;
-  height: 80px;
-  border: none;
-  border-radius: 50%;
-  background: #ff6b6b;
-  box-shadow: 0 6px 20px rgba(255, 107, 107, 0.4);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0;
-  border: 3px solid white;
-  /* Fix positioning - remove transforms that might cause movement */
-  position: relative;
-  /* Remove any animations that might cause movement */
-  transition: background-color 0.2s ease, box-shadow 0.2s ease !important;
-  transform: none !important;
-  animation: none !important;
-  /* Ensure it stays in place */
-  will-change: background-color, box-shadow;
+.reading-word.word-correct  { color: #28a745; font-weight: 500; }
+
+.reading-word.word-incorrect {
+  color: #dc3545;
+  text-decoration: line-through wavy #dc3545;
 }
 
-.mic-btn img {
-  width: 40px;
-  height: 40px;
-  pointer-events: none;
-  /* Ensure image doesn't move */
-  transition: none !important;
-  transform: none !important;
-  animation: none !important;
+.reading-word:hover {
+  background-color: rgba(255, 235, 59, 0.4);
+  border-radius: 4px;
+  transform: scale(1.05);
 }
 
-.mic-btn:hover:not(:disabled) {
-  background: #ff5252;
-  /* Remove scale transform that causes movement */
-  transform: none !important;
-}
-
-.mic-btn.listening {
-  background: #4caf50;
-  /* Use box-shadow animation instead of transform animation */
-  animation: pulse-shadow 1.5s infinite !important;
-}
-
-/* New pulse animation that doesn't move the button */
-@keyframes pulse-shadow {
-  0% {
-    box-shadow: 0 0 0 0 rgba(76, 175, 80, 0.7), 0 6px 20px rgba(76, 175, 80, 0.4);
-  }
-  50% {
-    box-shadow: 0 0 0 10px rgba(76, 175, 80, 0), 0 6px 20px rgba(76, 175, 80, 0.4);
-  }
-  100% {
-    box-shadow: 0 0 0 0 rgba(76, 175, 80, 0), 0 6px 20px rgba(76, 175, 80, 0.4);
-  }
-}
-
-/* Remove any conflicting transforms from parent */
-.mic-btn:active {
-  transform: none !important;
-}
-
-.mic-btn:focus {
-  outline: 2px solid white;
-  outline-offset: 2px;
-  transform: none !important;
-}
-
-/* Disabled state */
-.mic-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-  transform: none !important;
-}
-
-/* Remove any transforms from anywhere else */
-.reader-controls,
-.mic-control,
-.mic-btn,
-.mic-btn * {
-  transform: none !important;
+@keyframes gentlePulse {
+  0%   { opacity: 1; }
+  50%  { opacity: 0.8; }
+  100% { opacity: 1; }
 }

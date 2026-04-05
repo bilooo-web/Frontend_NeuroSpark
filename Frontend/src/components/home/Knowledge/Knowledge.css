@@ -162,3 +162,46 @@
   margin: 0;
   max-width: 90%;
 }
+
+@media (max-width: 1024px) {
+  .knowledge {
+    padding: 60px 40px;
+  }
+  .books {
+    display: none; /* Hide background books on tablet to prevent overlap with cards */
+  }
+  .knowledge-cards {
+    gap: 20px;
+  }
+  .knowledge-card {
+    width: 280px;
+    height: 200px;
+  }
+  .card-content {
+    padding: 15px;
+  }
+  .card-content h3 {
+    font-size: 16px;
+  }
+  .card-content p {
+    font-size: 13px;
+  }
+}
+
+@media (max-width: 768px) {
+  .knowledge {
+    padding: 40px 20px;
+  }
+  .knowledge h2 {
+    font-size: 28px;
+    margin-bottom: 20px;
+  }
+  .knowledge-cards {
+    grid-template-columns: 1fr;
+    gap: 15px;
+  }
+  .knowledge-card {
+    width: 100%;
+    max-width: 320px;
+  }
+}

@@ -199,3 +199,33 @@
   background: linear-gradient(to top, rgba(113, 208, 185, 0.15), transparent);
   z-index: 0;
 }
+
+@media (max-width: 1024px) {
+  .feedback-section {
+    padding: 100px 40px;
+  }
+  .feedback-grid {
+    flex-wrap: wrap;
+  }
+  .feedback-cloud {
+    display: none;
+  }
+}
+
+@media (max-width: 768px) {
+  .feedback-section {
+    padding: 80px 20px;
+  }
+  .feedback-title {
+    font-size: 32px;
+    margin-bottom: 40px;
+  }
+  .feedback-grid {
+    flex-direction: column;
+    align-items: center;
+  }
+  .feedback-item {
+    width: 100%;
+    max-width: 320px;
+  }
+}

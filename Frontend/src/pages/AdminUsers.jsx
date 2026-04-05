@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   Users,
   Plus,
@@ -12,6 +12,14 @@ import {
   ChevronRight,
   Bell,
   Send,
+  Mail,
+  Phone,
+  Calendar,
+  Coins,
+  Shield,
+  Baby,
+  Link2,
+  UserCheck,
 } from "lucide-react";
 import Modal from "../components/admin/Modal";
 import adminService from "../services/adminService";
@@ -53,13 +61,19 @@ const AdminUsers = () => {
   const [notifySuccess, setNotifySuccess] = useState(false);
 
   useEffect(() => {
-    fetchUsers();
+    fetchUsers(1, "all", "");
   }, []);
 
-  const fetchUsers = async (page = 1) => {
+  // Ref to hold current filter values for use inside callbacks
+  const searchTimerRef = useRef(null);
+
+  const fetchUsers = async (page = 1, role = roleFilter, searchVal = search) => {
     try {
       setLoading(true);
-      const res = await adminService.getUsers({ page });
+      const params = { page };
+      if (role && role !== "all") params.role = role;
+      if (searchVal && searchVal.trim()) params.search = searchVal.trim();
+      const res = await adminService.getUsers(params);
       setUsers(res.data || []);
       setPagination({
         current_page: res.current_page,
@@ -75,14 +89,22 @@ const AdminUsers = () => {
     }
   };
 
-  const filteredUsers = users.filter((u) => {
-    const matchSearch =
-      !search ||
-      u.full_name?.toLowerCase().includes(search.toLowerCase()) ||
-      u.username?.toLowerCase().includes(search.toLowerCase());
-    const matchRole = roleFilter === "all" || u.role === roleFilter;
-    return matchSearch && matchRole;
-  });
+  const handleRoleFilterChange = (role) => {
+    setRoleFilter(role);
+    fetchUsers(1, role, search);
+  };
+
+  const handleSearchChange = (value) => {
+    setSearch(value);
+    if (searchTimerRef.current) clearTimeout(searchTimerRef.current);
+    searchTimerRef.current = setTimeout(() => {
+      fetchUsers(1, roleFilter, value);
+    }, 400);
+  };
+
+  const refreshCurrentPage = () => {
+    fetchUsers(pagination.current_page || 1, roleFilter, search);
+  };
 
   // ADD USER
   const openAddModal = () => {
@@ -120,7 +142,7 @@ const AdminUsers = () => {
       }
       await adminService.createUser(payload);
       setAddModal(false);
-      fetchUsers(pagination.current_page);
+      refreshCurrentPage();
     } catch (err) {
       if (err.data?.errors) {
         setFormErrors(err.data.errors);
@@ -187,7 +209,7 @@ const AdminUsers = () => {
 
       await adminService.updateUser(user.id, payload);
       setEditModal({ open: false, user: null });
-      fetchUsers(pagination.current_page);
+      refreshCurrentPage();
     } catch (err) {
       if (err.data?.errors) {
         setFormErrors(err.data.errors);
@@ -200,12 +222,19 @@ const AdminUsers = () => {
   };
 
   // VIEW USER
+  const [viewLoading, setViewLoading] = useState(false);
+
   const openViewModal = async (user) => {
+    setViewModal({ open: true, user: null });
+    setViewLoading(true);
     try {
       const res = await adminService.getUser(user.id);
       setViewModal({ open: true, user: res.user || res });
     } catch {
+      // Fallback to list data if fetch fails
       setViewModal({ open: true, user });
+    } finally {
+      setViewLoading(false);
     }
   };
 
@@ -215,7 +244,7 @@ const AdminUsers = () => {
     try {
       await adminService.deleteUser(deleteModal.user.id);
       setDeleteModal({ open: false, user: null });
-      fetchUsers(pagination.current_page);
+      refreshCurrentPage();
     } catch (err) {
       alert(err.message || "Failed to delete user");
     } finally {
@@ -227,7 +256,7 @@ const AdminUsers = () => {
   const handleActivate = async (user) => {
     try {
       await adminService.activateUser(user.id);
-      fetchUsers(pagination.current_page);
+      refreshCurrentPage();
     } catch (err) {
       alert(err.message || "Failed to activate user");
     }
@@ -236,7 +265,7 @@ const AdminUsers = () => {
   const handleSuspend = async (user) => {
     try {
       await adminService.suspendUser(user.id);
-      fetchUsers(pagination.current_page);
+      refreshCurrentPage();
     } catch (err) {
       alert(err.message || "Failed to suspend user");
     }
@@ -319,7 +348,7 @@ const AdminUsers = () => {
           <input
             placeholder="Search users..."
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(e) => handleSearchChange(e.target.value)}
           />
         </div>
         <div className="filter-group">
@@ -327,7 +356,7 @@ const AdminUsers = () => {
             <button
               key={r}
               className={`filter-btn ${roleFilter === r ? "active" : ""}`}
-              onClick={() => setRoleFilter(r)}
+              onClick={() => handleRoleFilterChange(r)}
             >
               {r.charAt(0).toUpperCase() + r.slice(1)}
             </button>
@@ -355,14 +384,14 @@ const AdminUsers = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredUsers.length === 0 ? (
+                  {users.length === 0 ? (
                     <tr>
                       <td colSpan={5} style={{ textAlign: "center", padding: 32 }}>
                         <p className="text-muted">No users found</p>
                       </td>
                     </tr>
                   ) : (
-                    filteredUsers.map((user) => (
+                    users.map((user) => (
                       <tr key={user.id}>
                         <td>
                           <div className="table-user-cell">
@@ -430,10 +459,10 @@ const AdminUsers = () => {
               <div className="table-pagination">
                 <span>Showing {pagination.from}–{pagination.to} of {pagination.total}</span>
                 <div className="table-pagination-btns">
-                  <button disabled={pagination.current_page === 1} onClick={() => fetchUsers(pagination.current_page - 1)}>
+                  <button disabled={pagination.current_page === 1} onClick={() => fetchUsers(pagination.current_page - 1, roleFilter, search)}>
                     <ChevronLeft style={{ height: 16, width: 16 }} />
                   </button>
-                  <button disabled={pagination.current_page === pagination.last_page} onClick={() => fetchUsers(pagination.current_page + 1)}>
+                  <button disabled={pagination.current_page === pagination.last_page} onClick={() => fetchUsers(pagination.current_page + 1, roleFilter, search)}>
                     <ChevronRight style={{ height: 16, width: 16 }} />
                   </button>
                 </div>
@@ -517,26 +546,142 @@ const AdminUsers = () => {
 
       {/* ===== VIEW USER MODAL ===== */}
       <Modal open={viewModal.open} onClose={() => setViewModal({ open: false, user: null })} title="User Details">
-        {viewModal.user && (
-          <div>
-            <div className="modal-field"><div className="modal-field-label">Full Name</div><div className="modal-field-value">{viewModal.user.full_name}</div></div>
-            <div className="modal-field"><div className="modal-field-label">Username</div><div className="modal-field-value">@{viewModal.user.username}</div></div>
-            <div className="modal-field"><div className="modal-field-label">Role</div><div className="modal-field-value"><span className={`badge ${roleBadge[viewModal.user.role]}`}>{viewModal.user.role}</span></div></div>
-            <div className="modal-field"><div className="modal-field-label">Status</div><div className="modal-field-value"><span className={`badge ${statusBadge[viewModal.user.status]}`}>{viewModal.user.status}</span></div></div>
-            {(viewModal.user.role === "admin" || viewModal.user.role === "guardian") && (
-              <div className="modal-field"><div className="modal-field-label">Email</div><div className="modal-field-value">{viewModal.user.guardian?.email || viewModal.user.admin?.email || "—"}</div></div>
-            )}
-            {viewModal.user.role === "guardian" && (<>
-              <div className="modal-field"><div className="modal-field-label">Guardian Type</div><div className="modal-field-value">{viewModal.user.guardian?.guardian_type || "—"}</div></div>
-              <div className="modal-field"><div className="modal-field-label">Phone</div><div className="modal-field-value">{viewModal.user.guardian?.phone_number || "—"}</div></div>
-            </>)}
-            {viewModal.user.role === "child" && (<>
-              <div className="modal-field"><div className="modal-field-label">Date of Birth</div><div className="modal-field-value">{viewModal.user.child?.date_of_birth || "—"}</div></div>
-              <div className="modal-field"><div className="modal-field-label">Total Coins</div><div className="modal-field-value">{viewModal.user.child?.total_coins || 0}</div></div>
-            </>)}
-            <div className="modal-field"><div className="modal-field-label">Joined</div><div className="modal-field-value">{viewModal.user.created_at ? new Date(viewModal.user.created_at).toLocaleString() : "—"}</div></div>
+        {viewLoading ? (
+          <div style={{ textAlign: "center", padding: 40 }}>
+            <div className="admin-spinner" />
+            <p className="text-muted" style={{ marginTop: 12, fontSize: 13 }}>Loading user details...</p>
           </div>
-        )}
+        ) : viewModal.user && (() => {
+          const u = viewModal.user;
+          const roleColors = { admin: "#6c5ce7", guardian: "#00a896", child: "#3282dc" };
+          const avatarBg = roleColors[u.role] || "#888";
+          const guardianChildren = u.guardian?.children || [];
+          const childGuardians = u.child?.guardians || [];
+
+          return (
+            <div>
+              {/* Header with avatar */}
+              <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 20, padding: 16, background: "var(--muted)", borderRadius: 12 }}>
+                <div style={{ width: 56, height: 56, borderRadius: "50%", background: `linear-gradient(135deg, ${avatarBg}, ${avatarBg}aa)`, display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 24, fontWeight: 700, flexShrink: 0 }}>
+                  {u.full_name?.[0]?.toUpperCase() || "?"}
+                </div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: 18, fontWeight: 700, color: "var(--foreground)" }}>{u.full_name}</div>
+                  <div style={{ fontSize: 13, color: "var(--muted-foreground)", marginTop: 2 }}>@{u.username}</div>
+                  <div style={{ display: "flex", gap: 6, marginTop: 8, flexWrap: "wrap" }}>
+                    <span className={`badge ${roleBadge[u.role]}`}>{u.role}</span>
+                    {u.role === "guardian" && u.guardian?.guardian_type && (
+                      <span className={`badge ${u.guardian.guardian_type === "therapist" ? "badge-info" : "badge-accent"}`}>{u.guardian.guardian_type}</span>
+                    )}
+                    <span className={`badge ${statusBadge[u.status]}`}>{u.status}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* ═══ SECTION: Account ═══ */}
+              <div style={{ fontSize: 11, fontWeight: 700, color: "var(--muted-foreground)", textTransform: "uppercase", letterSpacing: 1.2, marginBottom: 10 }}>Account</div>
+              <div className="modal-field"><div className="modal-field-label">User ID</div><div className="modal-field-value">#{u.id}</div></div>
+              <div className="modal-field"><div className="modal-field-label"><Calendar style={{ height: 13, width: 13, marginRight: 4, verticalAlign: "middle" }} />Joined</div><div className="modal-field-value">{u.created_at ? new Date(u.created_at).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit" }) : "—"}</div></div>
+              {u.updated_at && u.updated_at !== u.created_at && (
+                <div className="modal-field"><div className="modal-field-label">Last Updated</div><div className="modal-field-value">{new Date(u.updated_at).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" })}</div></div>
+              )}
+
+              {/* ═══ ADMIN-SPECIFIC ═══ */}
+              {u.role === "admin" && u.admin && (<>
+                <div style={{ height: 1, background: "var(--border)", margin: "16px 0" }} />
+                <div style={{ fontSize: 11, fontWeight: 700, color: "var(--muted-foreground)", textTransform: "uppercase", letterSpacing: 1.2, marginBottom: 10 }}>
+                  <Shield style={{ height: 13, width: 13, marginRight: 4, verticalAlign: "middle" }} />Admin Profile
+                </div>
+                <div className="modal-field"><div className="modal-field-label"><Mail style={{ height: 13, width: 13, marginRight: 4, verticalAlign: "middle" }} />Email</div><div className="modal-field-value">{u.admin.email || "—"}</div></div>
+              </>)}
+
+              {/* ═══ GUARDIAN-SPECIFIC (Parent or Therapist) ═══ */}
+              {u.role === "guardian" && u.guardian && (<>
+                <div style={{ height: 1, background: "var(--border)", margin: "16px 0" }} />
+                <div style={{ fontSize: 11, fontWeight: 700, color: "var(--muted-foreground)", textTransform: "uppercase", letterSpacing: 1.2, marginBottom: 10 }}>
+                  <UserCheck style={{ height: 13, width: 13, marginRight: 4, verticalAlign: "middle" }} />
+                  {u.guardian.guardian_type === "therapist" ? "Therapist" : "Parent"} Profile
+                </div>
+                <div className="modal-field"><div className="modal-field-label"><Mail style={{ height: 13, width: 13, marginRight: 4, verticalAlign: "middle" }} />Email</div><div className="modal-field-value">{u.guardian.email || "—"}</div></div>
+                <div className="modal-field"><div className="modal-field-label"><Phone style={{ height: 13, width: 13, marginRight: 4, verticalAlign: "middle" }} />Phone</div><div className="modal-field-value">{u.guardian.phone_number || "—"}</div></div>
+                <div className="modal-field"><div className="modal-field-label">Guardian Type</div><div className="modal-field-value"><span className={`badge ${u.guardian.guardian_type === "therapist" ? "badge-info" : "badge-primary"}`} style={{ fontSize: 12 }}>{u.guardian.guardian_type}</span></div></div>
+                <div className="modal-field"><div className="modal-field-label">Guardian ID</div><div className="modal-field-value">#{u.guardian.id}</div></div>
+
+                {/* Linked Children */}
+                <div style={{ height: 1, background: "var(--border)", margin: "16px 0" }} />
+                <div style={{ fontSize: 11, fontWeight: 700, color: "var(--muted-foreground)", textTransform: "uppercase", letterSpacing: 1.2, marginBottom: 10 }}>
+                  <Link2 style={{ height: 13, width: 13, marginRight: 4, verticalAlign: "middle" }} />
+                  Linked Children ({guardianChildren.length})
+                </div>
+                {guardianChildren.length > 0 ? (
+                  <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                    {guardianChildren.map((child) => (
+                      <div key={child.id} style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 14px", background: "var(--muted)", borderRadius: 10, border: "1px solid var(--border)" }}>
+                        <div style={{ width: 36, height: 36, borderRadius: "50%", background: "linear-gradient(135deg, #3282dc, #3282dcaa)", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 14, fontWeight: 700, flexShrink: 0 }}>
+                          {child.user?.full_name?.[0]?.toUpperCase() || "?"}
+                        </div>
+                        <div style={{ flex: 1 }}>
+                          <div style={{ fontSize: 14, fontWeight: 600, color: "var(--foreground)" }}>{child.user?.full_name || "Unknown"}</div>
+                          <div style={{ fontSize: 11, color: "var(--muted-foreground)" }}>
+                            @{child.user?.username || "—"} · {child.date_of_birth ? Math.floor((new Date() - new Date(child.date_of_birth)) / (365.25*24*60*60*1000)) + " yrs" : "—"} · <Coins style={{ height: 11, width: 11, verticalAlign: "middle" }} /> {child.total_coins || 0}
+                          </div>
+                        </div>
+                        <span className="badge badge-accent" style={{ fontSize: 10 }}>{child.pivot?.relation_type || u.guardian.guardian_type}</span>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div style={{ padding: "16px", background: "var(--muted)", borderRadius: 10, textAlign: "center" }}>
+                    <Baby style={{ height: 24, width: 24, color: "var(--muted-foreground)", margin: "0 auto 6px" }} />
+                    <p style={{ fontSize: 13, color: "var(--muted-foreground)" }}>No children linked to this {u.guardian.guardian_type}</p>
+                  </div>
+                )}
+              </>)}
+
+              {/* ═══ CHILD-SPECIFIC ═══ */}
+              {u.role === "child" && u.child && (<>
+                <div style={{ height: 1, background: "var(--border)", margin: "16px 0" }} />
+                <div style={{ fontSize: 11, fontWeight: 700, color: "var(--muted-foreground)", textTransform: "uppercase", letterSpacing: 1.2, marginBottom: 10 }}>
+                  <Baby style={{ height: 13, width: 13, marginRight: 4, verticalAlign: "middle" }} />Child Profile
+                </div>
+                <div className="modal-field"><div className="modal-field-label"><Calendar style={{ height: 13, width: 13, marginRight: 4, verticalAlign: "middle" }} />Date of Birth</div><div className="modal-field-value">{u.child.date_of_birth ? new Date(u.child.date_of_birth).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" }) : "—"}</div></div>
+                <div className="modal-field"><div className="modal-field-label">Age</div><div className="modal-field-value">{u.child.date_of_birth ? Math.floor((new Date() - new Date(u.child.date_of_birth)) / (365.25*24*60*60*1000)) + " years old" : "—"}</div></div>
+                <div className="modal-field"><div className="modal-field-label"><Coins style={{ height: 13, width: 13, marginRight: 4, verticalAlign: "middle" }} />Total Coins</div><div className="modal-field-value"><span style={{ color: "#e6a014", fontWeight: 700, fontSize: 16 }}>{u.child.total_coins || 0}</span></div></div>
+                <div className="modal-field"><div className="modal-field-label">Child ID</div><div className="modal-field-value">#{u.child.id}</div></div>
+
+                {/* Linked Guardians */}
+                <div style={{ height: 1, background: "var(--border)", margin: "16px 0" }} />
+                <div style={{ fontSize: 11, fontWeight: 700, color: "var(--muted-foreground)", textTransform: "uppercase", letterSpacing: 1.2, marginBottom: 10 }}>
+                  <Link2 style={{ height: 13, width: 13, marginRight: 4, verticalAlign: "middle" }} />
+                  Linked Guardians ({childGuardians.length})
+                </div>
+                {childGuardians.length > 0 ? (
+                  <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                    {childGuardians.map((g) => (
+                      <div key={g.id} style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 14px", background: "var(--muted)", borderRadius: 10, border: "1px solid var(--border)" }}>
+                        <div style={{ width: 36, height: 36, borderRadius: "50%", background: `linear-gradient(135deg, ${g.guardian_type === "therapist" ? "#6c5ce7" : "#00a896"}, ${g.guardian_type === "therapist" ? "#6c5ce7aa" : "#00a896aa"})`, display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 14, fontWeight: 700, flexShrink: 0 }}>
+                          {g.user?.full_name?.[0]?.toUpperCase() || "?"}
+                        </div>
+                        <div style={{ flex: 1 }}>
+                          <div style={{ fontSize: 14, fontWeight: 600, color: "var(--foreground)" }}>{g.user?.full_name || "Unknown"}</div>
+                          <div style={{ fontSize: 11, color: "var(--muted-foreground)" }}>
+                            {g.email || "—"} · {g.phone_number || "—"}
+                          </div>
+                        </div>
+                        <span className={`badge ${g.guardian_type === "therapist" ? "badge-info" : "badge-primary"}`} style={{ fontSize: 10 }}>{g.guardian_type}</span>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div style={{ padding: "16px", background: "var(--muted)", borderRadius: 10, textAlign: "center" }}>
+                    <Shield style={{ height: 24, width: 24, color: "var(--muted-foreground)", margin: "0 auto 6px" }} />
+                    <p style={{ fontSize: 13, color: "var(--muted-foreground)" }}>No guardians linked to this child</p>
+                  </div>
+                )}
+              </>)}
+            </div>
+          );
+        })()}
       </Modal>
 
       {/* ===== DELETE CONFIRMATION MODAL ===== */}

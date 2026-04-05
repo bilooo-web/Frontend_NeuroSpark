@@ -380,6 +380,7 @@
   background: white;
   border: 1px solid #e2e8f0;
   transition: all 0.2s ease;
+  position: relative;
 }
 
 .header-search:hover {
@@ -928,6 +929,7 @@
   font-size: 14px;
   color: var(--muted-foreground);
   transition: color 0.2s;
+  cursor: pointer;
 }
 
 .table-pagination-btns button:hover {
@@ -1656,3 +1658,303 @@ textarea.form-input {
   background: rgba(220, 50, 50, 0.1);
   color: #ef4444;
 }
+
+.header-search-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  margin-top: 4px;
+  background: var(--card, #fff);
+  border: 1px solid var(--border, #e5e7eb);
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+  z-index: 9999;
+  max-height: 360px;
+  overflow-y: auto;
+  min-width: 320px;
+}
+ 
+.header-search-loading,
+.header-search-empty {
+  padding: 16px 20px;
+  text-align: center;
+  color: var(--muted-foreground, #888);
+  font-size: 13px;
+}
+ 
+.header-search-result {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 16px;
+  cursor: pointer;
+  transition: background 0.15s;
+  border-bottom: 1px solid var(--border, #f0f0f0);
+}
+ 
+.header-search-result:last-child {
+  border-bottom: none;
+}
+ 
+.header-search-result:hover {
+  background: var(--muted, #f5f5f5);
+}
+ 
+.header-search-result-icon {
+  font-size: 18px;
+  width: 28px;
+  text-align: center;
+  flex-shrink: 0;
+}
+ 
+.header-search-result-text {
+  flex: 1;
+  min-width: 0;
+}
+ 
+.header-search-result-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--foreground, #222);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+ 
+.header-search-result-subtitle {
+  font-size: 11px;
+  color: var(--muted-foreground, #888);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+ 
+.header-search-result-type {
+  font-size: 10px;
+  text-transform: uppercase;
+  color: var(--muted-foreground, #aaa);
+  background: var(--muted, #f0f0f0);
+  padding: 2px 8px;
+  border-radius: 20px;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+ 
+/* ===== ADMIN PROFILE MODAL ===== */
+.profile-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(4px);
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  animation: fadeIn 0.2s ease;
+}
+ 
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+ 
+@keyframes slideUp {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+ 
+.profile-modal {
+  background: var(--card, #fff);
+  border-radius: 16px;
+  width: 100%;
+  max-width: 480px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+  animation: slideUp 0.25s ease;
+}
+ 
+.profile-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px 0 24px;
+}
+ 
+.profile-modal-header h2 {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--foreground, #222);
+  margin: 0;
+}
+ 
+.profile-modal-close {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--muted-foreground, #888);
+  padding: 4px;
+  border-radius: 8px;
+  transition: background 0.15s;
+}
+ 
+.profile-modal-close:hover {
+  background: var(--muted, #f0f0f0);
+}
+ 
+.profile-modal-body {
+  padding: 20px 24px;
+}
+ 
+.profile-modal-field {
+  margin-bottom: 16px;
+}
+ 
+.profile-modal-field label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--foreground, #333);
+  margin-bottom: 6px;
+}
+ 
+.profile-modal-field .form-input {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1px solid var(--border, #e5e7eb);
+  border-radius: 10px;
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  background: var(--background, #fff);
+  color: var(--foreground, #222);
+  box-sizing: border-box;
+}
+ 
+.profile-modal-field .form-input:focus {
+  border-color: var(--primary, #00a896);
+  box-shadow: 0 0 0 3px rgba(0, 168, 150, 0.1);
+}
+ 
+.profile-modal-field-error {
+  color: var(--destructive, #dc3232);
+  font-size: 12px;
+  margin-top: 4px;
+}
+ 
+.profile-modal-divider {
+  height: 1px;
+  background: var(--border, #e5e7eb);
+  margin: 20px 0;
+}
+ 
+.profile-modal-error {
+  background: rgba(220, 50, 50, 0.08);
+  color: var(--destructive, #dc3232);
+  padding: 10px 14px;
+  border-radius: 10px;
+  font-size: 13px;
+  margin-bottom: 16px;
+}
+ 
+.profile-modal-success {
+  background: rgba(40, 167, 100, 0.08);
+  color: #28a764;
+  padding: 10px 14px;
+  border-radius: 10px;
+  font-size: 13px;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 500;
+}
+ 
+.profile-modal-footer {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  padding: 0 24px 20px 24px;
+}
+ 
+/* ===== RESPONSIVE REPORTS ===== */
+.reports-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+ 
+.responsive-summary {
+  flex-wrap: wrap;
+}
+ 
+@media (max-width: 900px) {
+  .reports-grid-2 {
+    grid-template-columns: 1fr;
+  }
+ 
+  .admin-summary-cards.responsive-summary {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+}
+ 
+@media (max-width: 600px) {
+  .reports-grid-2 {
+    grid-template-columns: 1fr;
+  }
+ 
+  .admin-summary-cards.responsive-summary {
+    grid-template-columns: 1fr;
+  }
+ 
+  .header-search-dropdown {
+    min-width: 280px;
+    left: -40px;
+  }
+ 
+  .profile-modal {
+    max-width: 100%;
+    margin: 10px;
+  }
+ 
+  .filter-group {
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+ 
+  .filter-btn {
+    font-size: 12px;
+    padding: 6px 10px;
+  }
+}
+ 
+/* ===== FEEDBACK / SENTIMENT SECTION RESPONSIVE ===== */
+@media (max-width: 768px) {
+  .grid-4 {
+    grid-template-columns: 1fr 1fr;
+  }
+ 
+  .grid-charts {
+    grid-template-columns: 1fr;
+  }
+ 
+  .grid-bottom {
+    grid-template-columns: 1fr;
+  }
+}
+ 
+@media (max-width: 480px) {
+  .grid-4 {
+    grid-template-columns: 1fr;
+  }
+}
+ 

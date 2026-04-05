@@ -13,7 +13,6 @@ import AdminReports from "./pages/AdminReports";
 import AdminNotifications from "./pages/AdminNotifications";
 import FeedbackDashboard from './components/admin/FeedbackDashboard';
 
-
 import AboutUs2 from "./pages/AboutUs2";
 import Home from "./pages/Home";
 import Challenges from "./pages/Challenges";
@@ -24,10 +23,17 @@ import Customization from "./pages/Customization";
 import Reading from "./pages/ReadingPage";
 import GameSwitcher from "./games/GameSwitcher";
 import StoryBook from "./pages/StoryBook";
+import StoryIntro from "./pages/StoryIntro";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Chatbot from "./components/Chatbot/Chatbot";
 import GuardianRouter from "./pages/GuardianRouter";
-
+import ParentDashboard from "./pages/ParentDashboard";
+import Children from "./pages/Children";
+import ChildDetail from "./pages/ChildDetail";
+import PendingInvites from "./pages/PendingInvites";
+import Anomalies from "./pages/Anomalies";
+import Feedbacks from "./pages/Feedbacks";
+import Settings from "./pages/Settings";
 import ChildDashboard from "./pages/ChildDashboard";
 
 import './styles/dashboard.css'; 
@@ -147,6 +153,7 @@ function App() {
         <Route path="/about" element={<AboutUs2 />} />
         <Route path="/customization" element={<Customization />} />
         <Route path="/ReadingPage" element={<Reading />} />
+        <Route path="/story/:id/intro" element={<StoryIntro />} />
         <Route path="/story/:id" element={<StoryBook />} />
 
 

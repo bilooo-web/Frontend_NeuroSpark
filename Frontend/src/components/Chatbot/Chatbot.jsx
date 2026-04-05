@@ -505,6 +505,20 @@ const Chatbot = ({ isAuthenticated: propIsAuthenticated }) => {
   const [authChecked, setAuthChecked] = useState(false);
   const [chatsLoading, setChatsLoading] = useState(false);
   const [messagesLoading, setMessagesLoading] = useState(false);
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+  
+  // Handle viewport resize for responsiveness
+  useEffect(() => {
+    const handleResize = () => {
+      const mobile = window.innerWidth < 768;
+      setIsMobile(mobile);
+      if (mobile && !full) {
+        // Force full mode on mobile if desired, or just let CSS handle it
+      }
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [full]);
   
   /* ===== Draggable button state ===== */
   const [btnPos, setBtnPos] = useState(() => {
@@ -1087,7 +1101,7 @@ const loadChatMessages = useCallback(async (chatId) => {
       <button 
         onMouseDown={handleBtnMouseDown}
         onTouchStart={handleBtnMouseDown}
-        onClick={handleOpenChatbot} 
+        onClick={handleOpenChatbot}
         aria-label="Open Chatbot" 
         className={`chatbot-button ${isAuthenticated ? 'authenticated' : ''} ${btnDragging ? 'dragging' : ''}`}
         style={{
@@ -1102,17 +1116,13 @@ const loadChatMessages = useCallback(async (chatId) => {
     );
   }
 
-  /* ========== MODAL STYLES ========== */
-  const boxStyle = full
-    ? { width: '100vw', height: '100vh', maxWidth: 'none', maxHeight: 'none', borderRadius: 0 }
-    : { width: 440, maxWidth: '92vw', height: 600, maxHeight: '82vh', borderRadius: 20 };
+  /* ========== MODAL STYLES (Moved to CSS) ========== */
 
   /* ========== RENDER CHATBOT MODAL ========== */
   return (
     <div className="chatbot-overlay" onClick={() => setOpen(false)}>
       <div 
-        className={`chatbot-modal ${full ? 'full' : 'compact'}`}
-        style={boxStyle}
+        className={`chatbot-modal ${full ? 'full' : 'compact'} ${isMobile ? 'mobile' : ''}`}
         onClick={e => e.stopPropagation()}
       >
         {/* Stars background effect */}
@@ -1281,12 +1291,14 @@ const loadChatMessages = useCallback(async (chatId) => {
             </div>
 
             <div className="header-actions">
-              <button 
-                onClick={() => setFull(f => !f)} 
-                className="header-btn"
-              >
-                {full ? <MinIcon/> : <MaxIcon/>}
-              </button>
+              {!isMobile && (
+                <button 
+                  onClick={() => setFull(f => !f)} 
+                  className="header-btn"
+                >
+                  {full ? <MinIcon/> : <MaxIcon/>}
+                </button>
+              )}
               <button 
                 onClick={() => setOpen(false)} 
                 className="header-btn"

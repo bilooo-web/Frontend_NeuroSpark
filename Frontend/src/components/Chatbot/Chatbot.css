@@ -121,8 +121,26 @@
   flex-direction: row;
   overflow: hidden;
   animation: cbIn 0.28s cubic-bezier(0.34,1.56,0.64,1);
-  transition: all 0.3s;
+  transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
+}
+
+/* Default Compact Mode */
+.chatbot-modal.compact {
+  width: 440px;
+  max-width: 92vw;
+  height: 600px;
+  max-height: 82vh;
+  border-radius: 20px;
+}
+
+/* Full Mode (Desktop/Tablet) */
+.chatbot-modal.full {
+  width: 100vw;
+  height: 100vh;
+  max-width: none;
+  max-height: none;
+  border-radius: 0;
 }
 
 /* ============================================================
@@ -133,6 +151,12 @@
 @keyframes chatbotTwinkle {
   0%, 100% { opacity: 0.3; }
   50% { opacity: 0.8; }
+}
+
+@media (max-width: 767px) {
+  .chatbot-button:hover {
+    transform: none;
+  }
 }
 
 @keyframes chatbotTwinkle2 {
@@ -1188,48 +1212,72 @@
 
 /* ============================================================
    MOBILE RESPONSIVENESS
-   ============================================================ */
+   ============================================================ *//* --- Tablet Responsiveness (768px - 1024px) --- */
+@media (min-width: 768px) and (max-width: 1024px) {
+  .chatbot-modal.compact {
+    width: 600px;
+    height: 750px;
+    max-height: 90vh;
+  }
+}
 
-@media (max-width: 640px) {
-  .chatbot-modal.full,
-  .chatbot-modal:not(.full) {
+/* --- Mobile Responsiveness (< 768px) --- */
+@media (max-width: 767px) {
+  .chatbot-modal.compact,
+  .chatbot-modal.full {
     width: 100vw !important;
     height: 100vh !important;
+    max-width: none !important;
+    max-height: none !important;
     border-radius: 0 !important;
+    margin: 0 !important;
   }
   
+  .chatbot-overlay {
+    backdrop-filter: none;
+  }
+
   .message-wrapper {
-    max-width: 90%;
+    max-width: 92%;
   }
   
   .header-logo {
-    position: static;
-    transform: none;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    /* Static positioning handled by justifyContent in header */
   }
-  
-  /* On mobile, sidebar is always overlay style */
+
+  /* Increase touch targets */
+  .header-btn, .menu-toggle {
+    padding: 10px;
+  }
+
+  .message-input {
+    padding: 12px 16px;
+    font-size: 16px; /* Prevents auto-zoom on iOS */
+  }
+
+  .send-btn {
+    width: 44px;
+    height: 44px;
+  }
+
   .chatbot-sidebar.sidebar-inline {
-    position: absolute;
+    position: absolute !important;
     top: 0;
     left: 0;
     bottom: 0;
-    width: 280px !important;
+    width: 300px !important;
     max-width: 85%;
-    box-shadow: 4px 0 25px rgba(0,0,0,0.2);
-    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  }
-  
-  .chatbot-sidebar.sidebar-inline.closed {
     transform: translateX(-100%);
-    width: 280px !important;
+    transition: transform 0.3s ease;
   }
   
   .chatbot-sidebar.sidebar-inline.open {
     transform: translateX(0);
-    width: 280px !important;
   }
 
-  /* Smaller code blocks on mobile */
   .md-code-content {
     font-size: 0.75em;
     padding: 8px 10px;
@@ -1237,6 +1285,16 @@
 
   .md-table {
     font-size: 0.78em;
+  }
+
+  .status-footer {
+    padding: 10px 16px;
+    font-size: 11px;
+    background: #fff;
+  }
+
+  .status-models {
+    gap: 10px;
   }
 }
 /* ========== Streaming cursor animation ========== */

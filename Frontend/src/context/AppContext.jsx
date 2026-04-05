@@ -19,7 +19,7 @@ export const AppProvider = ({ children }) => {
     const savedUser = localStorage.getItem('user');
     return savedUser ? JSON.parse(savedUser) : {
       id: 1,
-      name: 'Dr. Sarah Mitchell',
+      full_name: 'Dr. Sarah Mitchell',
       email: 'sarah@example.com',
       role: 'guardian',
       guardian: {
@@ -45,7 +45,7 @@ export const AppProvider = ({ children }) => {
         // Reset to default if no user
         setUser({
           id: 1,
-          name: 'Dr. Sarah Mitchell',
+          full_name: 'Dr. Sarah Mitchell',
           email: 'sarah@example.com',
           role: 'guardian',
           guardian: {
@@ -64,7 +64,7 @@ export const AppProvider = ({ children }) => {
     setRole(prev => (prev === 'parent' ? 'therapist' : 'parent'));
     setUser(prev => ({
       ...prev,
-      name: prev.guardian?.guardian_type === 'parent' ? 'Dr. Sarah Mitchell' : 'Sarah Johnson',
+      full_name: prev.guardian?.guardian_type === 'parent' ? 'Dr. Sarah Mitchell' : 'Sarah Johnson',
       guardian: {
         ...prev.guardian,
         guardian_type: prev.guardian?.guardian_type === 'parent' ? 'therapist' : 'parent'

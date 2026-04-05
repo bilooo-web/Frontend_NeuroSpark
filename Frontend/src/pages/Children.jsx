@@ -108,7 +108,7 @@ const Children = () => {
     
     const rows = children.map(child => [
       child.id,
-      child.name || 'Unknown',
+      child.user?.full_name || 'Unknown',
       child.age || '',
       child.total_coins || child.coins || 0,
       child.games_played || 0,
@@ -315,7 +315,7 @@ const Children = () => {
 
             <div className="nt-modal-body">
               <p style={{ marginBottom: '16px' }}>
-                Are you sure you want to unlink <strong>{childToUnlink.name}</strong>?
+                Are you sure you want to unlink <strong>{childToUnlink.user?.full_name || 'Unknown child'}</strong>?
                 This will remove them from your list. You can link them again later if needed.
               </p>
 

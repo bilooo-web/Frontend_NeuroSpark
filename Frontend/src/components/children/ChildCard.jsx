@@ -30,12 +30,58 @@ const MiniGauge = ({ value, label, color }) => {
 
 const ChildCard = ({ child, showActions = true }) => {
   const navigate = useNavigate();
-  
+
   // Safely get values with defaults
-  const name = child.user?.full_name || 'Unknown';
-  const age = child.date_of_birth 
-    ? new Date().getFullYear() - new Date(child.date_of_birth).getFullYear() 
-    : '?';
+  // Child name can come from either:
+  // 1. Nested structure: child.user?.full_name (from /guardian/children endpoint)
+  // 2. Flattened structure: child.name (from /guardian/dashboard endpoint)
+  const name = child.user?.full_name || child.name || 'Unknown';
+
+  // Calculate accurate age (checking if birthday has passed this year)
+  // The age field can come from multiple sources:
+  // 1. age (direct from /guardian/dashboard endpoint)
+  // 2. date_of_birth (from /guardian/children endpoint)
+  // 3. born_at (alternative date field)
+  // 4. birth_date (alternative date field)
+  // 5. age_group or age_range (fallback text)
+  const age = (() => {
+    // If age is directly provided as a number, use it
+    if (child.age && typeof child.age === 'number') {
+      return Math.max(0, child.age);
+    }
+
+    // If age is provided as a string (e.g., "8-10"), return it as-is
+    if (child.age && typeof child.age === 'string') {
+      return child.age;
+    }
+
+    // If age_group is provided
+    if (child.age_group) {
+      return child.age_group;
+    }
+
+    // Try to calculate from date fields
+    const dateField = child.date_of_birth || child.born_at || child.birth_date;
+    if (!dateField) return 'N/A'; // Changed from '?' to 'N/A'
+
+    try {
+      const birthDate = new Date(dateField);
+      if (isNaN(birthDate.getTime())) return 'N/A'; // Invalid date
+
+      const today = new Date();
+      let calculatedAge = today.getFullYear() - birthDate.getFullYear();
+      const monthDiff = today.getMonth() - birthDate.getMonth();
+
+      // If birthday hasn't occurred yet this year, subtract 1
+      if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+        calculatedAge--;
+      }
+
+      return Math.max(0, calculatedAge); // Never negative
+    } catch (e) {
+      return 'N/A';
+    }
+  })();
   const lastActive = child.last_active || child.last_activity || 'Recently';
   const coins = child.total_coins || child.coins || 0;
   const gamesPlayed = child.games_played || child.game_sessions_count || 0;

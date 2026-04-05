@@ -3,12 +3,12 @@ import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tool
 
 const ProgressLineChart = ({ data, title }) => {
   return (
-    <div className="nt-card">
-      <div className="nt-card-header">
-        <span className="nt-card-title">{title}</span>
-        <button className="nt-card-action">Last 7 days</button>
+    <div className="ptd-card">
+      <div className="ptd-card-header">
+        <span className="ptd-card-title">{title}</span>
+        <button className="ptd-card-action">Last 7 days</button>
       </div>
-      <div className="nt-chart-container">
+      <div className="ptd-chart-container">
         {data && data.length > 0 ? (
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart data={data} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>

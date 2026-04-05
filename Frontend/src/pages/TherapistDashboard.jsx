@@ -305,16 +305,16 @@ const TherapistDashboard = () => {
   if (isLoading) {
     return (
       <DashboardLayout>
-        <div className="nt-dashboard-skeleton">
-          <div className="nt-skeleton-header" />
-          <div className="nt-stats-grid">
+        <div className="ptd-dashboard-skeleton">
+          <div className="ptd-skeleton-header" />
+          <div className="ptd-stats-grid">
             {[1, 2, 3, 4, 5].map(i => (
-              <div key={i} className="nt-skeleton-card" />
+              <div key={i} className="ptd-skeleton-card" />
             ))}
           </div>
-          <div className="nt-content-grid">
-            <div className="nt-skeleton-chart" />
-            <div className="nt-skeleton-sidebar" />
+          <div className="ptd-content-grid">
+            <div className="ptd-skeleton-chart" />
+            <div className="ptd-skeleton-sidebar" />
           </div>
         </div>
       </DashboardLayout>
@@ -324,8 +324,8 @@ const TherapistDashboard = () => {
   return (
     <DashboardLayout>
       {/* Doctor Welcome */}
-      <div className="nt-doctor-welcome">
-        <div className="nt-doctor-emoji">
+      <div className="ptd-doctor-welcome">
+        <div className="ptd-doctor-emoji">
           <img
             src={therapistImg}
             alt="Therapist"
@@ -333,11 +333,11 @@ const TherapistDashboard = () => {
             style={{ height: '100px', width: 'auto', transition: 'transform 0.3s ease' }}
           />
         </div>
-        <div className="nt-doctor-content">
-          <div className="nt-doctor-title">
+        <div className="ptd-doctor-content">
+          <div className="ptd-doctor-title">
             Welcome back, Dr. {user?.full_name?.split(' ').slice(-1)[0] || 'Mitchell'}!
           </div>
-          <div className="nt-doctor-text">
+          <div className="ptd-doctor-text">
             You have {data.stats.activeChildren} active patients today.
             {data.anomalies.length > 0 && ` ${data.anomalies.length} anomalies need review.`}
           </div>
@@ -379,26 +379,26 @@ const TherapistDashboard = () => {
 
       {/* Urgent Alerts Banner */}
       {data.anomalies.length > 0 && (
-        <div className="nt-alert-banner">
-          <div className="nt-alert-banner-icon">
+        <div className="ptd-alert-banner">
+          <div className="ptd-alert-banner-icon">
             <AlertTriangle />
           </div>
-          <div className="nt-alert-banner-content">
-            <div className="nt-alert-banner-title">
+          <div className="ptd-alert-banner-content">
+            <div className="ptd-alert-banner-title">
               You have {data.anomalies.length} new anomalies today
             </div>
-            <div className="nt-alert-banner-text">
+            <div className="ptd-alert-banner-text">
               {data.anomalies[0]?.child_name} – {data.anomalies[0]?.reason?.slice(0, 50)}...
             </div>
           </div>
-          <button className="nt-alert-banner-action" onClick={() => navigate('/guardian/anomalies')}>
+          <button className="ptd-alert-banner-action" onClick={() => navigate('/guardian/anomalies')}>
             Review Now
           </button>
         </div>
       )}
 
       {/* Stats Grid */}
-      <div className="nt-stats-grid five-cols">
+      <div className="ptd-stats-grid five-cols">
         <StatsCard
           title="Total Children"
           value={data.stats.totalChildren}
@@ -435,8 +435,8 @@ const TherapistDashboard = () => {
       </div>
 
       {/* Main Content */}
-      <div className="nt-content-grid">
-        <div className="nt-content-left">
+      <div className="ptd-content-grid">
+        <div className="ptd-content-left">
           <div style={{ marginBottom: '18px' }}>
             <ProgressLineChart data={data.weeklyProgress} title="Daily Performance Overview (Last 7 Days)" />
           </div>
@@ -492,19 +492,19 @@ const TherapistDashboard = () => {
             />
           </div>
 
-          <div className="nt-card">
-            <div className="nt-card-header">
-              <span className="nt-card-title">Your Patients</span>
-              <button className="nt-card-action" onClick={() => navigate('/guardian/children')}>
+          <div className="ptd-card">
+            <div className="ptd-card-header">
+              <span className="ptd-card-title">Your Patients</span>
+              <button className="ptd-card-action" onClick={() => navigate('/guardian/children')}>
                 See all
               </button>
             </div>
-            <div className="nt-children-grid">
+            <div className="ptd-children-grid">
               {data.children.slice(0, 4).map(child => (
                 <ChildCard key={child.id} child={child} showActions={true} />
               ))}
               {data.children.length === 0 && (
-                <div className="nt-empty-state" style={{ gridColumn: '1/-1' }}>
+                <div className="ptd-empty-state" style={{ gridColumn: '1/-1' }}>
                   No patients linked yet. Start by linking a child's account.
                 </div>
               )}
@@ -513,10 +513,10 @@ const TherapistDashboard = () => {
 
           {/* Anomalies Section */}
           {data.anomalies.length > 0 && (
-            <div className="nt-card">
-              <div className="nt-card-header">
-                <span className="nt-card-title">Detected Anomalies</span>
-                <button className="nt-card-action" onClick={() => navigate('/guardian/anomalies')}>
+            <div className="ptd-card">
+              <div className="ptd-card-header">
+                <span className="ptd-card-title">Detected Anomalies</span>
+                <button className="ptd-card-action" onClick={() => navigate('/guardian/anomalies')}>
                   View all
                 </button>
               </div>
@@ -534,7 +534,7 @@ const TherapistDashboard = () => {
       {/* Feedback Success Toast */}
       {feedbackSuccess && (
         <div
-          className="nt-feedback-success"
+          className="ptd-feedback-success"
           style={{
             backgroundColor: getSentimentColor(feedbackSuccess),
             color: 'white',
@@ -557,7 +557,7 @@ const TherapistDashboard = () => {
       {/* Feedback Error */}
       {feedbackError && (
         <div
-          className="nt-feedback-error"
+          className="ptd-feedback-error"
           style={{
             backgroundColor: '#ffebee',
             color: '#c62828',
@@ -572,14 +572,14 @@ const TherapistDashboard = () => {
       )}
 
       {/* Feedback Input */}
-      <div className="nt-feedback-card">
-        <div className="nt-feedback-header">📝 Share Your Feedback</div>
-        <div className="nt-stars">
+      <div className="ptd-feedback-card">
+        <div className="ptd-feedback-header">📝 Share Your Feedback</div>
+        <div className="ptd-stars">
           {[1, 2, 3, 4, 5].map(star => (
             <button
               key={star}
               type="button"
-              className={`nt-star ${star <= rating ? 'filled' : 'empty'}`}
+              className={`ptd-star ${star <= rating ? 'filled' : 'empty'}`}
               onClick={() => setRating(star)}
               disabled={submitting}
             >
@@ -587,14 +587,14 @@ const TherapistDashboard = () => {
             </button>
           ))}
           {rating > 0 && (
-            <span style={{ fontSize: 13, color: 'var(--nt-text-secondary)', marginLeft: 8, alignSelf: 'center' }}>
+            <span style={{ fontSize: 13, color: 'var(--ptd-text-secondary)', marginLeft: 8, alignSelf: 'center' }}>
               {rating === 5 ? 'Excellent!' : rating === 4 ? 'Great' : rating === 3 ? 'Good' : rating === 2 ? 'Fair' : 'Poor'}
             </span>
           )}
         </div>
-        <div className="nt-feedback-row">
+        <div className="ptd-feedback-row">
           <textarea
-            className="nt-textarea"
+            className="ptd-textarea"
             placeholder="How was your experience today? Share your thoughts..."
             value={feedback}
             onChange={e => setFeedback(e.target.value)}
@@ -602,7 +602,7 @@ const TherapistDashboard = () => {
             disabled={submitting}
           />
           <button
-            className="nt-feedback-submit"
+            className="ptd-feedback-submit"
             onClick={handleFeedbackSubmit}
             disabled={submitting}
           >

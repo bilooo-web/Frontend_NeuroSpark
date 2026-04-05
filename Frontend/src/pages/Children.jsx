@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import DashboardLayout from '../components/layout/DashboardLayout';
 import ChildCard from '../components/children/ChildCard';
 import LinkChildModal from '../components/modals/LinkChildModal';
-import { Search, UserPlus, Download, RefreshCw, Trash2 } from 'lucide-react';
+import { Search, UserPlus, Download, RefreshCw, Trash2, X } from 'lucide-react';
 import guardianService from '../services/guardianService';
 
 const Children = () => {
@@ -135,17 +135,17 @@ const Children = () => {
   if (loading) {
     return (
       <DashboardLayout>
-        <div className="nt-loading-container" style={{ textAlign: 'center', padding: '60px 20px' }}>
-          <div className="nt-spinner" style={{ 
+        <div className="ptd-loading-container" style={{ textAlign: 'center', padding: '60px 20px' }}>
+          <div className="ptd-spinner" style={{ 
             width: '40px', 
             height: '40px', 
-            border: '3px solid var(--nt-border)',
-            borderTopColor: 'var(--nt-accent)',
+            border: '3px solid var(--ptd-border)',
+            borderTopColor: 'var(--ptd-accent)',
             borderRadius: '50%',
             animation: 'spin 1s linear infinite',
             margin: '0 auto 20px'
           }} />
-          <p style={{ color: 'var(--nt-text-secondary)' }}>Loading your children...</p>
+          <p style={{ color: 'var(--ptd-text-secondary)' }}>Loading your children...</p>
         </div>
       </DashboardLayout>
     );
@@ -153,32 +153,32 @@ const Children = () => {
 
   return (
     <DashboardLayout>
-      <div className="nt-page-header">
+      <div className="ptd-page-header">
         <div>
-          <div className="nt-page-title">Children</div>
-          <div className="nt-page-subtitle">
+          <div className="ptd-page-title">Children</div>
+          <div className="ptd-page-subtitle">
             {children.length} {children.length === 1 ? 'child' : 'children'} under your care
           </div>
         </div>
         <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
           <button 
-            className="nt-btn nt-btn-outline" 
+            className="ptd-btn ptd-btn-outline" 
             onClick={handleRefresh}
             disabled={refreshing}
             style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
           >
-            <RefreshCw size={16} className={refreshing ? 'nt-spin' : ''} />
+            <RefreshCw size={16} className={refreshing ? 'ptd-spin' : ''} />
             {refreshing ? 'Refreshing...' : 'Refresh'}
           </button>
           <button 
-            className="nt-btn nt-btn-outline" 
+            className="ptd-btn ptd-btn-outline" 
             onClick={exportToCSV}
             disabled={children.length === 0}
           >
             <Download size={16} /> Export CSV
           </button>
           <button 
-            className="nt-btn nt-btn-primary" 
+            className="ptd-btn ptd-btn-primary" 
             onClick={() => setShowLinkModal(true)}
           >
             <UserPlus size={16} /> Link Child
@@ -188,7 +188,7 @@ const Children = () => {
 
       {/* Error Message */}
       {error && (
-        <div className="nt-error-message" style={{ 
+        <div className="ptd-error-message" style={{ 
           backgroundColor: '#ffebee', 
           color: '#c62828', 
           padding: '12px 16px', 
@@ -216,7 +216,7 @@ const Children = () => {
       )}
 
       {/* Search Bar */}
-      <div className="nt-search-bar">
+      <div className="ptd-search-bar">
         <Search size={18} />
         <input
           type="text"
@@ -228,27 +228,27 @@ const Children = () => {
 
       {/* Children Grid */}
       {filteredChildren.length === 0 ? (
-        <div className="nt-empty-state" style={{ textAlign: 'center', padding: '60px 20px' }}>
+        <div className="ptd-empty-state" style={{ textAlign: 'center', padding: '60px 20px' }}>
           {children.length === 0 ? (
             <>
               <div style={{ fontSize: '48px', marginBottom: '16px', opacity: 0.5 }}>👶</div>
-              <h3 style={{ marginBottom: '8px', color: 'var(--nt-text-primary)' }}>No children yet</h3>
-              <p style={{ color: 'var(--nt-text-secondary)', marginBottom: '20px' }}>
+              <h3 style={{ marginBottom: '8px', color: 'var(--ptd-text-primary)' }}>No children yet</h3>
+              <p style={{ color: 'var(--ptd-text-secondary)', marginBottom: '20px' }}>
                 You haven't linked any children to your account yet.
               </p>
-              <button className="nt-btn nt-btn-primary" onClick={() => setShowLinkModal(true)}>
+              <button className="ptd-btn ptd-btn-primary" onClick={() => setShowLinkModal(true)}>
                 <UserPlus size={16} /> Link Your First Child
               </button>
             </>
           ) : (
             <>
               <div style={{ fontSize: '48px', marginBottom: '16px', opacity: 0.5 }}>🔍</div>
-              <h3 style={{ marginBottom: '8px', color: 'var(--nt-text-primary)' }}>No matches found</h3>
-              <p style={{ color: 'var(--nt-text-secondary)' }}>
+              <h3 style={{ marginBottom: '8px', color: 'var(--ptd-text-primary)' }}>No matches found</h3>
+              <p style={{ color: 'var(--ptd-text-secondary)' }}>
                 No children match your search "{search}".
               </p>
               <button 
-                className="nt-btn nt-btn-outline" 
+                className="ptd-btn ptd-btn-outline" 
                 onClick={() => setSearch('')}
                 style={{ marginTop: '16px' }}
               >
@@ -258,13 +258,13 @@ const Children = () => {
           )}
         </div>
       ) : (
-        <div className="nt-children-grid">
+        <div className="ptd-children-grid">
           {filteredChildren.map(child => (
             <div key={child.id} style={{ position: 'relative' }}>
               <ChildCard child={child} showActions={true} />
               <button
                 onClick={() => handleUnlinkClick(child)}
-                className="nt-child-unlink-btn"
+                className="ptd-child-unlink-btn"
                 style={{
                   position: 'absolute',
                   top: '10px',
@@ -300,12 +300,12 @@ const Children = () => {
 
       {/* Unlink Confirmation Modal */}
       {showUnlinkConfirm && childToUnlink && (
-        <div className="nt-modal-overlay" onClick={() => !unlinking && setShowUnlinkConfirm(false)}>
-          <div className="nt-modal" onClick={e => e.stopPropagation()} style={{ maxWidth: '400px' }}>
-            <div className="nt-modal-header">
-              <h3 className="nt-modal-title">Unlink Child</h3>
+        <div className="ptd-modal-overlay" onClick={() => !unlinking && setShowUnlinkConfirm(false)}>
+          <div className="ptd-modal" onClick={e => e.stopPropagation()} style={{ maxWidth: '400px' }}>
+            <div className="ptd-modal-header">
+              <h3 className="ptd-modal-title">Unlink Child</h3>
               <button 
-                className="nt-modal-close" 
+                className="ptd-modal-close" 
                 onClick={() => !unlinking && setShowUnlinkConfirm(false)}
                 disabled={unlinking}
               >
@@ -313,14 +313,14 @@ const Children = () => {
               </button>
             </div>
 
-            <div className="nt-modal-body">
+            <div className="ptd-modal-body">
               <p style={{ marginBottom: '16px' }}>
                 Are you sure you want to unlink <strong>{childToUnlink.user?.full_name || 'Unknown child'}</strong>?
                 This will remove them from your list. You can link them again later if needed.
               </p>
 
               {error && (
-                <div className="nt-error-message" style={{
+                <div className="ptd-error-message" style={{
                   backgroundColor: '#ffebee',
                   color: '#c62828',
                   padding: '10px 12px',
@@ -331,16 +331,16 @@ const Children = () => {
                 </div>
               )}
 
-              <div className="nt-modal-actions">
+              <div className="ptd-modal-actions">
                 <button
-                  className="nt-btn nt-btn-outline"
+                  className="ptd-btn ptd-btn-outline"
                   onClick={() => setShowUnlinkConfirm(false)}
                   disabled={unlinking}
                 >
                   Cancel
                 </button>
                 <button
-                  className="nt-btn nt-btn-danger"
+                  className="ptd-btn ptd-btn-danger"
                   onClick={handleUnlinkConfirm}
                   disabled={unlinking}
                 >
@@ -356,10 +356,10 @@ const Children = () => {
         @keyframes spin {
           to { transform: rotate(360deg); }
         }
-        .nt-spin {
+        .ptd-spin {
           animation: spin 1s linear infinite;
         }
-        .nt-child-unlink-btn:hover {
+        .ptd-child-unlink-btn:hover {
           background: rgba(239, 68, 68, 0.2) !important;
           transform: scale(1.1);
         }

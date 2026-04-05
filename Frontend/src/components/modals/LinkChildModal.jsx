@@ -62,17 +62,17 @@ const LinkChildModal = ({ isOpen, onClose, onSuccess }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="nt-modal-overlay" onClick={onClose}>
-      <div className="nt-modal" onClick={e => e.stopPropagation()}>
-        <div className="nt-modal-header">
-          <h3 className="nt-modal-title">Link a Child</h3>
-          <button className="nt-modal-close" onClick={onClose}>
+    <div className="ptd-modal-overlay" onClick={onClose}>
+      <div className="ptd-modal" onClick={e => e.stopPropagation()}>
+        <div className="ptd-modal-header">
+          <h3 className="ptd-modal-title">Link a Child</h3>
+          <button className="ptd-modal-close" onClick={onClose}>
             <X size={20} />
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="nt-modal-body">
-          <p className="nt-modal-description">
+        <form onSubmit={handleSubmit} className="ptd-modal-body">
+          <p className="ptd-modal-description">
             Enter the child's username to link them to your account.
           </p>
 
@@ -97,7 +97,7 @@ const LinkChildModal = ({ isOpen, onClose, onSuccess }) => {
 
           {/* General error */}
           {errors.general && (
-            <div className="nt-error-message" style={{
+            <div className="ptd-error-message" style={{
               backgroundColor: '#ffebee',
               color: '#c62828',
               padding: '10px 12px',
@@ -113,14 +113,14 @@ const LinkChildModal = ({ isOpen, onClose, onSuccess }) => {
             </div>
           )}
 
-          <div className="nt-form-group">
-            <label htmlFor="child-username" className="nt-label">
+          <div className="ptd-form-group">
+            <label htmlFor="child-username" className="ptd-label">
               Child's Username
             </label>
             <input
               id="child-username"
               type="text"
-              className={`nt-input ${errors.child_username ? 'nt-input-error' : ''}`}
+              className={`ptd-input ${errors.child_username ? 'ptd-input-error' : ''}`}
               placeholder="e.g., alex_johnson"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
@@ -138,10 +138,10 @@ const LinkChildModal = ({ isOpen, onClose, onSuccess }) => {
             )}
           </div>
 
-          <div className="nt-modal-actions">
+          <div className="ptd-modal-actions">
             <button
               type="button"
-              className="nt-btn nt-btn-outline"
+              className="ptd-btn ptd-btn-outline"
               onClick={onClose}
               disabled={loading}
             >
@@ -149,7 +149,7 @@ const LinkChildModal = ({ isOpen, onClose, onSuccess }) => {
             </button>
             <button
               type="submit"
-              className="nt-btn nt-btn-primary"
+              className="ptd-btn ptd-btn-primary"
               disabled={loading || !username.trim() || success}
             >
               {loading ? 'Linking...' : <><UserPlus size={16} /> Link Child</>}

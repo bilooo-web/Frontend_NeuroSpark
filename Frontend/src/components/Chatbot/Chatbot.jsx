@@ -447,14 +447,63 @@ const WELCOME_MESSAGE = {
 };
 
 /* ========== MEMOIZED MESSAGE BUBBLE ========== */
-const MessageBubble = memo(({ message, index, copiedIndex, onCopy }) => {
+const MessageBubble = memo(({ message, index, copiedIndex, onCopy, onAction }) => {
+  // Detect if message contains confirmation prompt
+  const hasConfirmation = message.role === 'assistant' && 
+    message.content && 
+    (message.content.includes('✅') && message.content.includes('❌')) &&
+    (message.content.includes('Confirm') && message.content.includes('Cancel'));
+
+  // Strip the confirm/cancel text from content if we're rendering buttons
+  const displayContent = hasConfirmation 
+    ? message.content
+        .replace(/✅\s*\*{0,2}Confirm\*{0,2}\s*(\||\bor\b)?\s*❌\s*\*{0,2}Cancel\*{0,2}\??/gi, '')
+        .replace(/✅\s*\*{0,2}Confirm\*{0,2}\s*❌\s*\*{0,2}Cancel\*{0,2}\??/gi, '')
+        .trim()
+    : message.content;
+
   return (
     <div className={`message-wrapper ${message.role}`}>
       <div className={`message-bubble ${message.role}${message.isStreaming ? ' streaming' : ''}`}>
         {message.role === 'assistant' ? (
-          <MarkdownRenderer content={message.content} />
+          <MarkdownRenderer content={displayContent} />
         ) : (
           message.content
+        )}
+
+        {/* Confirm / Cancel action buttons */}
+        {hasConfirmation && onAction && (
+          <div className="confirm-actions" style={{
+            display: 'flex', gap: '10px', marginTop: '12px', paddingTop: '12px',
+            borderTop: '1px solid rgba(0,0,0,0.08)'
+          }}>
+            <button
+              onClick={() => onAction('confirm')}
+              style={{
+                padding: '8px 20px', borderRadius: '8px', border: 'none',
+                background: '#22c55e', color: '#fff', fontWeight: 600,
+                cursor: 'pointer', fontSize: '14px', display: 'flex',
+                alignItems: 'center', gap: '6px', transition: 'opacity 0.2s'
+              }}
+              onMouseOver={e => e.target.style.opacity = '0.85'}
+              onMouseOut={e => e.target.style.opacity = '1'}
+            >
+              ✅ Confirm
+            </button>
+            <button
+              onClick={() => onAction('cancel')}
+              style={{
+                padding: '8px 20px', borderRadius: '8px', border: '1px solid #e5e7eb',
+                background: '#fff', color: '#ef4444', fontWeight: 600,
+                cursor: 'pointer', fontSize: '14px', display: 'flex',
+                alignItems: 'center', gap: '6px', transition: 'opacity 0.2s'
+              }}
+              onMouseOver={e => e.target.style.opacity = '0.85'}
+              onMouseOut={e => e.target.style.opacity = '1'}
+            >
+              ❌ Cancel
+            </button>
+          </div>
         )}
         
         {/* Copy button for ALL messages */}
@@ -1064,6 +1113,61 @@ const loadChatMessages = useCallback(async (chatId) => {
     }
   }, [input, loading, isAuthenticated, currentChatId, model, handleOpenAuth, sendToBackend, sendStreaming, timeStr, loadChats]);
 
+  // ========== SEND ACTION (for confirm/cancel buttons) ==========
+  const sendAction = useCallback(async (actionText) => {
+    if (loading) return;
+    
+    // Temporarily set input and trigger send
+    setInput(actionText);
+    // Use a ref trick — we need to call send with this specific text
+    // Since send reads from `input` state, we'll inline the logic
+    const messageContent = actionText;
+    const now = timeStr();
+    
+    const userMsg = { role: 'user', content: messageContent, time: now };
+    setMessages(prev => {
+      const filtered = prev.filter(m => !m.isWelcome);
+      return [...filtered, userMsg];
+    });
+    setInput('');
+    setLoading(true);
+    setThinkingSeconds(0);
+    thinkingTimerRef.current = setInterval(() => {
+      setThinkingSeconds(prev => prev + 1);
+    }, 1000);
+
+    try {
+      let response;
+      if (model === 'github' || model === 'openai') {
+        response = await sendStreaming(messageContent, currentChatId);
+      } else {
+        response = await sendToBackend(messageContent, currentChatId);
+        const assistantMsg = { 
+          role: 'assistant', content: response.reply, 
+          time: timeStr(), model: response.model_used 
+        };
+        setMessages(prev => [...prev, assistantMsg]);
+      }
+      if (!currentChatId && response.chat_id) {
+        skipNextLoad.current = true;
+        setCurrentChatId(response.chat_id);
+        setCurrentChat({ id: response.chat_id, title: 'New Chat', model: model });
+      }
+      setTimeout(() => loadChats(false), 800);
+    } catch (error) {
+      setMessages(prev => [...prev, { 
+        role: 'assistant', 
+        content: "I'm having trouble connecting. Please try again! 😊", 
+        time: timeStr() 
+      }]);
+    } finally {
+      clearInterval(thinkingTimerRef.current);
+      thinkingTimerRef.current = null;
+      setThinkingSeconds(0);
+      setLoading(false);
+    }
+  }, [loading, currentChatId, model, sendToBackend, sendStreaming, timeStr, loadChats]);
+
   const handleOpenChatbot = useCallback(() => {
     if (hasMoved.current) return;
 
@@ -1359,6 +1463,7 @@ const loadChatMessages = useCallback(async (chatId) => {
                   index={i} 
                   copiedIndex={copiedIndex}
                   onCopy={copyToClipboard}
+                  onAction={sendAction}
                 />
               ))
             )}

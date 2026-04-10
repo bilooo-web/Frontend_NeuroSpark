@@ -237,9 +237,6 @@
   }
 }
 
-/* =========================================
-   RESPONSIVE DESIGN (All screens under 1440px)
-   ========================================= */
 
 @media (max-width: 1440px) {
   .lets-read-together {

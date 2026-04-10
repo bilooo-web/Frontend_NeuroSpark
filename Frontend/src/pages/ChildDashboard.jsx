@@ -342,30 +342,7 @@ function ChildDashboard() {
             </div>
           </div>
 
-          {/* Continue Learning */}
-          <div className="cd-continue-row">
-            <div className="cd-continue-item" onClick={() => navigate('/story/3')}>
-              <div className="cd-continue-icon yellow" style={{fontSize:'24px'}}>🦒</div>
-              <div className="cd-continue-item-info">
-                <h4>Continue "The Friendly Giraffe"</h4>
-                <p>Chapter 3 • 4 min left</p>
-              </div>
-            </div>
-            <div className="cd-continue-item">
-              <div className="cd-continue-icon blue" style={{fontSize:'24px'}}>🎤</div>
-              <div className="cd-continue-item-info">
-                <h4>Pronunciation Practice</h4>
-                <p>5 words to review</p>
-              </div>
-            </div>
-            <div className="cd-continue-item" onClick={() => navigate('/challenges')}>
-              <div className="cd-continue-icon green" style={{fontSize:'24px'}}>🎮</div>
-              <div className="cd-continue-item-info">
-                <h4>Word Match Game</h4>
-                <p>Level 4 - Beat your score!</p>
-              </div>
-            </div>
-          </div>
+
 
           {/* 2 Column Grids */}
           <div className="cd-grid-2">
@@ -449,11 +426,11 @@ function ChildDashboard() {
             </div>
           </div>
 
-          {/* Learning Games */}
+          {/* Activity Hub */}
           <div className="cd-card">
             <div className="cd-title-flex">
-              <h3>Learning Games</h3>
-              <span className="cd-last-score">⭐ 3 games available</span>
+              <h3>Activity Hub</h3>
+              <span className="cd-last-score">⭐ 3 sections available</span>
             </div>
             <div className="cd-games-row">
               <div className="cd-game-card yellow" onClick={() => navigate('/challenges')}>
@@ -468,63 +445,16 @@ function ChildDashboard() {
                 <p>Medium</p>
                 <button className="cd-game-btn">⚡ Play</button>
               </div>
-              <div className="cd-game-card green" onClick={() => navigate('/challenges')}>
-                <div className="cd-game-icon">⚡</div>
-                <h4>Reading Speed</h4>
-                <p>Hard</p>
-                <button className="cd-game-btn">⚡ Play</button>
+              <div className="cd-game-card green" onClick={() => navigate('/customization')}>
+                <div className="cd-game-icon">🎨</div>
+                <h4>Customization</h4>
+                <p>Personalize</p>
+                <button className="cd-game-btn">✨ Open</button>
               </div>
             </div>
           </div>
 
-          {/* Bottom Row */}
-          <div className="cd-grid-2">
-            {/* Recent Activity */}
-            <div className="cd-card">
-              <div className="cd-title">Recent Activity</div>
-              <div className="cd-activity-list">
-                <div className="cd-activity-item">
-                  <div className="cd-rec-icon blue" style={{width:'40px', height:'40px', fontSize:'16px'}}>🎤</div>
-                  <div className="cd-activity-info">
-                    <h4>Practiced pronunciation</h4>
-                    <p>Today</p>
-                  </div>
-                </div>
-                <div className="cd-activity-item">
-                  <div className="cd-rec-icon yellow" style={{width:'40px', height:'40px', fontSize:'16px'}}>📖</div>
-                  <div className="cd-activity-info">
-                    <h4>Finished Story 3</h4>
-                    <p>Yesterday</p>
-                  </div>
-                </div>
-                <div className="cd-activity-item">
-                  <div className="cd-rec-icon green" style={{width:'40px', height:'40px', fontSize:'16px'}}>🎮</div>
-                  <div className="cd-activity-info">
-                    <h4>Played vocabulary game</h4>
-                    <p>3 days ago</p>
-                  </div>
-                </div>
-              </div>
-            </div>
 
-            {/* AI Coach */}
-            <div className="cd-card">
-              <div className="cd-title" style={{display:'flex', alignItems:'center', gap:'8px'}}>
-                <span style={{color:'#5DB06D'}}>💬</span> AI Coach
-              </div>
-              <div className="cd-coach-list">
-                <div className="cd-coach-msg">
-                  Your pronunciation improved by 8% this week! 🎉
-                </div>
-                <div className="cd-coach-msg">
-                  Try practicing longer sentences next.
-                </div>
-                <div className="cd-coach-msg">
-                  You read 3 stories this week — great job!
-                </div>
-              </div>
-            </div>
-          </div>
 
         </div>
       </div>

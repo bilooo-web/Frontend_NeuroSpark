@@ -18,9 +18,9 @@
   text-align: center;
   border-radius: 48px 48px 48px 48px; 
   margin-top: 10px;
-  max-width: 650px;
+  max-width: 600px;
   width: 100%;
-  padding: 3rem 6rem;
+  padding: 3rem 4rem;
   box-shadow: 0 20px 30px rgba(0, 0, 0, 0.05);
   z-index: 10;
   position: relative;
@@ -62,8 +62,8 @@
 }
 
 .character.duck {
-  left: -20px;
-  top: 15%;
+  left: 2%;
+  top: 13%;
   width: 130px;
 }
 
@@ -75,8 +75,8 @@
 }
 
 .character.yellow {
-  right: -20px;
-  top: -10%;
+  right: 11%;
+  top: -13%;
   width: 110px;
 }
 

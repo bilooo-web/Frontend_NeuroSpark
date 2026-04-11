@@ -35,7 +35,7 @@ import Anomalies from "./pages/Anomalies";
 import Feedbacks from "./pages/Feedbacks";
 import Settings from "./pages/Settings";
 import ChildDashboard from "./pages/ChildDashboard";
-
+import AdminFeedback from "./pages/AdminFeedback";
 import './styles/dashboard.css'; 
 import './components/common/Loader.css';
 
@@ -169,7 +169,7 @@ function App() {
           <Route path="voice-instructions" element={<AdminVoiceInstructions />} />
           <Route path="reports" element={<AdminReports />} />
           <Route path="notifications" element={<AdminNotifications />} />
-          <Route path="/admin/feedback" element={<FeedbackDashboard />} />
+          <Route path="/admin/feedback" element={<AdminFeedback />} />
         </Route>
 
         {/* Child Routes */}

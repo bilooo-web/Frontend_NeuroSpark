@@ -7,6 +7,7 @@ import Ginger2Slide from "../components/StoryReader/slides/Ginger/Ginger2Slide";
 import Ginger3Slide from "../components/StoryReader/slides/Ginger/Ginger3Slide";
 import Ginger4Slide from "../components/StoryReader/slides/Ginger/Ginger4Slide";
 import voiceService from "../services/voiceService";
+import api from "../services/api";
 import { useApp } from "../context/AppContext";
 import micIcon from "../assets/mic.png";
 import noMicIcon from "../assets/no-mic.png";
@@ -22,12 +23,44 @@ const StoryBook = () => {
   const [showFeedback, setShowFeedback] = useState(false);
   const [pageSummaries, setPageSummaries] = useState([]);
   const [isTTSSpeaking, setIsTTSSpeaking] = useState(false);
-  const [submitStatus, setSubmitStatus] = useState(null); // 'loading', 'success', 'error'
+  const [submitStatus, setSubmitStatus] = useState(null);
   const [submitError, setSubmitError] = useState(null);
+  const maxRewardCoinsRef = useRef(50); // default, updated from backend
   const startTimeRef = useRef(0);
+  // Track pause/idle time: time when mic is off between listening sessions
+  const pauseStartRef = useRef(null);
+  const totalPauseDurationRef = useRef(0);
   useEffect(() => {
     startTimeRef.current = Date.now();
+    totalPauseDurationRef.current = 0;
+    pauseStartRef.current = null;
   }, []);
+
+  // Fetch the voice instruction's reward_coins from backend
+  useEffect(() => {
+    if (!story?.slug) return;
+    const token = localStorage.getItem('token');
+    const storedUser = JSON.parse(localStorage.getItem('user') || '{}');
+    if (token && storedUser.role === 'child') {
+      api.get(`/child/stories/${story.slug}/progress`)
+        .then(res => {
+          // We don't need progress here, but we could extend the endpoint
+          // For now the reward_coins comes from the voice instruction
+        })
+        .catch(() => {});
+
+      // Fetch voice instructions to get reward_coins for this story
+      api.get('/child/voice-instructions')
+        .then(res => {
+          const instructions = Array.isArray(res) ? res : (res.data || []);
+          const match = instructions.find(i => i.story_slug === story.slug);
+          if (match?.reward_coins) {
+            maxRewardCoinsRef.current = match.reward_coins;
+          }
+        })
+        .catch(() => {});
+    }
+  }, [story?.slug]);
 
   const {
     isListening,
@@ -50,8 +83,12 @@ const StoryBook = () => {
 
   // Submit voice attempt to backend
   const submitVoiceAttempt = async (sessionData) => {
-    if (!user?.child_id) {
-      console.warn('⚠️ Child ID not available in user context');
+    const token = localStorage.getItem('token');
+    const storedUser = JSON.parse(localStorage.getItem('user') || '{}');
+
+    // Only submit for authenticated child users
+    if (!token || storedUser.role !== 'child') {
+      console.warn('⚠️ Not a logged-in child — skipping voice attempt submission');
       return;
     }
 
@@ -59,32 +96,61 @@ const StoryBook = () => {
     setSubmitError(null);
 
     try {
+      const storySlug = story?.slug;
+      if (!storySlug) {
+        console.warn('⚠️ Story slug not found — skipping voice attempt submission');
+        setSubmitStatus(null);
+        return;
+      }
+
+      const totalTime = sessionData.totalTime || 0;
+      const totalWords = sessionData.totalWords || 0;
+
+      // accuracy_score = correct words / total expected words (includes missing as wrong)
+      const accuracyScore = Math.round((sessionData.overallScore ?? 0) * 100);
+
+      // pronunciation_score = correct words / total words actually spoken (excludes missing)
+      // This measures how well the child pronounced the words they DID attempt
+      const spokenWords = totalWords - (sessionData.missingCount || 0);
+      const correctWords = totalWords - (sessionData.incorrectCount || 0) - (sessionData.missingCount || 0);
+      const pronunciationScore = spokenWords > 0
+        ? Math.round((correctWords / spokenWords) * 100)
+        : 0;
+
       const voiceData = {
-        voice_instruction_id: parseInt(id),
-        child_id: user.child_id,
-        accuracy_score: Math.round(sessionData.overallScore * 100),
-        total_words: sessionData.totalWords,
-        incorrect_words: sessionData.incorrectCount,
-        duration: sessionData.totalTime,
+        story_slug: storySlug,
+        accuracy_score: accuracyScore,
+        pronunciation_score: pronunciationScore,
+        speech_rate: totalWords && totalTime
+          ? parseFloat((totalWords / Math.max(totalTime / 60, 0.01)).toFixed(2))
+          : 0,
+        total_words: totalWords,
+        incorrect_words: sessionData.incorrectCount || 0,
+        duration: totalTime,
+        pause_duration: sessionData.pauseDuration || 0,
         coins_earned: sessionData.coinsEarned || 0,
+        speaker_clicks: sessionData.totalSpeakerClicks || 0,
+        word_clicks: sessionData.totalWordClicks || 0,
+        page_summaries: sessionData.pageSummaries || null,
       };
 
       console.log('📤 Submitting voice attempt:', voiceData);
-      await voiceService.submitVoiceAttempt(voiceData);
+      const result = await voiceService.submitVoiceAttempt(voiceData);
+
+      // Sync coins from server response
+      if (result?.total_coins !== undefined) {
+        localStorage.setItem('totalCoins', String(result.total_coins));
+      }
 
       setSubmitStatus('success');
       console.log('✅ Voice attempt saved successfully');
 
-      // Clear status after 2 seconds
-      setTimeout(() => {
-        setSubmitStatus(null);
-      }, 2000);
+      setTimeout(() => setSubmitStatus(null), 2000);
     } catch (error) {
       console.error('❌ Failed to submit voice attempt:', error);
       setSubmitError(error.message || 'Failed to save voice attempt');
       setSubmitStatus('error');
 
-      // Clear error after 3 seconds
       setTimeout(() => {
         setSubmitStatus(null);
         setSubmitError(null);
@@ -118,11 +184,20 @@ const StoryBook = () => {
     if (isListening) {
       isPageFreshRef.current = false;
       sessionBaseRef.current = pageTranscriptRef.current;
+      // Mic turned on — end pause period
+      if (pauseStartRef.current) {
+        totalPauseDurationRef.current += Math.round((Date.now() - pauseStartRef.current) / 1000);
+        pauseStartRef.current = null;
+      }
     } else {
       const latest = transcriptRef.current;
       if (latest) {
         const base = sessionBaseRef.current;
         pageTranscriptRef.current = base ? base + " " + latest : latest;
+      }
+      // Mic turned off — start tracking pause
+      if (!isPageFreshRef.current) {
+        pauseStartRef.current = Date.now();
       }
     }
   }, [isListening]);
@@ -323,6 +398,8 @@ const StoryBook = () => {
     };
   };
 
+  const isSubmittingRef = useRef(false);
+
   const goToNextPage = () => {
     const summary = buildPageSummary();
     if (summary) {
@@ -333,58 +410,68 @@ const StoryBook = () => {
       });
     }
     if (isLastPageRef.current) {
-      try {
-        setPageSummaries((allSummariesInput) => {
-          const allSummaries = [...allSummariesInput];
-          if (summary) allSummaries[pageIndexRef.current] = summary;
+      // Guard against double-submit (React StrictMode or rapid clicks)
+      if (isSubmittingRef.current) return;
+      isSubmittingRef.current = true;
 
-          const allCorrect  = allSummaries.flatMap(p => p?.correctWords  || []);
-          const allIncorrect = allSummaries.flatMap(p => p?.incorrectWords || []);
-          const allMissing  = allSummaries.flatMap(p => p?.missingWords   || []);
-          const totalWords  = allSummaries.reduce((a, p) => a + (p?.totalWords || 0), 0);
-          const totalSpeakerClicks = allSummaries.reduce((a, p) => a + (p?.speakerClicks || 0), 0);
-          const totalWordClicks    = allSummaries.reduce((a, p) => a + (p?.wordClicks    || 0), 0);
-          const allClickedWords    = allSummaries.flatMap(p => p?.clickedWords || []);
-          const overallScore = totalWords > 0 ? allCorrect.length / totalWords : 0;
-          const totalTime    = Math.round((Date.now() - startTimeRef.current) / 1000);
+      // Compute final stats synchronously using the ref-based summaries
+      // instead of inside a state updater (which React StrictMode calls twice)
+      const allSummaries = [...pageSummaries];
+      if (summary) allSummaries[pageIndexRef.current] = summary;
 
-          const prevRaw  = localStorage.getItem(`story_progress_${idRef.current}`);
-          const prev     = prevRaw ? JSON.parse(prevRaw) : {};
-          const attempts = (prev.attempts || 0) + 1;
+      const allCorrect  = allSummaries.flatMap(p => p?.correctWords  || []);
+      const allIncorrect = allSummaries.flatMap(p => p?.incorrectWords || []);
+      const allMissing  = allSummaries.flatMap(p => p?.missingWords   || []);
+      const totalWords  = allSummaries.reduce((a, p) => a + (p?.totalWords || 0), 0);
+      const totalSpeakerClicks = allSummaries.reduce((a, p) => a + (p?.speakerClicks || 0), 0);
+      const totalWordClicks    = allSummaries.reduce((a, p) => a + (p?.wordClicks    || 0), 0);
+      const allClickedWords    = allSummaries.flatMap(p => p?.clickedWords || []);
+      const overallScore = totalWords > 0 ? allCorrect.length / totalWords : 0;
+      const totalTime    = Math.round((Date.now() - startTimeRef.current) / 1000);
 
-          localStorage.setItem(`story_progress_${idRef.current}`, JSON.stringify({
-            overallScore,
-            attempts,
-            lastPlayed:   Date.now(),
-            totalTime,
-            totalWords,
-            correctCount:  allCorrect.length,
-            incorrectCount: allIncorrect.length,
-            missingCount:  allMissing.length,
-            totalSpeakerClicks,
-            totalWordClicks,
-            topClickedWords: Object.entries(
-              allClickedWords.reduce((acc, w) => { acc[w] = (acc[w] || 0) + 1; return acc; }, {})
-            ).sort((a, b) => b[1] - a[1]).slice(0, 8),
-            pageSummaries: allSummaries,
-          }));
+      // Update state for UI
+      setPageSummaries(allSummaries);
 
-          // Calculate coins earned (1 coin per correct word, min 5)
-          const coinsEarned = Math.max(5, allCorrect.length);
+      // Calculate coins earned
+      const maxCoins = maxRewardCoinsRef.current;
+      const coinsEarned = totalWords > 0
+        ? Math.round(maxCoins * (allCorrect.length / totalWords))
+        : 0;
 
-          // Submit voice attempt to backend
-          submitVoiceAttempt({
-            overallScore,
-            totalWords,
-            incorrectCount: allIncorrect.length,
-            totalTime,
-            coinsEarned,
-          });
+      // Finalize pause tracking — if mic is still paused, count it
+      if (pauseStartRef.current) {
+        totalPauseDurationRef.current += Math.round((Date.now() - pauseStartRef.current) / 1000);
+        pauseStartRef.current = null;
+      }
 
-          return allSummaries;
-        });
-      } catch (e) {}
-      navigate(`/story/${idRef.current}/intro`);
+      const submissionData = {
+        overallScore,
+        totalWords,
+        incorrectCount: allIncorrect.length,
+        missingCount: allMissing.length,
+        totalTime,
+        pauseDuration: totalPauseDurationRef.current,
+        coinsEarned,
+        totalSpeakerClicks,
+        totalWordClicks,
+        pageSummaries: allSummaries.map(p => ({
+          pageNumber: p?.pageNumber,
+          score: p?.score,
+          totalWords: p?.totalWords,
+          correctWords: p?.correctWords,
+          incorrectWords: p?.incorrectWords,
+          missingWords: p?.missingWords,
+          speakerClicks: p?.speakerClicks || 0,
+          wordClicks: p?.wordClicks || 0,
+          clickedWords: p?.clickedWords || [],
+        })),
+      };
+
+      // Submit first, THEN navigate after completion (success or failure)
+      submitVoiceAttempt(submissionData).finally(() => {
+        isSubmittingRef.current = false;
+        navigate(`/story/${idRef.current}/intro`);
+      });
     } else {
       setPageIndex((prev) => prev + 1);
     }

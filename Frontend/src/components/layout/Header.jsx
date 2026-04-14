@@ -6,9 +6,10 @@ import api from '../../services/api';
 const Header = () => {
   const { user } = useApp();
 
-  // user.full_name is the correct field (not user.name)
-  const fullName = user?.full_name || user?.name || 'Therapist';
+  const fullName = user?.full_name || user?.name || 'User';
   const initials = fullName.split(' ').map((n) => n[0]).join('').slice(0, 2).toUpperCase();
+  const roleLabel = user?.guardian?.guardian_type || user?.guardian_type || user?.role || 'User';
+  const displayRole = roleLabel.charAt(0).toUpperCase() + roleLabel.slice(1);
 
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
@@ -22,18 +23,17 @@ const Header = () => {
   const profileRef = useRef(null);
   const fileInputRef = useRef(null);
 
-  // Fetch notifications
+  // Fetch notifications from the correct general endpoint
   const fetchNotifications = async () => {
     setLoadingNotifications(true);
     try {
-      // Try guardian notifications endpoint
-      const res = await api.get('/guardian/notifications').catch(() => null);
-      if (res?.data && Array.isArray(res.data)) {
-        setNotifications(res.data);
-        setUnreadCount(res.data.filter((n) => !n.read_at).length);
-      } else if (res?.notifications) {
+      const res = await api.get('/notifications').catch(() => null);
+      if (res?.notifications && Array.isArray(res.notifications)) {
         setNotifications(res.notifications);
-        setUnreadCount(res.notifications.filter((n) => !n.read_at).length);
+        setUnreadCount(res.unread_count || res.notifications.filter((n) => !n.is_read).length);
+      } else if (res?.data && Array.isArray(res.data)) {
+        setNotifications(res.data);
+        setUnreadCount(res.data.filter((n) => !n.is_read).length);
       }
     } catch {
       // Notifications not available — fail silently
@@ -43,11 +43,11 @@ const Header = () => {
   };
 
   useEffect(() => {
+    if (!user) return; // Don't fetch if not logged in
     fetchNotifications();
-    // Poll every 60 seconds
     const interval = setInterval(fetchNotifications, 60000);
     return () => clearInterval(interval);
-  }, []);
+  }, [user]);
 
   // Close dropdowns on outside click
   useEffect(() => {
@@ -65,23 +65,25 @@ const Header = () => {
 
   const handleMarkAllRead = async () => {
     try {
-      await api.post('/guardian/notifications/read-all').catch(() => null);
-      setNotifications((prev) => prev.map((n) => ({ ...n, read_at: new Date().toISOString() })));
+      // Mark each unread notification individually (no bulk endpoint for general users)
+      const unread = notifications.filter(n => !n.is_read);
+      await Promise.all(unread.map(n => api.post(`/notifications/${n.id}/read`).catch(() => null)));
+      setNotifications((prev) => prev.map((n) => ({ ...n, is_read: true })));
       setUnreadCount(0);
     } catch { /* silent */ }
   };
 
   const handleMarkOneRead = async (id) => {
     try {
-      await api.post(`/guardian/notifications/${id}/read`).catch(() => null);
+      await api.post(`/notifications/${id}/read`).catch(() => null);
       setNotifications((prev) =>
-        prev.map((n) => n.id === id ? { ...n, read_at: new Date().toISOString() } : n)
+        prev.map((n) => n.id === id ? { ...n, is_read: true } : n)
       );
       setUnreadCount((c) => Math.max(0, c - 1));
     } catch { /* silent */ }
   };
 
-  // Profile photo upload — stored in localStorage (no backend endpoint needed)
+  // Profile photo upload — stored in localStorage
   const handlePhotoChange = (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -177,23 +179,23 @@ const Header = () => {
                   notifications.map((n) => (
                     <div
                       key={n.id}
-                      onClick={() => !n.read_at && handleMarkOneRead(n.id)}
+                      onClick={() => !n.is_read && handleMarkOneRead(n.id)}
                       style={{
                         padding: '12px 16px',
                         borderBottom: '1px solid #f5f5f5',
-                        background: n.read_at ? '#fff' : '#f5f0ff',
-                        cursor: n.read_at ? 'default' : 'pointer',
+                        background: n.is_read ? '#fff' : '#f5f0ff',
+                        cursor: n.is_read ? 'default' : 'pointer',
                         display: 'flex', gap: 10, alignItems: 'flex-start',
                       }}
                     >
-                      {!n.read_at && (
+                      {!n.is_read && (
                         <div style={{
                           width: 8, height: 8, borderRadius: '50%',
                           background: '#7c3aed', marginTop: 5, flexShrink: 0,
                         }} />
                       )}
                       <div style={{ flex: 1 }}>
-                        <div style={{ fontSize: 13, fontWeight: n.read_at ? 400 : 600, color: '#1a1a2e' }}>
+                        <div style={{ fontSize: 13, fontWeight: n.is_read ? 400 : 600, color: '#1a1a2e' }}>
                           {n.title || n.message || n.data?.message || 'New notification'}
                         </div>
                         {n.created_at && (
@@ -222,7 +224,7 @@ const Header = () => {
           >
             <div className="ptd-header-user-info">
               <div className="ptd-header-user-name">{fullName}</div>
-              <div className="ptd-header-user-role">Therapist</div>
+              <div className="ptd-header-user-role">{displayRole}</div>
             </div>
             <div
               className="ptd-header-user-avatar"
@@ -251,7 +253,7 @@ const Header = () => {
             }}>
               <div style={{ padding: '14px 16px', borderBottom: '1px solid #f0f0f0' }}>
                 <div style={{ fontWeight: 700, fontSize: 14, color: '#1a1a2e' }}>{fullName}</div>
-                <div style={{ fontSize: 12, color: '#999', marginTop: 2 }}>Therapist</div>
+                <div style={{ fontSize: 12, color: '#999', marginTop: 2 }}>{displayRole}</div>
               </div>
 
               {/* Upload photo */}

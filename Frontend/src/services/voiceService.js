@@ -1,10 +1,14 @@
-// Service to handle communication with your backend API
-class VoiceService {
-  constructor(baseURL = 'http://localhost:5000/api') {
-    this.baseURL = baseURL;
-  }
+import api from './api';
 
-  // Send recorded audio to backend for processing
+// Service to handle voice/story reading API calls
+const voiceService = {
+  // Submit completed story reading voice attempt to backend
+  // Called by StoryBook.jsx when child finishes reading a story
+  async submitVoiceAttempt(data) {
+    return api.post('/child/voice-attempts/submit', data);
+  },
+
+  // Send recorded audio to backend for processing (future use)
   async processAudio(audioBlob, storyId, pageIndex, expectedText) {
     const formData = new FormData();
     formData.append('audio', audioBlob, 'recording.webm');
@@ -12,50 +16,24 @@ class VoiceService {
     formData.append('pageIndex', pageIndex);
     formData.append('expectedText', expectedText);
 
-    try {
-      const response = await fetch(`${this.baseURL}/speech/process`, {
-        method: 'POST',
-        body: formData,
-      });
+    const token = localStorage.getItem('token');
+    const baseURL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api';
 
-      if (!response.ok) {
-        throw new Error(`Server responded with ${response.status}`);
-      }
+    const response = await fetch(`${baseURL}/speech/process`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Accept': 'application/json',
+      },
+      body: formData,
+    });
 
-      return await response.json();
-    } catch (error) {
-      console.error('Error sending audio to backend:', error);
-      throw error;
+    if (!response.ok) {
+      throw new Error(`Server responded with ${response.status}`);
     }
-  }
 
-  // Alternative: Stream audio in real-time via WebSocket
-  createWebSocketConnection(storyId, pageIndex, onTranscript, onError) {
-    const ws = new WebSocket(`ws://localhost:5000/speech/stream`);
-    
-    ws.onopen = () => {
-      // Send metadata first
-      ws.send(JSON.stringify({
-        type: 'config',
-        storyId,
-        pageIndex,
-        expectedText: 'The target sentence for comparison'
-      }));
-    };
-    
-    ws.onmessage = (event) => {
-      const data = JSON.parse(event.data);
-      if (data.type === 'transcript') {
-        onTranscript(data);
-      }
-    };
-    
-    ws.onerror = (error) => {
-      if (onError) onError(error);
-    };
-    
-    return ws;
-  }
-}
+    return response.json();
+  },
+};
 
-export default new VoiceService();
+export default voiceService;

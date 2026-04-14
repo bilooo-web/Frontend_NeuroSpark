@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import './SafeStories.css';
 import { useNavigate } from "react-router-dom";
+import AuthModal from '../../Auth/AuthModal';
 
 
 // Book images
@@ -37,6 +38,18 @@ const bookData = [
 
 const SafeStories = () => {
   const navigate = useNavigate();
+  const [showAuthModal, setShowAuthModal] = useState(false);
+
+  const handleBookClick = (bookId) => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      // User is not signed in — show the auth modal
+      setShowAuthModal(true);
+      return;
+    }
+    // User is signed in — navigate to story intro
+    navigate(`/story/${bookId}/intro`);
+  };
   return (
     <div className="stories-container">
       <div className="safestories-stars-bg" />
@@ -54,7 +67,7 @@ const SafeStories = () => {
 
       <div className="books-grid">
         {bookData.map((book) => (
-          <div key={book.id} className="book-card" onClick={() => navigate(`/story/${book.id}/intro`)}>
+          <div key={book.id} className="book-card" onClick={() => handleBookClick(book.id)}>
             <img src={book.img} alt={book.title} className="book-cover" />
             <p className="book-title">{book.title}</p>
           </div>
@@ -65,6 +78,13 @@ const SafeStories = () => {
           <path fill="#DEF0FF" fillOpacity="1" d="M0,64L80,69.3C160,75,320,85,480,80C640,75,800,53,960,48C1120,43,1280,53,1360,58.7L1440,64L1440,0L1360,0C1280,0,1120,0,960,0C800,0,640,0,480,0C320,0,160,0,80,0L0,0Z"></path>
         </svg>
       </div>
+
+      {showAuthModal && (
+        <AuthModal
+          onClose={() => setShowAuthModal(false)}
+          initialMode="signin"
+        />
+      )}
     </div>
   );
 };

@@ -290,7 +290,7 @@ body{font-family:'Segoe UI',Arial,sans-serif;color:#1a1a2e;background:#fff;}
     return (
       <DashboardLayout>
         <div style={{ textAlign: 'center', padding: 48 }}>
-          <div className="nt-spinner" />
+          <div className="ptd-spinner" />
         </div>
       </DashboardLayout>
     );
@@ -299,7 +299,7 @@ body{font-family:'Segoe UI',Arial,sans-serif;color:#1a1a2e;background:#fff;}
   if (error || !child) {
     return (
       <DashboardLayout>
-        <div className="nt-empty-state">{error || 'Child not found'}</div>
+        <div className="ptd-empty-state">{error || 'Child not found'}</div>
       </DashboardLayout>
     );
   }
@@ -308,27 +308,27 @@ body{font-family:'Segoe UI',Arial,sans-serif;color:#1a1a2e;background:#fff;}
 
   return (
     <DashboardLayout>
-      <button className="nt-back-btn" onClick={() => navigate(-1)}>
+      <button className="ptd-back-btn" onClick={() => navigate(-1)}>
         <ArrowLeft /> Back
       </button>
 
-      <div className="nt-child-detail-header">
-        <div className="nt-child-detail-avatar">{initials}</div>
+      <div className="ptd-child-detail-header">
+        <div className="ptd-child-detail-avatar">{initials}</div>
         <div>
-          <div className="nt-child-detail-name">{childName}</div>
-          <div className="nt-child-detail-age">Age {childAge} · @{childUsername}</div>
+          <div className="ptd-child-detail-name">{childName}</div>
+          <div className="ptd-child-detail-age">Age {childAge} · @{childUsername}</div>
         </div>
-        <div className="nt-coins-badge">
+        <div className="ptd-coins-badge">
           <Coins /> {totalCoins} coins
         </div>
       </div>
 
-      <div className="nt-tabs">
+      <div className="ptd-tabs">
         {allTabs.map(tab => (
           <button
             key={tab.key}
             onClick={() => setActiveTab(tab.key)}
-            className={`nt-tab ${activeTab === tab.key ? 'active' : ''}`}
+            className={`ptd-tab ${activeTab === tab.key ? 'active' : ''}`}
           >
             {tab.icon} {tab.label}
           </button>
@@ -337,34 +337,34 @@ body{font-family:'Segoe UI',Arial,sans-serif;color:#1a1a2e;background:#fff;}
 
       {/* Overview */}
       {activeTab === 'overview' && (
-        <div className="nt-space-y-6">
-          <div className="nt-stats-grid">
-            <div className="nt-stat-card">
-              <div className="nt-stat-icon green"><Gamepad2 /></div>
-              <div className="nt-stat-content">
-                <div className="nt-stat-label">Total Sessions</div>
-                <div className="nt-stat-value">{totalGames}</div>
+        <div className="ptd-space-y-6">
+          <div className="ptd-stats-grid">
+            <div className="ptd-stat-card">
+              <div className="ptd-stat-icon green"><Gamepad2 /></div>
+              <div className="ptd-stat-content">
+                <div className="ptd-stat-label">Total Sessions</div>
+                <div className="ptd-stat-value">{totalGames}</div>
               </div>
             </div>
-            <div className="nt-stat-card">
-              <div className="nt-stat-icon teal"><Mic /></div>
-              <div className="nt-stat-content">
-                <div className="nt-stat-label">Completion Rate</div>
-                <div className="nt-stat-value">{completionRate}%</div>
+            <div className="ptd-stat-card">
+              <div className="ptd-stat-icon teal"><Mic /></div>
+              <div className="ptd-stat-content">
+                <div className="ptd-stat-label">Completion Rate</div>
+                <div className="ptd-stat-value">{completionRate}%</div>
               </div>
             </div>
-            <div className="nt-stat-card">
-              <div className="nt-stat-icon blue"><Clock /></div>
-              <div className="nt-stat-content">
-                <div className="nt-stat-label">Avg. Duration</div>
-                <div className="nt-stat-value">{avgDuration}s</div>
+            <div className="ptd-stat-card">
+              <div className="ptd-stat-icon blue"><Clock /></div>
+              <div className="ptd-stat-content">
+                <div className="ptd-stat-label">Avg. Duration</div>
+                <div className="ptd-stat-value">{avgDuration}s</div>
               </div>
             </div>
-            <div className="nt-stat-card">
-              <div className="nt-stat-icon amber"><Coins /></div>
-              <div className="nt-stat-content">
-                <div className="nt-stat-label">Total Coins</div>
-                <div className="nt-stat-value">{totalCoins}</div>
+            <div className="ptd-stat-card">
+              <div className="ptd-stat-icon amber"><Coins /></div>
+              <div className="ptd-stat-content">
+                <div className="ptd-stat-label">Total Coins</div>
+                <div className="ptd-stat-value">{totalCoins}</div>
               </div>
             </div>
           </div>
@@ -383,9 +383,9 @@ body{font-family:'Segoe UI',Arial,sans-serif;color:#1a1a2e;background:#fff;}
           />
 
           {recommendations.length > 0 && (
-            <div className="nt-card">
-              <div className="nt-card-header">
-                <span className="nt-card-title">💡 Recommendations</span>
+            <div className="ptd-card">
+              <div className="ptd-card-header">
+                <span className="ptd-card-title">💡 Recommendations</span>
               </div>
               {recommendations.map((rec, i) => (
                 <div key={i} style={{
@@ -401,30 +401,30 @@ body{font-family:'Segoe UI',Arial,sans-serif;color:#1a1a2e;background:#fff;}
 
       {/* Behavioral Insights */}
       {activeTab === 'insights' && (
-        <div className="nt-space-y-6">
+        <div className="ptd-space-y-6">
           {insights ? (
-            <div className="nt-card">
-              <div className="nt-card-header">
-                <span className="nt-card-title">The Big Three Scores</span>
+            <div className="ptd-card">
+              <div className="ptd-card-header">
+                <span className="ptd-card-title">The Big Three Scores</span>
               </div>
-              <div className="nt-insights-row">
+              <div className="ptd-insights-row">
                 <GaugeChart value={insights.attention_score || 0} label="Attention" color="#22C55E" size={140} interpretation={getInterpretation('attention', insights.attention_score)} />
                 <GaugeChart value={insights.impulsivity_score || 0} label="Impulsivity" color="#F59E0B" size={140} interpretation={getInterpretation('impulsivity', insights.impulsivity_score)} />
                 <GaugeChart value={insights.consistency_score || 0} label="Consistency" color="#14B8A6" size={140} interpretation={getInterpretation('consistency', insights.consistency_score)} />
               </div>
               {insights.best_time_of_day && (
-                <div className="nt-focus-time-card">
+                <div className="ptd-focus-time-card">
                   <Clock />
-                  <span className="nt-focus-time-text">
+                  <span className="ptd-focus-time-text">
                     📊 Best performance in the <strong>{insights.best_time_of_day}</strong>. Schedule sessions then.
                   </span>
                 </div>
               )}
             </div>
           ) : (
-            <div className="nt-empty-state" style={{ textAlign: 'center', padding: 40 }}>
+            <div className="ptd-empty-state" style={{ textAlign: 'center', padding: 40 }}>
               <Brain size={48} style={{ opacity: 0.3, marginBottom: 12 }} />
-              <p style={{ color: 'var(--nt-text-secondary)' }}>
+              <p style={{ color: 'var(--ptd-text-secondary)' }}>
                 No behavioral insights available yet. More game sessions are needed.
               </p>
             </div>
@@ -439,7 +439,7 @@ body{font-family:'Segoe UI',Arial,sans-serif;color:#1a1a2e;background:#fff;}
 
       {/* Export & Reports */}
       {activeTab === 'export' && (
-        <div className="nt-space-y-4">
+        <div className="ptd-space-y-4">
           {exportSuccess && (
             <div style={{
               backgroundColor: '#e8f5e9', color: '#2e7d32',
@@ -451,11 +451,11 @@ body{font-family:'Segoe UI',Arial,sans-serif;color:#1a1a2e;background:#fff;}
           )}
 
           {/* PDF */}
-          <div className="nt-card">
-            <div className="nt-card-header">
-              <span className="nt-card-title">📄 Clinical PDF Report</span>
+          <div className="ptd-card">
+            <div className="ptd-card-header">
+              <span className="ptd-card-title">📄 Clinical PDF Report</span>
             </div>
-            <p style={{ fontSize: 14, color: 'var(--nt-text-secondary)', marginBottom: 16 }}>
+            <p style={{ fontSize: 14, color: 'var(--ptd-text-secondary)', marginBottom: 16 }}>
               Generate a professional clinical report for <strong>{childName}</strong> including performance summary, behavioral insights, anomalies, and your personal notes.
             </p>
             <div style={{ marginBottom: 16 }}>
@@ -468,16 +468,16 @@ body{font-family:'Segoe UI',Arial,sans-serif;color:#1a1a2e;background:#fff;}
                 placeholder="Add your observations, clinical notes, treatment recommendations..."
                 style={{
                   width: '100%', minHeight: 120, padding: 12,
-                  borderRadius: 8, border: '1px solid var(--nt-border)',
-                  fontSize: 13, background: 'var(--nt-bg-secondary)',
+                  borderRadius: 8, border: '1px solid var(--ptd-border)',
+                  fontSize: 13, background: 'var(--ptd-bg-secondary)',
                   resize: 'vertical', outline: 'none',
                   fontFamily: 'inherit', lineHeight: 1.6,
-                  color: 'var(--nt-text-primary)'
+                  color: 'var(--ptd-text-primary)'
                 }}
               />
             </div>
             <button
-              className="nt-btn nt-btn-primary"
+              className="ptd-btn ptd-btn-primary"
               onClick={handleGeneratePDF}
               disabled={generatingPdf}
               style={{ display: 'flex', alignItems: 'center', gap: 8 }}
@@ -488,15 +488,15 @@ body{font-family:'Segoe UI',Arial,sans-serif;color:#1a1a2e;background:#fff;}
           </div>
 
           {/* CSV */}
-          <div className="nt-card">
-            <div className="nt-card-header">
-              <span className="nt-card-title">📊 Export Raw Data (CSV)</span>
+          <div className="ptd-card">
+            <div className="ptd-card-header">
+              <span className="ptd-card-title">📊 Export Raw Data (CSV)</span>
             </div>
-            <p style={{ fontSize: 14, color: 'var(--nt-text-secondary)', marginBottom: 16 }}>
+            <p style={{ fontSize: 14, color: 'var(--ptd-text-secondary)', marginBottom: 16 }}>
               Export all available data for <strong>{childName}</strong> including performance summary, weekly progress, game performance, behavioral insights, and recommendations.
             </p>
             <button
-              className="nt-btn nt-btn-outline"
+              className="ptd-btn ptd-btn-outline"
               onClick={handleExportCSV}
               disabled={exportingCsv}
               style={{ display: 'flex', alignItems: 'center', gap: 8 }}

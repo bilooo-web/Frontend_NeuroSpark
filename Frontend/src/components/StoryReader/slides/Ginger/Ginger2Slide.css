@@ -1,3 +1,4 @@
+/* ─── Scene ─────────────────────────────────────────────── */
 .ginger-scene2 {
   background-color: #9AD0EE;
   position: relative;
@@ -8,6 +9,7 @@
   background-repeat: no-repeat;
 }
 
+/* ─── Scene characters ───────────────────────────────────── */
 .giraffe-boots {
   position: absolute;
   margin-top: 255px;
@@ -17,6 +19,7 @@
   z-index: 4;
 }
 
+/* Same position as GingerIntroSlide */
 .giraffe-portrait {
   position: absolute;
   margin-top: -30px;
@@ -26,6 +29,7 @@
   z-index: 2;
 }
 
+/* ─── Speaker button ─────────────────────────────────────── */
 .giraffe-speaker-wrapper {
   position: absolute;
   bottom: 8%;
@@ -39,7 +43,7 @@
 }
 
 .giraffe-speaker {
-  width: 90px;     
+  width: 90px;     /* change this freely — no position/margin here */
   height: auto;
   transition: transform 0.2s ease, filter 0.2s ease;
   filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2));
@@ -65,6 +69,7 @@
   transform: scale(0.95);
 }
 
+/* ─── Text container ─────────────────────────────────────── */
 .story-text-container {
   position: absolute;
   top: 12%;
@@ -94,6 +99,7 @@
               0 10px 30px rgba(0, 0, 0, 0.15);
 }
 
+/* ─── Page indicator ─────────────────────────────────────── */
 .page-indicator {
   margin-top: 12px;
   padding-top: 10px;
@@ -105,6 +111,7 @@
   letter-spacing: 0.3px;
 }
 
+/* ─── Progress bar ───────────────────────────────────────── */
 .reading-progress {
   width: 100%;
   max-width: 100%;
@@ -137,6 +144,7 @@
 }
 
 
+/* ─── Word highlighting ──────────────────────────────────── */
 .reading-word {
   display: inline-block;
   cursor: pointer;

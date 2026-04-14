@@ -1,4 +1,6 @@
-
+/* storybook-container no longer needs position:relative.
+   Removing it (and any z-index) prevents it from creating a stacking context
+   that traps position:fixed children (mic button, nav, overlays). */
 .storybook-container {
   height: 100vh;
   display: flex;
@@ -6,7 +8,9 @@
   overflow: hidden;
 }
 
-
+/* ================================================
+   MIC BUTTON
+   ================================================ */
 .global-mic-control {
   position: fixed;
   bottom: 70px;
@@ -59,6 +63,10 @@
   }
 }
 
+/* ================================================
+   NAVIGATION BAR
+   Sits just above the mic button
+   ================================================ */
 .story-nav {
   position: fixed;
   bottom: 125px;
@@ -104,6 +112,9 @@
   color: #2d3436;
 }
 
+/* ================================================
+   FEEDBACK OVERLAYS
+   ================================================ */
 .feedback-overlay {
   position: fixed;
   top: 30px;
@@ -142,6 +153,9 @@
   }
 }
 
+/* ================================================
+   TRANSCRIPT OVERLAY
+   ================================================ */
 .transcript-overlay {
   position: fixed;
   bottom: 220px;
@@ -170,6 +184,9 @@
   border: 1px solid #ce93d8;
 }
 
+/* ================================================
+   ERROR OVERLAY
+   ================================================ */
 .error-overlay {
   position: fixed;
   bottom: 220px;
@@ -186,6 +203,7 @@
   white-space: nowrap;
 }
 
+/* Mic disabled while TTS giraffe is speaking */
 .global-mic-btn.disabled {
   background: #b0bec5;
   opacity: 0.5;
@@ -198,37 +216,4 @@
   background: #b0bec5;
   box-shadow: none;
   transform: none;
-}
-
-/* Voice submission status indicator */
-.voice-submit-status {
-  position: fixed;
-  top: 80px;
-  left: 50%;
-  transform: translateX(-50%);
-  padding: 12px 24px;
-  border-radius: 25px;
-  font-size: 14px;
-  font-weight: 600;
-  z-index: 10001;
-  animation: slideDown 0.3s ease-out;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-}
-
-.voice-submit-status.loading {
-  background: #fff3cd;
-  color: #856404;
-  border: 1px solid #ffeaa7;
-}
-
-.voice-submit-status.success {
-  background: #d4edda;
-  color: #155724;
-  border: 1px solid #c3e6cb;
-}
-
-.voice-submit-status.error {
-  background: #f8d7da;
-  color: #721c24;
-  border: 1px solid #f5c6cb;
 }

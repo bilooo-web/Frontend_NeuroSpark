@@ -143,9 +143,11 @@ const Ginger4Slide = ({
   return (
     <div className="ginger-scene4">
 
+      {/* Scene characters */}
       <img src={both}         className="both"     alt="giraffe" />
       <img src={giraffePortrait} className="giraffe-portrait" alt="giraffe portrait" />
 
+      {/* Speaker button */}
       <div className="giraffe-speaker-wrapper1" onClick={handleSpeakerClick}>
         <img
           src={isSpeaking ? speakerOn : speakerOff}

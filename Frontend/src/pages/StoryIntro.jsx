@@ -1,15 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { stories } from '../data/storiesData';
-import api from '../services/api';
-import AuthModal from '../components/Auth/AuthModal';
 import './StoryIntro.css';
 
+// Cover images
 import gingerCover from '../assets/ginger-giraffe.png';
 import introBg    from '../assets/stories/ginger/background3.png';
 
 const coverImages = {
   1: gingerCover,
+  // add more story covers here as: id: importedImage
 };
 
 const formatTime = (s) => {
@@ -29,7 +29,7 @@ const scoreEmoji = (pct) => {
 };
 
 const motivationMsg = (pct, hasPlayed) => {
-  if (!hasPlayed) return { emoji: '🌟', text: 'Ready for your first read?', sub: 'Take your time you got this!' };
+  if (!hasPlayed) return { emoji: '🌟', text: 'Ready for your first read?', sub: 'Take your time — you got this!' };
   if (pct >= 90)  return { emoji: '🏆', text: 'Amazing last time!',         sub: 'Can you do it again?' };
   if (pct >= 70)  return { emoji: '😊', text: 'Great effort last time!',    sub: "You're getting better every read!" };
   if (pct >= 50)  return { emoji: '💪', text: 'Keep it up!',                sub: 'Every read makes you stronger!' };
@@ -43,72 +43,12 @@ const StoryIntro = () => {
   const [prev, setPrev] = useState(null);
   const [visible, setVisible] = useState(false);
   const [activeTab, setActiveTab] = useState('overview');
-  const [showAuthModal, setShowAuthModal] = useState(false);
-  const [loadingProgress, setLoadingProgress] = useState(true);
-
-  // Check if user is authenticated
-  const isAuthenticated = () => !!localStorage.getItem('token');
-
-  // Get current user info
-  const getCurrentUser = () => {
-    try {
-      return JSON.parse(localStorage.getItem('user') || '{}');
-    } catch { return {}; }
-  };
 
   useEffect(() => {
-    // If not authenticated, show auth modal immediately
-    if (!isAuthenticated()) {
-      setShowAuthModal(true);
-      setLoadingProgress(false);
-      return;
-    }
-
-    const token = localStorage.getItem('token');
-    const user = getCurrentUser();
-
-    // Only fetch progress for child users from backend
-    if (token && user.role === 'child' && story?.slug) {
-      setLoadingProgress(true);
-      api.get(`/child/stories/${story.slug}/progress`)
-        .then(res => {
-          if (res.has_progress && res.progress) {
-            const backendProgress = res.progress;
-
-            // Ensure pageSummaries have correct structure for all tabs
-            if (backendProgress.pageSummaries && Array.isArray(backendProgress.pageSummaries)) {
-              backendProgress.pageSummaries = backendProgress.pageSummaries.map((p, i) => ({
-                pageNumber: p?.pageNumber ?? (i + 1),
-                score: p?.score ?? 0,
-                totalWords: p?.totalWords ?? 0,
-                correctWords: p?.correctWords ?? [],
-                incorrectWords: p?.incorrectWords ?? [],
-                missingWords: p?.missingWords ?? [],
-                speakerClicks: p?.speakerClicks ?? 0,
-                wordClicks: p?.wordClicks ?? 0,
-                clickedWords: p?.clickedWords ?? [],
-              }));
-            }
-
-            setPrev(backendProgress);
-          } else {
-            // No progress exists for this child — first time reading
-            setPrev(null);
-          }
-        })
-        .catch(() => {
-          // Backend error — show no previous progress
-          setPrev(null);
-        })
-        .finally(() => {
-          setLoadingProgress(false);
-        });
-    } else {
-      // Not a child user or no story — no progress to show
-      setPrev(null);
-      setLoadingProgress(false);
-    }
-
+    try {
+      const raw = localStorage.getItem(`story_progress_${id}`);
+      if (raw) setPrev(JSON.parse(raw));
+    } catch (e) {}
     const t = setTimeout(() => setVisible(true), 60);
     return () => clearTimeout(t);
   }, [id]);
@@ -116,7 +56,7 @@ const StoryIntro = () => {
   if (!story) return <div>Story not found</div>;
 
   const totalPages  = story.pages?.length || 0;
-  const hasPlayed   = !loadingProgress && prev && (prev.attempts || 0) > 0;
+  const hasPlayed   = prev && (prev.attempts || 0) > 0;
   const prevPct     = hasPlayed ? Math.round((prev.overallScore || 0) * 100) : 0;
   const msg         = motivationMsg(prevPct, hasPlayed);
 
@@ -131,6 +71,7 @@ const StoryIntro = () => {
 
       <div className="si-card">
 
+        {/* Cover + title */}
         <div className="si-top">
           <div className="si-cover-wrapper">
             <img src={coverImages[Number(id)] || story.coverImage} alt={story.title} className="si-cover" />
@@ -145,6 +86,7 @@ const StoryIntro = () => {
           </div>
         </div>
 
+        {/* Motivation */}
         <div className="si-motivation">
           <span className="si-motivation-emoji">{msg.emoji}</span>
           <div className="si-motivation-text">
@@ -153,19 +95,10 @@ const StoryIntro = () => {
           </div>
         </div>
 
-        {loadingProgress && (
-          <div style={{ textAlign: 'center', padding: '24px 0' }}>
-            <div style={{
-              width: 32, height: 32, border: '3px solid #e5e7eb', borderTopColor: '#6c5ce7',
-              borderRadius: '50%', animation: 'spin 0.8s linear infinite', margin: '0 auto 8px',
-            }} />
-            <p style={{ fontSize: 13, color: '#94a3b8', margin: 0 }}>Loading your progress...</p>
-            <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
-          </div>
-        )}
-
+        {/* Previous stats — only if played before */}
         {hasPlayed && (
           <>
+            {/* Overall score bar */}
             <div className="si-score-block">
               <div className="si-score-row">
                 <span className="si-score-label">Last score</span>
@@ -178,6 +111,7 @@ const StoryIntro = () => {
               </div>
             </div>
 
+            {/* Stat pills */}
             <div className="si-stats-grid">
               <div className="si-stat si-stat-green">
                 <span className="si-stat-num">{prev.correctCount || 0}</span>
@@ -205,6 +139,7 @@ const StoryIntro = () => {
               </div>
             </div>
 
+            {/* Tabs for detailed breakdown */}
             <div className="si-tabs">
               {['overview', 'pages', 'therapist'].map(tab => (
                 <button
@@ -219,6 +154,7 @@ const StoryIntro = () => {
               ))}
             </div>
 
+            {/* Tab: overview — per page bars */}
             {activeTab === 'overview' && (
               <div className="si-panel">
                 {(prev.pageSummaries || []).map((p, i) => {
@@ -236,6 +172,7 @@ const StoryIntro = () => {
               </div>
             )}
 
+            {/* Tab: pages — per page error detail */}
             {activeTab === 'pages' && (
               <div className="si-panel">
                 {(prev.pageSummaries || []).map((p, i) => {
@@ -283,6 +220,7 @@ const StoryIntro = () => {
               </div>
             )}
 
+            {/* Tab: therapist */}
             {activeTab === 'therapist' && (
               <div className="si-panel">
                 <div className="si-therapist-cards">
@@ -307,6 +245,7 @@ const StoryIntro = () => {
                     </div>
                   </div>
                 )}
+                {/* Per page */}
                 {(prev.pageSummaries || []).map((p, i) => (
                   <div key={i} className="si-therapist-page-row">
                     <span className="si-bar-label">Page {i + 1}</span>
@@ -330,14 +269,9 @@ const StoryIntro = () => {
           </>
         )}
 
+        {/* Actions */}
         <div className="si-actions">
-          <button className="si-btn si-btn-start" onClick={() => {
-            if (!isAuthenticated()) {
-              setShowAuthModal(true);
-              return;
-            }
-            navigate(`/story/${id}`);
-          }}>
+          <button className="si-btn si-btn-start" onClick={() => navigate(`/story/${id}`)}>
             {hasPlayed ? ' Read Again' : ' Start Reading'}
           </button>
           <button className="si-btn si-btn-back" onClick={() => navigate(-1)}>
@@ -346,19 +280,6 @@ const StoryIntro = () => {
         </div>
 
       </div>
-
-      {showAuthModal && (
-        <AuthModal
-          onClose={() => {
-            setShowAuthModal(false);
-            // If still not authenticated after closing modal, go back
-            if (!isAuthenticated()) {
-              navigate(-1);
-            }
-          }}
-          initialMode="signin"
-        />
-      )}
     </div>
   );
 };

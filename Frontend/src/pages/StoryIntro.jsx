@@ -5,11 +5,13 @@ import api from '../services/api';
 import AuthModal from '../components/Auth/AuthModal';
 import './StoryIntro.css';
 
+// Cover images
 import gingerCover from '../assets/ginger-giraffe.png';
 import introBg    from '../assets/stories/ginger/background3.png';
 
 const coverImages = {
   1: gingerCover,
+  // add more story covers here as: id: importedImage
 };
 
 const formatTime = (s) => {
@@ -29,7 +31,7 @@ const scoreEmoji = (pct) => {
 };
 
 const motivationMsg = (pct, hasPlayed) => {
-  if (!hasPlayed) return { emoji: '🌟', text: 'Ready for your first read?', sub: 'Take your time you got this!' };
+  if (!hasPlayed) return { emoji: '🌟', text: 'Ready for your first read?', sub: 'Take your time — you got this!' };
   if (pct >= 90)  return { emoji: '🏆', text: 'Amazing last time!',         sub: 'Can you do it again?' };
   if (pct >= 70)  return { emoji: '😊', text: 'Great effort last time!',    sub: "You're getting better every read!" };
   if (pct >= 50)  return { emoji: '💪', text: 'Keep it up!',                sub: 'Every read makes you stronger!' };
@@ -131,6 +133,7 @@ const StoryIntro = () => {
 
       <div className="si-card">
 
+        {/* Cover + title */}
         <div className="si-top">
           <div className="si-cover-wrapper">
             <img src={coverImages[Number(id)] || story.coverImage} alt={story.title} className="si-cover" />
@@ -145,6 +148,7 @@ const StoryIntro = () => {
           </div>
         </div>
 
+        {/* Motivation */}
         <div className="si-motivation">
           <span className="si-motivation-emoji">{msg.emoji}</span>
           <div className="si-motivation-text">
@@ -164,8 +168,10 @@ const StoryIntro = () => {
           </div>
         )}
 
+        {/* Previous stats — only if played before */}
         {hasPlayed && (
           <>
+            {/* Overall score bar */}
             <div className="si-score-block">
               <div className="si-score-row">
                 <span className="si-score-label">Last score</span>
@@ -178,6 +184,7 @@ const StoryIntro = () => {
               </div>
             </div>
 
+            {/* Stat pills */}
             <div className="si-stats-grid">
               <div className="si-stat si-stat-green">
                 <span className="si-stat-num">{prev.correctCount || 0}</span>
@@ -205,6 +212,7 @@ const StoryIntro = () => {
               </div>
             </div>
 
+            {/* Tabs for detailed breakdown */}
             <div className="si-tabs">
               {['overview', 'pages', 'therapist'].map(tab => (
                 <button
@@ -219,6 +227,7 @@ const StoryIntro = () => {
               ))}
             </div>
 
+            {/* Tab: overview — per page bars */}
             {activeTab === 'overview' && (
               <div className="si-panel">
                 {(prev.pageSummaries || []).map((p, i) => {
@@ -236,6 +245,7 @@ const StoryIntro = () => {
               </div>
             )}
 
+            {/* Tab: pages — per page error detail */}
             {activeTab === 'pages' && (
               <div className="si-panel">
                 {(prev.pageSummaries || []).map((p, i) => {
@@ -283,6 +293,7 @@ const StoryIntro = () => {
               </div>
             )}
 
+            {/* Tab: therapist */}
             {activeTab === 'therapist' && (
               <div className="si-panel">
                 <div className="si-therapist-cards">
@@ -307,6 +318,7 @@ const StoryIntro = () => {
                     </div>
                   </div>
                 )}
+                {/* Per page */}
                 {(prev.pageSummaries || []).map((p, i) => (
                   <div key={i} className="si-therapist-page-row">
                     <span className="si-bar-label">Page {i + 1}</span>
@@ -330,6 +342,7 @@ const StoryIntro = () => {
           </>
         )}
 
+        {/* Actions */}
         <div className="si-actions">
           <button className="si-btn si-btn-start" onClick={() => {
             if (!isAuthenticated()) {

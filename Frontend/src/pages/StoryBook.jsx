@@ -7,7 +7,6 @@ import Ginger2Slide from "../components/StoryReader/slides/Ginger/Ginger2Slide";
 import Ginger3Slide from "../components/StoryReader/slides/Ginger/Ginger3Slide";
 import Ginger4Slide from "../components/StoryReader/slides/Ginger/Ginger4Slide";
 import voiceService from "../services/voiceService";
-import api from "../services/api";
 import { useApp } from "../context/AppContext";
 import micIcon from "../assets/mic.png";
 import noMicIcon from "../assets/no-mic.png";
@@ -17,50 +16,20 @@ const StoryBook = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const story = stories[id];
-  const { user } = useApp();
 
   const [pageIndex, setPageIndex] = useState(0);
   const [showFeedback, setShowFeedback] = useState(false);
   const [pageSummaries, setPageSummaries] = useState([]);
   const [isTTSSpeaking, setIsTTSSpeaking] = useState(false);
-  const [submitStatus, setSubmitStatus] = useState(null);
+  const [submitStatus, setSubmitStatus] = useState(null); // 'loading', 'success', 'error'
   const [submitError, setSubmitError] = useState(null);
-  const maxRewardCoinsRef = useRef(50); // default, updated from backend
   const startTimeRef = useRef(0);
   // Track pause/idle time: time when mic is off between listening sessions
   const pauseStartRef = useRef(null);
   const totalPauseDurationRef = useRef(0);
   useEffect(() => {
     startTimeRef.current = Date.now();
-    totalPauseDurationRef.current = 0;
-    pauseStartRef.current = null;
   }, []);
-
-  // Fetch the voice instruction's reward_coins from backend
-  useEffect(() => {
-    if (!story?.slug) return;
-    const token = localStorage.getItem('token');
-    const storedUser = JSON.parse(localStorage.getItem('user') || '{}');
-    if (token && storedUser.role === 'child') {
-      api.get(`/child/stories/${story.slug}/progress`)
-        .then(res => {
-          // We don't need progress here, but we could extend the endpoint
-          // For now the reward_coins comes from the voice instruction
-        })
-        .catch(() => {});
-
-      // Fetch voice instructions to get reward_coins for this story
-      api.get('/child/voice-instructions')
-        .then(res => {
-          const instructions = Array.isArray(res) ? res : (res.data || []);
-          const match = instructions.find(i => i.story_slug === story.slug);
-          if (match?.reward_coins) {
-            maxRewardCoinsRef.current = match.reward_coins;
-          }
-        })
-        .catch(() => {});
-    }
-  }, [story?.slug]);
 
   const {
     isListening,
@@ -74,6 +43,7 @@ const StoryBook = () => {
     setExpectedText,
   } = useSpeechRecognition();
 
+  // Store hook functions in refs - batched update
   const resetRef = useRef(reset);
   const setExpectedTextRef = useRef(setExpectedText);
   useEffect(() => {
@@ -83,12 +53,8 @@ const StoryBook = () => {
 
   // Submit voice attempt to backend
   const submitVoiceAttempt = async (sessionData) => {
-    const token = localStorage.getItem('token');
-    const storedUser = JSON.parse(localStorage.getItem('user') || '{}');
-
-    // Only submit for authenticated child users
-    if (!token || storedUser.role !== 'child') {
-      console.warn('⚠️ Not a logged-in child — skipping voice attempt submission');
+    if (!user?.child_id) {
+      console.warn('⚠️ Child ID not available in user context');
       return;
     }
 
@@ -96,61 +62,32 @@ const StoryBook = () => {
     setSubmitError(null);
 
     try {
-      const storySlug = story?.slug;
-      if (!storySlug) {
-        console.warn('⚠️ Story slug not found — skipping voice attempt submission');
-        setSubmitStatus(null);
-        return;
-      }
-
-      const totalTime = sessionData.totalTime || 0;
-      const totalWords = sessionData.totalWords || 0;
-
-      // accuracy_score = correct words / total expected words (includes missing as wrong)
-      const accuracyScore = Math.round((sessionData.overallScore ?? 0) * 100);
-
-      // pronunciation_score = correct words / total words actually spoken (excludes missing)
-      // This measures how well the child pronounced the words they DID attempt
-      const spokenWords = totalWords - (sessionData.missingCount || 0);
-      const correctWords = totalWords - (sessionData.incorrectCount || 0) - (sessionData.missingCount || 0);
-      const pronunciationScore = spokenWords > 0
-        ? Math.round((correctWords / spokenWords) * 100)
-        : 0;
-
       const voiceData = {
-        story_slug: storySlug,
-        accuracy_score: accuracyScore,
-        pronunciation_score: pronunciationScore,
-        speech_rate: totalWords && totalTime
-          ? parseFloat((totalWords / Math.max(totalTime / 60, 0.01)).toFixed(2))
-          : 0,
-        total_words: totalWords,
-        incorrect_words: sessionData.incorrectCount || 0,
-        duration: totalTime,
-        pause_duration: sessionData.pauseDuration || 0,
+        voice_instruction_id: parseInt(id),
+        child_id: user.child_id,
+        accuracy_score: Math.round(sessionData.overallScore * 100),
+        total_words: sessionData.totalWords,
+        incorrect_words: sessionData.incorrectCount,
+        duration: sessionData.totalTime,
         coins_earned: sessionData.coinsEarned || 0,
-        speaker_clicks: sessionData.totalSpeakerClicks || 0,
-        word_clicks: sessionData.totalWordClicks || 0,
-        page_summaries: sessionData.pageSummaries || null,
       };
 
       console.log('📤 Submitting voice attempt:', voiceData);
-      const result = await voiceService.submitVoiceAttempt(voiceData);
-
-      // Sync coins from server response
-      if (result?.total_coins !== undefined) {
-        localStorage.setItem('totalCoins', String(result.total_coins));
-      }
+      await voiceService.submitVoiceAttempt(voiceData);
 
       setSubmitStatus('success');
       console.log('✅ Voice attempt saved successfully');
 
-      setTimeout(() => setSubmitStatus(null), 2000);
+      // Clear status after 2 seconds
+      setTimeout(() => {
+        setSubmitStatus(null);
+      }, 2000);
     } catch (error) {
       console.error('❌ Failed to submit voice attempt:', error);
       setSubmitError(error.message || 'Failed to save voice attempt');
       setSubmitStatus('error');
 
+      // Clear error after 3 seconds
       setTimeout(() => {
         setSubmitStatus(null);
         setSubmitError(null);
@@ -159,18 +96,29 @@ const StoryBook = () => {
   };
 
   const currentPageRef = useRef("");
+  // Blocks getWordStatuses from using stale transcript before mic is opened on new page
   const isPageFreshRef = useRef(true);
+  // Prevents goToNextPage from firing more than once per page
   const hasAdvancedRef = useRef(false);
+  // Accumulates ALL spoken text for this page across multiple mic sessions.
+  // Never wiped on pause/resume — only cleared on page change.
   const pageTranscriptRef = useRef("");
+  // Snapshot of pageTranscriptRef at the moment the mic was turned ON,
+  // so we can compute: fullText = pageTranscriptRef + " " + currentTranscript
   const sessionBaseRef = useRef("");
-  const transcriptRef = useRef(""); 
-  const idRef = useRef(id);
+  const transcriptRef = useRef(""); // always holds latest transcript value
+  const idRef = useRef(id); // stable ref for id inside closures
   useEffect(() => { idRef.current = id; }, [id]);
-  const pageStatsRef = useRef({}); 
-  const goToNextPageRef = useRef(null);
+  // Therapist stats — updated live as child interacts with each page
+  const pageStatsRef = useRef({}); // { [pageIndex]: { speakerClicks, wordClicks, clickedWords } }
+  const goToNextPageRef = useRef(null); // stable ref to goToNextPage for use inside effects
+  // When mic turns ON: snapshot base so we can combine sessions
+  // When mic turns OFF: commit final transcript for this session
+
   const currentPage = story?.pages?.[pageIndex];
   const isLastPage = story ? pageIndex === story.pages.length - 1 : false;
 
+  // Keep refs in sync so closures inside useEffects always read latest values
   const currentPageRef2 = useRef(currentPage);
   const isLastPageRef = useRef(isLastPage);
   const pageIndexRef = useRef(pageIndex);
@@ -180,6 +128,7 @@ const StoryBook = () => {
   useEffect(() => { transcriptRef.current = transcript; }, [transcript]);
 
 
+  // Track mic sessions — accumulate transcript across pause/resume
   useEffect(() => {
     if (isListening) {
       isPageFreshRef.current = false;
@@ -202,6 +151,10 @@ const StoryBook = () => {
     }
   }, [isListening]);
 
+  // ── Sequential all-words check ──────────────────────────────────────────────
+  // Checks if every word in the page was said in order.
+  // Uses pageTranscriptRef (committed sessions) + live transcript.
+  // Returns true only when t reaches the end of targetWords.
   const checkAllWordsSequential = (sourceText) => {
     if (!sourceText || !currentPageRef2.current || hasAdvancedRef.current) return false;
     const targetWords = currentPageRef2.current.text
@@ -240,39 +193,49 @@ const StoryBook = () => {
     }
   };
 
+  // Check while mic is ON — on every live transcript update
   useEffect(() => {
     if (!isListening || !transcript || isPageFreshRef.current) return;
     const liveText = [sessionBaseRef.current, transcript].filter(Boolean).join(' ');
     advanceIfComplete(liveText);
   }, [transcript]);
 
+  // Check when mic turns OFF — use the committed pageTranscriptRef
   useEffect(() => {
-    if (isListening) return; 
+    if (isListening) return; // only fire on mic-off
     if (isPageFreshRef.current || hasAdvancedRef.current) return;
     const committed = pageTranscriptRef.current;
     if (committed) advanceIfComplete(committed);
   }, [isListening]);
 
+  // Helper: check if all words are correct given a source text
+
+  // Reset everything when page changes
   useEffect(() => {
     if (currentPage) {
       const cleanText = currentPage.text.replace(/[.,!?;:]/g, "").toLowerCase();
       currentPageRef.current = cleanText;
       setExpectedTextRef.current(cleanText);
     }
-    pageTranscriptRef.current = ""; 
+    pageTranscriptRef.current = ""; // clear all accumulated text for the new page
     sessionBaseRef.current = "";
-    isPageFreshRef.current = true;  
-    hasAdvancedRef.current = false;   
+    isPageFreshRef.current = true;  // block highlighting until mic is opened
+    hasAdvancedRef.current = false;   // allow advancing on the new page
     resetRef.current();
     setShowFeedback(false);
   }, [pageIndex, currentPage]);
 
+  // ─── Word status calculation ────────────────────────────────────────────────
   const getWordStatuses = (pageOverride) => {
     const page = pageOverride || currentPage;
     if (!page) return [];
 
+    // Block highlighting if the user hasn't spoken on this page yet
     if (isPageFreshRef.current) return [];
 
+    // Build the full text for this page:
+    // - While listening: committed text from previous sessions + live transcript this session
+    // - While paused:    committed text only (pageTranscriptRef)
     const sourceText = isListening
       ? [sessionBaseRef.current, transcript].filter(Boolean).join(" ")
       : pageTranscriptRef.current;
@@ -334,6 +297,7 @@ const StoryBook = () => {
   };
 
 
+  // ─── Build a summary for the current page ────────────────────────────────
   const buildPageSummary = () => {
     const page = currentPageRef2.current;
     if (!page) return null;
@@ -392,14 +356,15 @@ const StoryBook = () => {
       extraWords,
       score,
       totalWords,
-      speakerClicks: stats.speakerClicks,   
-      wordClicks:    stats.wordClicks,       
-      clickedWords:  stats.clickedWords,     
+      speakerClicks: stats.speakerClicks,   // how many times child pressed speaker
+      wordClicks:    stats.wordClicks,       // how many words child tapped to hear
+      clickedWords:  stats.clickedWords,     // which specific words were tapped
     };
   };
 
   const isSubmittingRef = useRef(false);
 
+  // ─── Advance to next page or show summary ────────────────────────────────
   const goToNextPage = () => {
     const summary = buildPageSummary();
     if (summary) {
@@ -410,73 +375,64 @@ const StoryBook = () => {
       });
     }
     if (isLastPageRef.current) {
-      // Guard against double-submit (React StrictMode or rapid clicks)
-      if (isSubmittingRef.current) return;
-      isSubmittingRef.current = true;
+      try {
+        setPageSummaries((allSummariesInput) => {
+          const allSummaries = [...allSummariesInput];
+          if (summary) allSummaries[pageIndexRef.current] = summary;
 
-      // Compute final stats synchronously using the ref-based summaries
-      // instead of inside a state updater (which React StrictMode calls twice)
-      const allSummaries = [...pageSummaries];
-      if (summary) allSummaries[pageIndexRef.current] = summary;
+          const allCorrect  = allSummaries.flatMap(p => p?.correctWords  || []);
+          const allIncorrect = allSummaries.flatMap(p => p?.incorrectWords || []);
+          const allMissing  = allSummaries.flatMap(p => p?.missingWords   || []);
+          const totalWords  = allSummaries.reduce((a, p) => a + (p?.totalWords || 0), 0);
+          const totalSpeakerClicks = allSummaries.reduce((a, p) => a + (p?.speakerClicks || 0), 0);
+          const totalWordClicks    = allSummaries.reduce((a, p) => a + (p?.wordClicks    || 0), 0);
+          const allClickedWords    = allSummaries.flatMap(p => p?.clickedWords || []);
+          const overallScore = totalWords > 0 ? allCorrect.length / totalWords : 0;
+          const totalTime    = Math.round((Date.now() - startTimeRef.current) / 1000);
 
-      const allCorrect  = allSummaries.flatMap(p => p?.correctWords  || []);
-      const allIncorrect = allSummaries.flatMap(p => p?.incorrectWords || []);
-      const allMissing  = allSummaries.flatMap(p => p?.missingWords   || []);
-      const totalWords  = allSummaries.reduce((a, p) => a + (p?.totalWords || 0), 0);
-      const totalSpeakerClicks = allSummaries.reduce((a, p) => a + (p?.speakerClicks || 0), 0);
-      const totalWordClicks    = allSummaries.reduce((a, p) => a + (p?.wordClicks    || 0), 0);
-      const allClickedWords    = allSummaries.flatMap(p => p?.clickedWords || []);
-      const overallScore = totalWords > 0 ? allCorrect.length / totalWords : 0;
-      const totalTime    = Math.round((Date.now() - startTimeRef.current) / 1000);
+          const prevRaw  = localStorage.getItem(`story_progress_${idRef.current}`);
+          const prev     = prevRaw ? JSON.parse(prevRaw) : {};
+          const attempts = (prev.attempts || 0) + 1;
 
-      // Update state for UI
-      setPageSummaries(allSummaries);
+          localStorage.setItem(`story_progress_${idRef.current}`, JSON.stringify({
+            overallScore,
+            attempts,
+            lastPlayed:   Date.now(),
+            totalTime,
+            totalWords,
+            correctCount:  allCorrect.length,
+            incorrectCount: allIncorrect.length,
+            missingCount:  allMissing.length,
+            totalSpeakerClicks,
+            totalWordClicks,
+            topClickedWords: Object.entries(
+              allClickedWords.reduce((acc, w) => { acc[w] = (acc[w] || 0) + 1; return acc; }, {})
+            ).sort((a, b) => b[1] - a[1]).slice(0, 8),
+            pageSummaries: allSummaries,
+          }));
 
-      // Calculate coins earned
-      const maxCoins = maxRewardCoinsRef.current;
-      const coinsEarned = totalWords > 0
-        ? Math.round(maxCoins * (allCorrect.length / totalWords))
-        : 0;
+          // Calculate coins earned (1 coin per correct word, min 5)
+          const coinsEarned = Math.max(5, allCorrect.length);
 
-      // Finalize pause tracking — if mic is still paused, count it
-      if (pauseStartRef.current) {
-        totalPauseDurationRef.current += Math.round((Date.now() - pauseStartRef.current) / 1000);
-        pauseStartRef.current = null;
-      }
+          // Submit voice attempt to backend
+          submitVoiceAttempt({
+            overallScore,
+            totalWords,
+            incorrectCount: allIncorrect.length,
+            totalTime,
+            coinsEarned,
+          });
 
-      const submissionData = {
-        overallScore,
-        totalWords,
-        incorrectCount: allIncorrect.length,
-        missingCount: allMissing.length,
-        totalTime,
-        pauseDuration: totalPauseDurationRef.current,
-        coinsEarned,
-        totalSpeakerClicks,
-        totalWordClicks,
-        pageSummaries: allSummaries.map(p => ({
-          pageNumber: p?.pageNumber,
-          score: p?.score,
-          totalWords: p?.totalWords,
-          correctWords: p?.correctWords,
-          incorrectWords: p?.incorrectWords,
-          missingWords: p?.missingWords,
-          speakerClicks: p?.speakerClicks || 0,
-          wordClicks: p?.wordClicks || 0,
-          clickedWords: p?.clickedWords || [],
-        })),
-      };
-
-      // Submit first, THEN navigate after completion (success or failure)
-      submitVoiceAttempt(submissionData).finally(() => {
-        isSubmittingRef.current = false;
-        navigate(`/story/${idRef.current}/intro`);
-      });
+          return allSummaries;
+        });
+      } catch (e) {}
+      navigate(`/story/${idRef.current}/intro`);
     } else {
       setPageIndex((prev) => prev + 1);
     }
   };
 
+  // Keep goToNextPageRef always pointing to the latest goToNextPage
   goToNextPageRef.current = goToNextPage;
 
   const goToPrevPage = () => {
@@ -489,11 +445,13 @@ const StoryBook = () => {
     if (isListening) {
       stopListening();
     } else {
+      // No reset() here — we want to keep accumulated progress from previous sessions
       startListening(currentPageRef.current);
     }
   }, [isListening, stopListening, startListening]);
 
 
+  // ─── Slide renderer ──────────────────────────────────────────────────────────
   const renderCurrentSlide = () => {
     if (!currentPage) return <div>Page not found</div>;
 
@@ -530,6 +488,7 @@ const StoryBook = () => {
         {renderCurrentSlide()}
       </div>
 
+      {/* Success feedback */}
       {showFeedback && (
         <div className="feedback-overlay correct">
           ⭐ Great job!{" "}
@@ -537,16 +496,9 @@ const StoryBook = () => {
         </div>
       )}
 
+      {/* Error message */}
       {error && <div className="error-overlay">⚠️ {error}</div>}
-
-      {submitStatus && (
-        <div className={`voice-submit-status ${submitStatus}`}>
-          {submitStatus === 'loading' && '⏳ Saving your reading...'}
-          {submitStatus === 'success' && '✅ Reading saved!'}
-          {submitStatus === 'error' && `❌ ${submitError}`}
-        </div>
-      )}
-
+      {/* Global mic button */}
       <div className="global-mic-control">
         <button
           className={`global-mic-btn ${isListening ? "listening" : ""} ${isTTSSpeaking ? "disabled" : ""}`}

@@ -9,7 +9,7 @@ import guardianService from '../../services/guardianService';
 import api from '../../services/api';
 
 const Sidebar = () => {
-  const { user, setUser } = useApp();
+  const { user, setUser, isTherapist } = useApp();
   const location = useLocation();
   const navigate = useNavigate();
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -25,7 +25,6 @@ const Sidebar = () => {
   useEffect(() => {
     const syncPhoto = () => setProfilePhoto(localStorage.getItem('profilePhoto') || null);
     window.addEventListener('storage', syncPhoto);
-    // Also poll every second to catch same-tab updates from Header
     const interval = setInterval(syncPhoto, 1000);
     return () => {
       window.removeEventListener('storage', syncPhoto);
@@ -34,10 +33,10 @@ const Sidebar = () => {
   }, []);
 
   useEffect(() => {
+    if (!isTherapist) return; // Only therapists see anomalies
     const fetchAnomalyCount = async () => {
       try {
         const res = await guardianService.getAllAnomalies();
-        // api.js returns json directly: { success, data: [...] }
         const anomalies = res.data || [];
         setAnomalyCount(Array.isArray(anomalies) ? anomalies.length : 0);
       } catch {
@@ -45,33 +44,48 @@ const Sidebar = () => {
       }
     };
     fetchAnomalyCount();
-  }, []);
+  }, [isTherapist]);
 
-  // user.full_name is the correct field
-  const fullName = user?.full_name || user?.name || 'Therapist';
+  const fullName = user?.full_name || user?.name || 'User';
   const initials = fullName.split(' ').map((n) => n[0]).join('').slice(0, 2).toUpperCase();
+  const roleLabel = user?.guardian?.guardian_type || user?.guardian_type || user?.role || 'User';
+  const displayRole = roleLabel.charAt(0).toUpperCase() + roleLabel.slice(1);
 
   const handleLogout = async () => {
     setLoggingOut(true);
     try {
-      await api.post('/logout').catch(() => null); // try server logout
+      await api.post('/logout').catch(() => null);
     } finally {
       localStorage.removeItem('token');
       localStorage.removeItem('user');
+      localStorage.removeItem('guardian_type');
       localStorage.removeItem('profilePhoto');
       if (setUser) setUser(null);
+      window.dispatchEvent(new Event('user-updated'));
+      window.dispatchEvent(new Event('logout'));
       navigate('/');
     }
   };
 
+  // Build nav items dynamically based on role
   const mainNav = [
-    { label: 'Overview',       icon: <LayoutDashboard size={20} />, path: '/guardian/dashboard' },
-    { label: 'Children',       icon: <Users size={20} />,           path: '/guardian/children' },
-    { label: 'Anomalies',      icon: <AlertTriangle size={20} />,   path: '/guardian/anomalies', badge: anomalyCount },
-    { label: 'Pending Invites',icon: <Mail size={20} />,            path: '/guardian/invites' },
-    { label: 'Feedbacks',      icon: <MessageSquare size={20} />,   path: '/guardian/feedbacks' },
-    { label: 'Settings',       icon: <Settings size={20} />,        path: '/guardian/settings' },
+    { label: 'Overview', icon: <LayoutDashboard size={20} />, path: '/guardian/dashboard' },
+    { label: 'Children', icon: <Users size={20} />, path: '/guardian/children' },
   ];
+
+  // Therapist-only items
+  if (isTherapist) {
+    mainNav.push(
+      { label: 'Anomalies', icon: <AlertTriangle size={20} />, path: '/guardian/anomalies', badge: anomalyCount },
+      { label: 'Pending Invites', icon: <Mail size={20} />, path: '/guardian/invites' },
+    );
+  }
+
+  // Common items
+  mainNav.push(
+    { label: 'Feedbacks', icon: <MessageSquare size={20} />, path: '/guardian/feedbacks' },
+    { label: 'Settings', icon: <Settings size={20} />, path: '/guardian/settings' },
+  );
 
   const handleNav = (path) => {
     navigate(path);
@@ -147,7 +161,7 @@ const Sidebar = () => {
           </div>
           <div className="ptd-sidebar-user-info">
             <div className="ptd-sidebar-user-name">{fullName}</div>
-            <div className="ptd-sidebar-user-role">Therapist</div>
+            <div className="ptd-sidebar-user-role">{displayRole}</div>
           </div>
         </div>
 

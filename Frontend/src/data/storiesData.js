@@ -1,6 +1,7 @@
 export const stories = {
   1: {
     title: "Ginger The Giraffe",
+    slug: "ginger-the-giraffe",
     pages: [
 
       {

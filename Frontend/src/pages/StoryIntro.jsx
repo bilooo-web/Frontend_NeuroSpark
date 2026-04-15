@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { stories } from '../data/storiesData';
+import api from '../services/api';
+import AuthModal from '../components/Auth/AuthModal';
 import './StoryIntro.css';
 
 import gingerCover from '../assets/ginger-giraffe.png';
@@ -41,12 +43,72 @@ const StoryIntro = () => {
   const [prev, setPrev] = useState(null);
   const [visible, setVisible] = useState(false);
   const [activeTab, setActiveTab] = useState('overview');
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const [loadingProgress, setLoadingProgress] = useState(true);
+
+  // Check if user is authenticated
+  const isAuthenticated = () => !!localStorage.getItem('token');
+
+  // Get current user info
+  const getCurrentUser = () => {
+    try {
+      return JSON.parse(localStorage.getItem('user') || '{}');
+    } catch { return {}; }
+  };
 
   useEffect(() => {
-    try {
-      const raw = localStorage.getItem(`story_progress_${id}`);
-      if (raw) setPrev(JSON.parse(raw));
-    } catch (e) {}
+    // If not authenticated, show auth modal immediately
+    if (!isAuthenticated()) {
+      setShowAuthModal(true);
+      setLoadingProgress(false);
+      return;
+    }
+
+    const token = localStorage.getItem('token');
+    const user = getCurrentUser();
+
+    // Only fetch progress for child users from backend
+    if (token && user.role === 'child' && story?.slug) {
+      setLoadingProgress(true);
+      api.get(`/child/stories/${story.slug}/progress`)
+        .then(res => {
+          if (res.has_progress && res.progress) {
+            const backendProgress = res.progress;
+
+            // Ensure pageSummaries have correct structure for all tabs
+            if (backendProgress.pageSummaries && Array.isArray(backendProgress.pageSummaries)) {
+              backendProgress.pageSummaries = backendProgress.pageSummaries.map((p, i) => ({
+                pageNumber: p?.pageNumber ?? (i + 1),
+                score: p?.score ?? 0,
+                totalWords: p?.totalWords ?? 0,
+                correctWords: p?.correctWords ?? [],
+                incorrectWords: p?.incorrectWords ?? [],
+                missingWords: p?.missingWords ?? [],
+                speakerClicks: p?.speakerClicks ?? 0,
+                wordClicks: p?.wordClicks ?? 0,
+                clickedWords: p?.clickedWords ?? [],
+              }));
+            }
+
+            setPrev(backendProgress);
+          } else {
+            // No progress exists for this child — first time reading
+            setPrev(null);
+          }
+        })
+        .catch(() => {
+          // Backend error — show no previous progress
+          setPrev(null);
+        })
+        .finally(() => {
+          setLoadingProgress(false);
+        });
+    } else {
+      // Not a child user or no story — no progress to show
+      setPrev(null);
+      setLoadingProgress(false);
+    }
+
     const t = setTimeout(() => setVisible(true), 60);
     return () => clearTimeout(t);
   }, [id]);
@@ -54,7 +116,7 @@ const StoryIntro = () => {
   if (!story) return <div>Story not found</div>;
 
   const totalPages  = story.pages?.length || 0;
-  const hasPlayed   = prev && (prev.attempts || 0) > 0;
+  const hasPlayed   = !loadingProgress && prev && (prev.attempts || 0) > 0;
   const prevPct     = hasPlayed ? Math.round((prev.overallScore || 0) * 100) : 0;
   const msg         = motivationMsg(prevPct, hasPlayed);
 
@@ -90,6 +152,17 @@ const StoryIntro = () => {
             <span>{msg.sub}</span>
           </div>
         </div>
+
+        {loadingProgress && (
+          <div style={{ textAlign: 'center', padding: '24px 0' }}>
+            <div style={{
+              width: 32, height: 32, border: '3px solid #e5e7eb', borderTopColor: '#6c5ce7',
+              borderRadius: '50%', animation: 'spin 0.8s linear infinite', margin: '0 auto 8px',
+            }} />
+            <p style={{ fontSize: 13, color: '#94a3b8', margin: 0 }}>Loading your progress...</p>
+            <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+          </div>
+        )}
 
         {hasPlayed && (
           <>
@@ -258,7 +331,13 @@ const StoryIntro = () => {
         )}
 
         <div className="si-actions">
-          <button className="si-btn si-btn-start" onClick={() => navigate(`/story/${id}`)}>
+          <button className="si-btn si-btn-start" onClick={() => {
+            if (!isAuthenticated()) {
+              setShowAuthModal(true);
+              return;
+            }
+            navigate(`/story/${id}`);
+          }}>
             {hasPlayed ? ' Read Again' : ' Start Reading'}
           </button>
           <button className="si-btn si-btn-back" onClick={() => navigate(-1)}>
@@ -267,6 +346,19 @@ const StoryIntro = () => {
         </div>
 
       </div>
+
+      {showAuthModal && (
+        <AuthModal
+          onClose={() => {
+            setShowAuthModal(false);
+            // If still not authenticated after closing modal, go back
+            if (!isAuthenticated()) {
+              navigate(-1);
+            }
+          }}
+          initialMode="signin"
+        />
+      )}
     </div>
   );
 };

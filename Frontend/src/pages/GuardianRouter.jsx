@@ -68,7 +68,6 @@ const GuardianRouter = ({ guardianType: guardianTypeProp }) => {
       <Route path="/children/:id" element={<ChildDetail />} />
       <Route path="/settings" element={<Settings />} />
       <Route path="/feedbacks" element={<Feedbacks />} />
-      <Route path="/children/:id" element={<ChildDetail />} />         // common
       
       {/* Therapist-only routes */}
       {guardianType === 'therapist' && (

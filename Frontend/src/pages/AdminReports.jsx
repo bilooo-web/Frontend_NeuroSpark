@@ -1,13 +1,13 @@
 import { useState, useEffect } from "react";
 import {
   BarChart3, Users, Gamepad2, TrendingUp, Activity,
-  Clock, Target, Zap, BookOpen, Mic, Award, Volume2,
+  Clock, Target, Zap, BookOpen, Mic, Volume2,
 } from "lucide-react";
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, PieChart, Pie, Cell,
   ComposedChart, RadialBarChart, RadialBar, Legend,
-  Line, LineChart, AreaChart, Area,
+  Line,
 } from "recharts";
 import adminService from "../services/adminService";
 
@@ -54,7 +54,6 @@ const AdminReports = () => {
   const voiceActivity = reportData?.voice_activity || [];
   const topGames = reportData?.top_games || [];
   const roleDist = reportData?.role_distribution || {};
-  const coinsDaily = reportData?.coins_daily || [];
   const weeklyEngagement = reportData?.weekly_engagement || [];
   const perGamePerf = reportData?.per_game_performance || [];
   const activeChildren7d = reportData?.active_children_7d || 0;
@@ -67,6 +66,8 @@ const AdminReports = () => {
   const voiceDaily = reportData?.voice_daily || [];
   const perInstruction = reportData?.per_instruction_performance || [];
   const weeklyVoice = reportData?.weekly_voice_trend || [];
+  const voiceAccuracyDist = reportData?.voice_accuracy_distribution || [];
+  const voiceReadingGrowth = reportData?.voice_reading_growth || [];
 
   /* ═══ Engagement Tab computations ═══ */
   const totalChildren = perf.total_children || 1;
@@ -112,8 +113,6 @@ const AdminReports = () => {
     };
   });
 
-  const coinsChart = coinsDaily.map(c => ({ date: c.date?.slice(5) || "", coins: parseInt(c.coins || 0) }));
-
   const rolePie = Object.entries(roleDist).map(([name, value]) => ({ name, value }));
 
   const topGamesChart = topGames.slice(0, 8).map(g => ({
@@ -149,6 +148,19 @@ const AdminReports = () => {
     accuracy: Math.round(parseFloat(v.avg_accuracy || 0)),
     pronunciation: Math.round(parseFloat(v.avg_pronunciation || 0)),
     coins: parseInt(v.coins || 0),
+  }));
+
+  /* New chart data transforms */
+  const voiceAccuracyPie = voiceAccuracyDist.filter(d => d.count > 0);
+
+  const readingGrowthChart = voiceReadingGrowth.map(v => ({
+    week: v.week || "",
+    totalWords: v.total_words || 0,
+    incorrectWords: v.incorrect_words || 0,
+    correctWords: (v.total_words || 0) - (v.incorrect_words || 0),
+    uniqueReaders: v.unique_readers || 0,
+    speakerClicks: v.total_speaker_clicks || 0,
+    wordClicks: v.total_word_clicks || 0,
   }));
 
   /* ═══ Tabs ═══ */
@@ -319,18 +331,25 @@ const AdminReports = () => {
             </div>
 
             <div className="glass-card" style={{ padding: 20 }}>
-              <h3 style={{ fontSize: 15, marginBottom: 16 }}>Coins Economy (Daily)</h3>
-              {coinsChart.length > 0 ? (
-                <ResponsiveContainer width="100%" height={220}>
-                  <BarChart data={coinsChart}>
+              <h3 style={{ fontSize: 15, marginBottom: 4 }}>Weekly Reading Volume</h3>
+              <p style={{ fontSize: 11, color: "var(--muted-foreground)", marginBottom: 12 }}>
+                Total words read per week with unique active readers overlay
+              </p>
+              {readingGrowthChart.length > 0 ? (
+                <ResponsiveContainer width="100%" height={260}>
+                  <ComposedChart data={readingGrowthChart}>
                     <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-                    <XAxis dataKey="date" fontSize={10} />
-                    <YAxis {...yInt} />
+                    <XAxis dataKey="week" fontSize={11} />
+                    <YAxis yAxisId="left" {...yInt} />
+                    <YAxis yAxisId="right" orientation="right" {...yInt} />
                     <Tooltip content={<CustomTooltip />} />
-                    <Bar dataKey="coins" fill="#fdcb6e" radius={[4,4,0,0]} name="Coins Distributed" />
-                  </BarChart>
+                    <Legend />
+                    <Bar yAxisId="left" dataKey="correctWords" stackId="words" fill="#00b894" name="Correct Words" radius={[0,0,0,0]} />
+                    <Bar yAxisId="left" dataKey="incorrectWords" stackId="words" fill="#e17055" name="Incorrect Words" radius={[4,4,0,0]} />
+                    <Line yAxisId="right" type="monotone" dataKey="uniqueReaders" stroke="#e84393" strokeWidth={2.5} name="Unique Readers" dot={{ r: 3, fill: "#e84393" }} />
+                  </ComposedChart>
                 </ResponsiveContainer>
-              ) : <div className="empty-state"><p>No coins data</p></div>}
+              ) : <div className="empty-state"><p>No reading growth data yet</p></div>}
             </div>
           </div>
         </>
@@ -512,6 +531,8 @@ const AdminReports = () => {
             {renderKPI(<Target style={{ height: 22, width: 22 }} />, "Avg Accuracy", `${Math.round(voiceStats.avg_accuracy || 0)}%`, "#0984e3")}
             {renderKPI(<Volume2 style={{ height: 22, width: 22 }} />, "Avg Pronunciation", `${Math.round(voiceStats.avg_pronunciation || 0)}%`, "#fdcb6e")}
             {renderKPI(<Users style={{ height: 22, width: 22 }} />, "Active Readers (7d)", voiceStats.active_readers_7d || 0, "#e84393")}
+            {renderKPI(<Zap style={{ height: 22, width: 22 }} />, "Avg Speech Rate", `${voiceStats.avg_speech_rate || 0} wpm`, "#00cec9",
+              "Average words per minute across all reading attempts")}
           </div>
 
           <div className="reports-grid-2" style={{ marginTop: 20 }}>
@@ -608,34 +629,24 @@ const AdminReports = () => {
             </div>
           )}
 
-          <div className="reports-grid-2" style={{ marginTop: 20 }}>
-            {/* Voice Coins Daily */}
-            <div className="glass-card" style={{ padding: 20 }}>
-              <h3 style={{ fontSize: 15, marginBottom: 16 }}>Voice Coins Earned (Daily)</h3>
-              {voiceDailyChart.length > 0 ? (
-                <ResponsiveContainer width="100%" height={220}>
-                  <BarChart data={voiceDailyChart}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-                    <XAxis dataKey="date" fontSize={10} />
-                    <YAxis {...yInt} />
-                    <Tooltip content={<CustomTooltip />} />
-                    <Bar dataKey="coins" fill="#fdcb6e" radius={[4,4,0,0]} name="Coins Earned" />
-                  </BarChart>
-                </ResponsiveContainer>
-              ) : <div className="empty-state"><p>No coins data</p></div>}
-            </div>
-
-            {/* Summary Stats */}
+          {/* Reading Summary — full width */}
+          <div style={{ marginTop: 20 }}>
             <div className="glass-card" style={{ padding: 20 }}>
               <h3 style={{ fontSize: 15, marginBottom: 16 }}>Reading Summary</h3>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, padding: 10 }}>
                 {[
-                  { label: "Total Words Practiced", value: voiceStats.total_words_practiced || 0, icon: "📖" },
-                  { label: "Total Incorrect Words", value: voiceStats.total_incorrect_words || 0, icon: "❌" },
+                  { label: "Total Words Practiced", value: (voiceStats.total_words_practiced || 0).toLocaleString(), icon: "📖" },
+                  { label: "Total Incorrect Words", value: (voiceStats.total_incorrect_words || 0).toLocaleString(), icon: "❌" },
                   { label: "Attempts / Child", value: voiceStats.attempts_per_child || 0, icon: "📊" },
-                  { label: "Total Coins (Voice)", value: voiceStats.total_coins || 0, icon: "🪙" },
+                  { label: "Total Coins (Voice)", value: (voiceStats.total_coins || 0).toLocaleString(), icon: "🪙" },
                   { label: "Avg Duration", value: `${Math.round(voiceStats.avg_duration || 0)}s`, icon: "⏱️" },
                   { label: "Word Accuracy", value: voiceStats.total_words_practiced > 0 ? `${Math.round(((voiceStats.total_words_practiced - voiceStats.total_incorrect_words) / voiceStats.total_words_practiced) * 100)}%` : "—", icon: "🎯" },
+                  { label: "Avg Read-Alouds / Session", value: voiceStats.avg_speaker_clicks || 0, icon: "🔊" },
+                  { label: "Avg Word Taps / Session", value: voiceStats.avg_word_clicks || 0, icon: "👆" },
+                  { label: "Avg Speech Rate", value: `${voiceStats.avg_speech_rate || 0} wpm`, icon: "🗣️" },
+                  { label: "Avg Pause Duration", value: `${Math.round(voiceStats.avg_pause_duration || 0)}s`, icon: "⏸️" },
+                  { label: "Active Readers (30d)", value: voiceStats.active_readers_30d || 0, icon: "📅" },
+                  { label: "Unique Stories Read", value: voiceStats.unique_stories_read || 0, icon: "📚" },
                 ].map((s, i) => (
                   <div key={i} style={{ background: "var(--card-hover)", borderRadius: 12, padding: "12px 14px", display: "flex", alignItems: "center", gap: 10 }}>
                     <span style={{ fontSize: 22 }}>{s.icon}</span>

@@ -32,6 +32,7 @@ const GingerIntroSlide = ({
   const wordClicksRef    = useRef(0);
   const clickedWordsRef  = useRef([]);
 
+  // Reset counters + stop TTS when page changes
   useEffect(() => {
     speakerClicksRef.current = 0;
     wordClicksRef.current    = 0;
@@ -43,6 +44,7 @@ const GingerIntroSlide = ({
     };
   }, [text]);
 
+  // Voices load async on some browsers
   useEffect(() => {
     const noop = () => {};
     window.speechSynthesis.addEventListener('voiceschanged', noop);
@@ -73,6 +75,7 @@ const GingerIntroSlide = ({
       onSpeakingChange?.(true);
       return;
     }
+    // Fresh start — count it
     speakerClicksRef.current += 1;
     onStatsUpdate?.({ speakerClicks: speakerClicksRef.current, wordClicks: wordClicksRef.current, clickedWords: [...clickedWordsRef.current] });
     window.speechSynthesis.cancel();
@@ -146,12 +149,14 @@ const GingerIntroSlide = ({
   return (
     <div className="ginger-scene">
 
+      {/* Background layer characters */}
       <img src={tree}           className="tree"            alt="tree" />
       <img src={animals}        className="animals"         alt="animals" />
       <img src={giraffeSmall}   className="giraffe-small"   alt="small giraffe" />
       <img src={giraffePortrait} className="giraffe-portrait" alt="giraffe portrait" />
       <img src={giraffe}        className="giraffe-big"     alt="giraffe" />
 
+      {/* Speaker button */}
       <div className="giraffe-speaker-wrapper1" onClick={handleSpeakerClick}>
         <img
           src={isSpeaking ? speakerOn : speakerOff}
@@ -166,6 +171,7 @@ const GingerIntroSlide = ({
           <div className="page-indicator">Page {pageNumber} of {totalPages}</div>
         </div>
 
+        {/* Word progress bar */}
         <div className="reading-progress">
           <div className="progress-header">
             <span className="progress-words-label">

@@ -1,25 +1,31 @@
-import React, { createContext, useState, useContext, useEffect, useCallback } from 'react';
+import React, { createContext, useState, useContext, useEffect } from 'react';
 
 const AppContext = createContext();
 
 export const AppProvider = ({ children }) => {
+  // Initialize from localStorage immediately (synchronous)
   const [role, setRole] = useState(() => {
+    // First check user from login
     const savedUser = localStorage.getItem('user');
     if (savedUser) {
-      try {
-        const user = JSON.parse(savedUser);
-        return user.guardian?.guardian_type || user.guardian_type || user.role || null;
-      } catch { return null; }
+      const user = JSON.parse(savedUser);
+      // Check guardian_type from the user object
+      return user.guardian?.guardian_type || user.role || 'therapist';
     }
-    return null;
+    return 'therapist'; // default
   });
-
+  
   const [user, setUser] = useState(() => {
     const savedUser = localStorage.getItem('user');
-    if (savedUser) {
-      try { return JSON.parse(savedUser); } catch { return null; }
-    }
-    return null;
+    return savedUser ? JSON.parse(savedUser) : {
+      id: 1,
+      full_name: 'Dr. Sarah Mitchell',
+      email: 'sarah@example.com',
+      role: 'guardian',
+      guardian: {
+        guardian_type: 'therapist'
+      }
+    };
   });
 
   const [selectedChild, setSelectedChild] = useState(0);
@@ -27,34 +33,44 @@ export const AppProvider = ({ children }) => {
   const [page, setPage] = useState('dashboard');
   const [isLoading, setIsLoading] = useState(false);
 
-  // Sync user state from localStorage — works for cross-tab AND same-tab updates
-  const syncFromStorage = useCallback(() => {
-    const savedUser = localStorage.getItem('user');
-    if (savedUser) {
-      try {
+  // Listen for storage changes (when user logs in/out)
+  useEffect(() => {
+    const handleStorageChange = () => {
+      const savedUser = localStorage.getItem('user');
+      if (savedUser) {
         const userData = JSON.parse(savedUser);
         setUser(userData);
-        setRole(userData.guardian?.guardian_type || userData.guardian_type || userData.role || null);
-      } catch {
-        setUser(null);
-        setRole(null);
+        setRole(userData.guardian?.guardian_type || userData.role || 'therapist');
+      } else {
+        // Reset to default if no user
+        setUser({
+          id: 1,
+          full_name: 'Dr. Sarah Mitchell',
+          email: 'sarah@example.com',
+          role: 'guardian',
+          guardian: {
+            guardian_type: 'therapist'
+          }
+        });
+        setRole('therapist');
       }
-    } else {
-      setUser(null);
-      setRole(null);
-    }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
   }, []);
 
-  useEffect(() => {
-    // Cross-tab storage events
-    window.addEventListener('storage', syncFromStorage);
-    // Same-tab custom event (fired after login sets localStorage)
-    window.addEventListener('user-updated', syncFromStorage);
-    return () => {
-      window.removeEventListener('storage', syncFromStorage);
-      window.removeEventListener('user-updated', syncFromStorage);
-    };
-  }, [syncFromStorage]);
+  const switchRole = () => {
+    setRole(prev => (prev === 'parent' ? 'therapist' : 'parent'));
+    setUser(prev => ({
+      ...prev,
+      full_name: prev.guardian?.guardian_type === 'parent' ? 'Dr. Sarah Mitchell' : 'Sarah Johnson',
+      guardian: {
+        ...prev.guardian,
+        guardian_type: prev.guardian?.guardian_type === 'parent' ? 'therapist' : 'parent'
+      }
+    }));
+  };
 
   const toggleSidebar = () => setSidebarCollapsed(prev => !prev);
 
@@ -63,20 +79,20 @@ export const AppProvider = ({ children }) => {
     window.scrollTo(0, 0);
   };
 
-  const isTherapist = user?.guardian?.guardian_type === 'therapist' || user?.guardian_type === 'therapist';
-  const isParent = user?.guardian?.guardian_type === 'parent' || user?.guardian_type === 'parent';
+  // Helper to check user type
+  const isTherapist = user?.guardian?.guardian_type === 'therapist';
+  const isParent = user?.guardian?.guardian_type === 'parent';
 
   return (
     <AppContext.Provider value={{
       role,
       user,
-      setUser,
-      setRole,
       selectedChild,
       sidebarCollapsed,
       page,
       isLoading,
       setSelectedChild,
+      switchRole,
       toggleSidebar,
       navigate,
       isTherapist,

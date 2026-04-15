@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import './SafeStories.css';
 import { useNavigate } from "react-router-dom";
-import AuthModal from '../../Auth/AuthModal';
+import AuthModal from '../../auth/AuthModal';
 
 
 // Book images

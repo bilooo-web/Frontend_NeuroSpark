@@ -1,10 +1,40 @@
 // feedbackService.js
-// Admin-only feedback management endpoints.
-// Guardian feedback methods are in guardianService.js — do NOT duplicate them here.
+// Connected to real backend API
 
 import api from './api';
 
 const feedbackService = {
+
+  // ========== PUBLIC ENDPOINTS (for homepage) ==========
+
+  getHomepageFeedback: async (limit = 6) => {
+    const res = await api.get(`/guardian/feedback`);
+    const all = res.data || res || [];
+    return all.filter(f => f.is_approved).slice(0, limit);
+  },
+
+  getFeaturedFeedback: async (limit = 3) => {
+    const res = await api.get(`/guardian/feedback`);
+    const all = res.data || res || [];
+    return all.filter(f => f.is_featured).slice(0, limit);
+  },
+
+  // ========== GUARDIAN ENDPOINTS ==========
+
+  submitFeedback: (feedbackData) =>
+    api.post('/guardian/feedback', {
+      feedback: feedbackData.text,
+      rate: feedbackData.rating,
+    }),
+
+  getMyFeedback: () => api.get('/guardian/feedback'),
+  getFeedbackById: (id) => api.get(`/guardian/feedback/${id}`),
+  deleteFeedback: (id) => api.delete(`/guardian/feedback/${id}`),
+  updateFeedback: (id, data) =>
+    api.put(`/guardian/feedback/${id}`, {
+      feedback: data.text,
+      rate: data.rating,
+    }),
 
   // ========== ADMIN ENDPOINTS ==========
 
@@ -58,7 +88,7 @@ const feedbackService = {
   },
 
   /**
-   * Delete a feedback (admin)
+   * Delete a feedback
    */
   adminDeleteFeedback: async (id) => {
     return api.delete(`/admin/feedback/${id}`);

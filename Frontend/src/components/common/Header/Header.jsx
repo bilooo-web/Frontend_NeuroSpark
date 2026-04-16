@@ -233,7 +233,6 @@ function Header({ totalCoins }) {
               <img src={profileImage} alt="Profile" className="profile-img" style={{ cursor:'pointer' }} />
               <span className="profile-name">{user.full_name}</span>
             </div>
-            <button className="logout-btn-small" onClick={handleLogout}>Logout</button>
           </>) : (
             <button className="header-btn signin" onClick={openSignIn}>Sign In</button>
           )}

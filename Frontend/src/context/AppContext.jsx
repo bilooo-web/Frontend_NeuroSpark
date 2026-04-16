@@ -1,76 +1,78 @@
-import React, { createContext, useState, useContext, useEffect } from 'react';
+import React, { createContext, useState, useContext, useEffect, useCallback } from 'react';
 
 const AppContext = createContext();
 
-export const AppProvider = ({ children }) => {
-  // Initialize from localStorage immediately (synchronous)
-  const [role, setRole] = useState(() => {
-    // First check user from login
-    const savedUser = localStorage.getItem('user');
-    if (savedUser) {
-      const user = JSON.parse(savedUser);
-      // Check guardian_type from the user object
-      return user.guardian?.guardian_type || user.role || 'therapist';
-    }
-    return 'therapist'; // default
-  });
-  
-  const [user, setUser] = useState(() => {
-    const savedUser = localStorage.getItem('user');
-    return savedUser ? JSON.parse(savedUser) : {
-      id: 1,
-      full_name: 'Dr. Sarah Mitchell',
-      email: 'sarah@example.com',
-      role: 'guardian',
-      guardian: {
-        guardian_type: 'therapist'
-      }
-    };
-  });
+// ── Pure helper: extract user data from localStorage synchronously ──────────
+const readStoredUser = () => {
+  try {
+    const raw = localStorage.getItem('user');
+    if (!raw) return { user: null, role: null };
+    const user = JSON.parse(raw);
+    // Guardian type can be nested or flat; also check the separate key set by AuthModal
+    const role =
+      user.guardian?.guardian_type ||
+      user.guardian_type            ||
+      localStorage.getItem('guardian_type') ||
+      user.role                     ||
+      null;
+    return { user, role };
+  } catch {
+    return { user: null, role: null };
+  }
+};
 
-  const [selectedChild, setSelectedChild] = useState(0);
+export const AppProvider = ({ children }) => {
+  // Initialise synchronously — no async, no delay
+  const [user, setUserState] = useState(() => readStoredUser().user);
+  const [role, setRole]      = useState(() => readStoredUser().role);
+
+  const [selectedChild, setSelectedChild]   = useState(0);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const [page, setPage] = useState('dashboard');
+  const [page, setPage]   = useState('dashboard');
   const [isLoading, setIsLoading] = useState(false);
 
-  // Listen for storage changes (when user logs in/out)
-  useEffect(() => {
-    const handleStorageChange = () => {
-      const savedUser = localStorage.getItem('user');
-      if (savedUser) {
-        const userData = JSON.parse(savedUser);
-        setUser(userData);
-        setRole(userData.guardian?.guardian_type || userData.role || 'therapist');
-      } else {
-        // Reset to default if no user
-        setUser({
-          id: 1,
-          full_name: 'Dr. Sarah Mitchell',
-          email: 'sarah@example.com',
-          role: 'guardian',
-          guardian: {
-            guardian_type: 'therapist'
-          }
-        });
-        setRole('therapist');
-      }
-    };
-
-    window.addEventListener('storage', handleStorageChange);
-    return () => window.removeEventListener('storage', handleStorageChange);
+  // Single sync function — keeps user + role in sync from localStorage
+  const syncFromStorage = useCallback(() => {
+    const { user: u, role: r } = readStoredUser();
+    setUserState(u);
+    setRole(r);
   }, []);
 
-  const switchRole = () => {
-    setRole(prev => (prev === 'parent' ? 'therapist' : 'parent'));
-    setUser(prev => ({
-      ...prev,
-      full_name: prev.guardian?.guardian_type === 'parent' ? 'Dr. Sarah Mitchell' : 'Sarah Johnson',
-      guardian: {
-        ...prev.guardian,
-        guardian_type: prev.guardian?.guardian_type === 'parent' ? 'therapist' : 'parent'
-      }
-    }));
-  };
+  // Expose setUser so AuthModal/login can push a new user object in directly
+  // AND also persist to localStorage so a refresh works
+  const setUser = useCallback((userData) => {
+    if (!userData) {
+      // Logout path
+      setUserState(null);
+      setRole(null);
+      return;
+    }
+    // Merge into localStorage so sidebar/header read the same thing
+    localStorage.setItem('user', JSON.stringify(userData));
+    const r =
+      userData.guardian?.guardian_type ||
+      userData.guardian_type            ||
+      localStorage.getItem('guardian_type') ||
+      userData.role                     ||
+      null;
+    if (r) localStorage.setItem('guardian_type', r);
+    setUserState(userData);
+    setRole(r);
+  }, []);
+
+  useEffect(() => {
+    // cross-tab: actual StorageEvent fires when another tab changes localStorage
+    window.addEventListener('storage', syncFromStorage);
+    // same-tab: AuthModal fires 'user-updated' after writing to localStorage
+    window.addEventListener('user-updated', syncFromStorage);
+    // same-tab: AuthModal fires 'login-success' — re-read immediately
+    window.addEventListener('login-success', syncFromStorage);
+    return () => {
+      window.removeEventListener('storage', syncFromStorage);
+      window.removeEventListener('user-updated', syncFromStorage);
+      window.removeEventListener('login-success', syncFromStorage);
+    };
+  }, [syncFromStorage]);
 
   const toggleSidebar = () => setSidebarCollapsed(prev => !prev);
 
@@ -79,20 +81,25 @@ export const AppProvider = ({ children }) => {
     window.scrollTo(0, 0);
   };
 
-  // Helper to check user type
-  const isTherapist = user?.guardian?.guardian_type === 'therapist';
-  const isParent = user?.guardian?.guardian_type === 'parent';
+  const isTherapist = role === 'therapist' ||
+    user?.guardian?.guardian_type === 'therapist' ||
+    user?.guardian_type === 'therapist';
+
+  const isParent = role === 'parent' ||
+    user?.guardian?.guardian_type === 'parent' ||
+    user?.guardian_type === 'parent';
 
   return (
     <AppContext.Provider value={{
       role,
       user,
+      setUser,
+      setRole,
       selectedChild,
       sidebarCollapsed,
       page,
       isLoading,
       setSelectedChild,
-      switchRole,
       toggleSidebar,
       navigate,
       isTherapist,
@@ -105,8 +112,6 @@ export const AppProvider = ({ children }) => {
 
 export const useApp = () => {
   const context = useContext(AppContext);
-  if (!context) {
-    throw new Error('useApp must be used within an AppProvider');
-  }
+  if (!context) throw new Error('useApp must be used within an AppProvider');
   return context;
 };

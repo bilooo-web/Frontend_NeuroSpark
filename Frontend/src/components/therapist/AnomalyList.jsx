@@ -19,12 +19,17 @@ const AnomalyList = ({ anomalies }) => {
         <span className="ptd-card-title">Anomalies</span>
         <button className="ptd-card-action">View all</button>
       </div>
-      {anomalies.map((anomaly) => (
-        <div key={anomaly.id} className="ptd-anomaly-item">
-          <span className={`ptd-anomaly-severity ${anomaly.severity}`} />
+      {anomalies.map((anomaly, i) => (
+        <div key={anomaly.session_id || anomaly.id || i} className="ptd-anomaly-item">
+          <span className={`ptd-anomaly-severity ${anomaly.severity || 'warning'}`} />
           <div className="ptd-anomaly-content">
             <div className="ptd-anomaly-reason">{anomaly.reason}</div>
-            <div className="ptd-anomaly-meta">{anomaly.child_name} · {anomaly.date}</div>
+            <div className="ptd-anomaly-meta">
+              {anomaly.child_name && `${anomaly.child_name} · `}
+              {anomaly.played_at || anomaly.date
+                ? new Date(anomaly.played_at || anomaly.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+                : '—'}
+            </div>
           </div>
           <button className="ptd-anomaly-action">Review</button>
         </div>

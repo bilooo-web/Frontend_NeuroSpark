@@ -68,7 +68,7 @@
   bottom: 0;
   width: var(--ptd-sidebar-width);
   z-index: 100;
-  padding: 12px;
+  padding: 0;
   display: none;
   transition: transform 0.3s ease;
 }
@@ -105,13 +105,15 @@
 /* ---- Sidebar ---- */
 .ptd-sidebar {
   background: var(--ptd-sidebar-bg);
-  border-radius: var(--ptd-sidebar-radius);
+  border-radius: 0;
   height: 100%;
+  min-height: 100vh;
   display: flex;
   flex-direction: column;
   padding: 20px 12px;
   overflow-y: auto;
-  border: 1px solid var(--ptd-border);
+  border: none;
+  border-right: 1px solid var(--ptd-border);
 }
 
 .ptd-sidebar-logo {

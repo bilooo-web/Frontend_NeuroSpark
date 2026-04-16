@@ -65,6 +65,9 @@ class ApiClient {
   delete(endpoint) {
     return this.request('DELETE', endpoint);
   }
+  patch(endpoint, data) {
+    return this.request('PATCH', endpoint, data);
+  }
 
   async getChats() {
     return this.get('/chatbot/chats');

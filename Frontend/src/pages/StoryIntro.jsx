@@ -7,6 +7,7 @@ import './StoryIntro.css';
 
 import gingerCover from '../assets/ginger-giraffe.png';
 import introBg    from '../assets/stories/ginger/background3.png';
+import coinIcon from '../assets/coin.png';
 
 const coverImages = {
   1: gingerCover,
@@ -90,7 +91,10 @@ const StoryIntro = () => {
               }));
             }
 
-            setPrev(backendProgress);
+            setPrev({
+              ...backendProgress,
+              coinsEarned: backendProgress.coinsEarned || 0,
+            });
           } else {
             // No progress exists for this child — first time reading
             setPrev(null);
@@ -202,6 +206,10 @@ const StoryIntro = () => {
               <div className="si-stat si-stat-teal">
                 <span className="si-stat-num">{prev.totalWordClicks || 0}</span>
                 <span className="si-stat-lbl">👆 Word Taps</span>
+              </div>
+              <div className="si-stat si-stat-gold">
+                <span className="si-stat-num">{prev.coinsEarned || 0}</span>
+                <span className="si-stat-lbl">🪙 Coins Earned</span>
               </div>
             </div>
 
@@ -340,7 +348,7 @@ const StoryIntro = () => {
           }}>
             {hasPlayed ? ' Read Again' : ' Start Reading'}
           </button>
-          <button className="si-btn si-btn-back" onClick={() => navigate(-1)}>
+          <button className="si-btn si-btn-back" onClick={() => navigate('/ReadingPage')}>
             ← Back
           </button>
         </div>

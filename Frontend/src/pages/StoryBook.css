@@ -217,3 +217,47 @@
   box-shadow: none;
   transform: none;
 }
+.coin-reward-overlay {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: linear-gradient(135deg, #fbbf24, #f59e0b);
+  padding: 20px 40px;
+  border-radius: 60px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  z-index: 10000;
+  animation: coinPop 0.5s ease, coinFloat 2s ease forwards;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+}
+
+.coin-emoji {
+  font-size: 36px;
+  animation: coinSpin 0.6s ease;
+}
+
+.coin-amount {
+  font-size: 28px;
+  font-weight: 800;
+  color: white;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+@keyframes coinPop {
+  0% { transform: translate(-50%, -50%) scale(0.5); opacity: 0; }
+  70% { transform: translate(-50%, -50%) scale(1.1); }
+  100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+}
+
+@keyframes coinFloat {
+  0% { transform: translate(-50%, -50%); opacity: 1; }
+  80% { transform: translate(-50%, -80%); opacity: 1; }
+  100% { transform: translate(-50%, -120%); opacity: 0; }
+}
+
+@keyframes coinSpin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}

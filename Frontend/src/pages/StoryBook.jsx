@@ -25,6 +25,9 @@ const StoryBook = () => {
   const [isTTSSpeaking, setIsTTSSpeaking] = useState(false);
   const [submitStatus, setSubmitStatus] = useState(null);
   const [submitError, setSubmitError] = useState(null);
+  // Add state for coin animation
+  const [showCoinReward, setShowCoinReward] = useState(false);
+  const [coinsEarned, setCoinsEarned] = useState(0);
   const maxRewardCoinsRef = useRef(50); // default, updated from backend
   const startTimeRef = useRef(0);
   // Track pause/idle time: time when mic is off between listening sessions
@@ -438,6 +441,11 @@ const StoryBook = () => {
         ? Math.round(maxCoins * (allCorrect.length / totalWords))
         : 0;
 
+      // Set coin reward for animation
+      setCoinsEarned(coinsEarned);
+      setShowCoinReward(true);
+      setTimeout(() => setShowCoinReward(false), 3000);
+
       // Finalize pause tracking — if mic is still paused, count it
       if (pauseStartRef.current) {
         totalPauseDurationRef.current += Math.round((Date.now() - pauseStartRef.current) / 1000);
@@ -534,6 +542,13 @@ const StoryBook = () => {
         <div className="feedback-overlay correct">
           ⭐ Great job!{" "}
           {isLastPage ? "Finishing story... 🎉" : "Moving to next page..."}
+        </div>
+      )}
+
+      {showCoinReward && (
+        <div className="coin-reward-overlay">
+          <span className="coin-emoji">🪙</span>
+          <span className="coin-amount">+{coinsEarned} coins!</span>
         </div>
       )}
 

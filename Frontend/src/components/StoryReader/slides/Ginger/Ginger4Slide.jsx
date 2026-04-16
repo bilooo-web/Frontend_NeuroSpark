@@ -2,11 +2,10 @@ import "./Ginger4Slide.css";
 import "../../ReadingStyles.css";
 import { useState, useEffect, useRef } from "react";
 
-import both        from "../../../../assets/stories/ginger/both.png";
+import both            from "../../../../assets/stories/ginger/both.png";
 import giraffePortrait from "../../../../assets/stories/ginger/giraffe-portrait.png";
-import speakerOff     from "../../../../assets/giraffe-speaker-off.png";
-import speakerOn      from "../../../../assets/giraffe-speaker-on.png";
-
+import speakerOff      from "../../../../assets/giraffe-speaker-off.png";
+import speakerOn       from "../../../../assets/giraffe-speaker-on.png";
 
 const Ginger4Slide = ({
   text,
@@ -143,7 +142,7 @@ const Ginger4Slide = ({
   return (
     <div className="ginger-scene4">
 
-      <img src={both}         className="both"     alt="giraffe" />
+      <img src={both}            className="both"             alt="giraffe" />
       <img src={giraffePortrait} className="giraffe-portrait" alt="giraffe portrait" />
 
       <div className="giraffe-speaker-wrapper1" onClick={handleSpeakerClick}>
@@ -152,7 +151,6 @@ const Ginger4Slide = ({
           className="giraffe-speaker1"
           alt={isSpeaking ? "Stop reading" : "Read aloud"}
         />
-        
       </div>
 
       <div className="story-text-container">
@@ -168,7 +166,10 @@ const Ginger4Slide = ({
             </span>
           </div>
           <div className="progress-bar1">
-            <div className="progress-fill1" style={{ width: `${progressPercentage}%` }} />
+            <div
+              className="progress-fill1"
+              style={{ width: `${progressPercentage}%` }}
+            />
           </div>
         </div>
       </div>

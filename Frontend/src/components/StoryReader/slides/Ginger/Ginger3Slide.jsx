@@ -166,7 +166,10 @@ const Ginger3Slide = ({
             </span>
           </div>
           <div className="progress-bar1">
-            <div className="progress-fill1" style={{ width: `${progressPercentage}%` }} />
+            <div
+              className="progress-fill1"
+              style={{ width: `${progressPercentage}%` }}
+            />
           </div>
         </div>
       </div>

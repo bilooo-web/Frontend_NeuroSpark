@@ -2,10 +2,10 @@ import "./Ginger2Slide.css";
 import "../../ReadingStyles.css";
 import { useState, useEffect, useRef } from "react";
 
-import giraffeBoots   from "../../../../assets/stories/ginger/girafee-boots.png";
+import giraffeBoots    from "../../../../assets/stories/ginger/girafee-boots.png";
 import giraffePortrait from "../../../../assets/stories/ginger/giraffe-portrait.png";
-import speakerOff     from "../../../../assets/giraffe-speaker-off.png";
-import speakerOn      from "../../../../assets/giraffe-speaker-on.png";
+import speakerOff      from "../../../../assets/giraffe-speaker-off.png";
+import speakerOn       from "../../../../assets/giraffe-speaker-on.png";
 
 const Ginger2Slide = ({
   text,
@@ -21,12 +21,12 @@ const Ginger2Slide = ({
   onSpeakingChange,
   onStatsUpdate,
 }) => {
-  const [isSpeaking, setIsSpeaking]   = useState(false);
-  const isPausedRef                   = useRef(false);
-  const utteranceRef                  = useRef(null);
-  const speakerClicksRef              = useRef(0);
-  const wordClicksRef                 = useRef(0);
-  const clickedWordsRef               = useRef([]);
+  const [isSpeaking, setIsSpeaking] = useState(false);
+  const isPausedRef      = useRef(false);
+  const utteranceRef     = useRef(null);
+  const speakerClicksRef = useRef(0);
+  const wordClicksRef    = useRef(0);
+  const clickedWordsRef  = useRef([]);
 
   useEffect(() => {
     speakerClicksRef.current = 0;
@@ -142,7 +142,7 @@ const Ginger2Slide = ({
   return (
     <div className="ginger-scene2">
 
-      <img src={giraffeBoots}   className="giraffe-boots"   alt="giraffe with boots" />
+      <img src={giraffeBoots}    className="giraffe-boots"    alt="giraffe with boots" />
       <img src={giraffePortrait} className="giraffe-portrait" alt="giraffe portrait" />
 
       <div className="giraffe-speaker-wrapper1" onClick={handleSpeakerClick}>
@@ -166,7 +166,10 @@ const Ginger2Slide = ({
             </span>
           </div>
           <div className="progress-bar1">
-            <div className="progress-fill1" style={{ width: `${progressPercentage}%` }} />
+            <div
+              className="progress-fill1"
+              style={{ width: `${progressPercentage}%` }}
+            />
           </div>
         </div>
       </div>

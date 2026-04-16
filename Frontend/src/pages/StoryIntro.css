@@ -337,7 +337,11 @@
 }
 
 .si-btn-back:hover { background: #e2e8f0; transform: translateY(-1px); }
-
+/* Add this to StoryIntro.css with the other stat styles */
+.si-stat-gold { 
+  background: #fef3c7; 
+  grid-column: span 1;
+}
 /* ── responsive ───────────────────────────────── */
 @media (max-width: 480px) {
   .si-card  { padding: 24px 16px 20px; gap: 16px; border-radius: 26px; }

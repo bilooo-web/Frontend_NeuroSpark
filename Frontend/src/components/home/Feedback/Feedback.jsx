@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import './Feedback.css';
+import feedbackService from '../../../services/feedbackService';
 
 import cloud    from '../../../assets/cloud-blue.png';
 import dinoBlue  from '../../../assets/dino-blue.png';

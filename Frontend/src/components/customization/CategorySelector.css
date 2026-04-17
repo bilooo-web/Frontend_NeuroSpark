@@ -1,0 +1,482 @@
+/* ════════════════════════════════════════════
+   CategorySelector.css — Laptop / full-width
+   ════════════════════════════════════════════ */
+
+/* ── Root / tokens ── */
+:root {
+  --teal: #EAFBF7;
+  --teal-dark: #EAFBF7;
+  --yellow: #f5c400;
+  --red: #e3000b;
+  --white: #ffffff;
+  --text-dark: #1a1a1a;
+}
+
+/* ── Wrapper — full screen width ── */
+.cs-wrapper {
+  width: 100%;
+  min-height: 100vh;
+  background: var(--teal);
+  overflow: hidden;
+}
+
+/* ══════════════════════════════
+   HERO
+══════════════════════════════ */
+.cs-hero {
+  position: relative;
+  width: 100%;
+  min-height: 380px;
+  background: var(--teal);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 28px;
+  margin-left: -190px;
+  animation: subtleFloat 6s ease-in-out infinite;
+}
+@keyframes subtleFloat {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+/* scattered bricks — top-right corner */
+.cs-hero__pieces {
+  position: absolute;
+  margin-top: -100px;
+  margin-left: 1450px;
+  width: 500px;
+  z-index: 1;
+  pointer-events: none;
+}
+
+/* LEGO logo — centred at top */
+.cs-hero__logo {
+  position: relative;
+  z-index: 2;
+  width: 110px;
+  margin-bottom: 16px;
+  animation: logoPop 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+@keyframes logoPop {
+  0% {
+    transform: scale(0) rotate(-180deg);
+    opacity: 0;
+  }
+  70% {
+    transform: scale(1.1) rotate(5deg);
+  }
+  100% {
+    transform: scale(1) rotate(0deg);
+    opacity: 1;
+  }
+}
+/* white rounded headline card */
+.cs-hero__card {
+  position: relative;
+  z-index: 2;
+  background-image: url("../../assets/legoBg_green.png");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  border-radius: 22px;
+  padding: 22px 36px 18px;
+  width:889px;
+  height: 170px;
+  text-align: center;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.13);
+  animation: cardSlideUp 0.9s ease-out;
+}
+@keyframes cardSlideUp {
+  0% {
+    transform: translateY(80px);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+.cs-hero__title {
+  font-size: 1.9rem;
+  font-weight: 1000;
+  color: white;
+  line-height: 1.2;
+  margin: 0 0 10px;
+}
+
+.cs-hero__subtitle {
+  font-size: 20px;
+  color: white;
+  font-weight: 700;
+  line-height: 1.5;
+  margin: 0;
+}
+
+/* "Just Build It" badge — bottom-left of hero */
+.cs-hero__quote {
+  position: absolute;
+  bottom: -40px;
+  margin-right: 950px;
+  width: 130px;
+  z-index: 3;
+  animation: quoteBounce 0.8s ease-out 0.5s both;
+}
+@keyframes quoteBounce {
+  0% {
+    transform: scale(0) rotate(-90deg);
+    opacity: 0;
+  }
+  60% {
+    transform: scale(1.2) rotate(10deg);
+  }
+  100% {
+    transform: scale(1) rotate(0deg);
+    opacity: 1;
+  }
+}
+
+/* three minifig characters — bottom-right of hero */
+.cs-hero__characters {
+  position: absolute;
+  top: 27px;
+  right: 40px;
+  width: 30%;
+  max-width: 420px;
+  z-index: 3;
+  object-fit: contain;
+  animation: slideFromRight 0.7s ease-out 0.3s both;
+}
+@keyframes slideFromRight {
+  0% {
+    transform: translateX(100px);
+    opacity: 0;
+  }
+  100% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+.customization-wave {
+  position: relative;
+  width: 100%;
+  height: 120px;
+  margin-top: 80px;
+  overflow: hidden;
+}
+
+.customization-wave-svg {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.customization-wave-primary {
+  height: 120px;
+  z-index: 2;
+}
+
+.customization-wave-primary path {
+  fill: #3AC7C1;
+}
+
+.customization-wave-secondary {
+  height: 100px;
+  z-index: 1;
+  opacity: 0.7;
+}
+
+.customization-wave-secondary path {
+  fill: #3AC7C1;
+}
+
+.customization-wave-tertiary {
+  height: 80px;
+  z-index: 0;
+  opacity: 0.5;
+}
+
+.customization-wave-tertiary path {
+  fill: #3AC7C1;
+}
+/* ══════════════════════════════
+   BODY
+══════════════════════════════ */
+.cs-body {
+  position: relative;
+  background: #3AC7C1;
+  padding: 40px 80px 60px;
+  min-height: 500px;
+}
+
+/* spider-man decorations hanging on sides */
+.cs-body__spider {
+  position: absolute;
+  margin-top: -117px;
+  width: 100px;
+  z-index: 999;
+  animation: spiderSwing 4s ease-in-out infinite;
+  transform-origin: top center;
+}
+
+.cs-body__spider--left {
+  left: 20px;
+  animation-delay: 0s;
+}
+
+.cs-body__spider--right {
+  right: 20px;
+  transform: scaleX(-1);
+  animation-delay: 0.5s;
+}
+@keyframes spiderSwing {
+  0%, 100% {
+    transform: rotate(-5deg) scaleX(-1);
+  }
+  50% {
+    transform: rotate(5deg) scaleX(-1);
+  }
+}
+.customization-content {
+  max-width: 700px;
+  margin: 0 auto;
+  text-align: center;
+  position: relative;
+  z-index: 2;
+  animation: textFadeIn 1s ease-out 0.2s both;
+}
+@keyframes textFadeIn {
+  0% {
+    transform: translateY(30px);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+.customization-content h1 {
+  font-size: 42px;
+  font-weight: 800;
+  line-height: 1.2;
+  margin-top: -20px;
+  color: white;
+  transition: text-shadow 0.3s ease;
+}
+.customization-content h1:hover {
+  text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+}
+
+.customization-content p {
+  margin-top: 14px;
+  font-size: 16px;
+  color: white;
+}
+
+/* ── Game grid — 3 columns, generous spacing ── */
+.cs-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 30px 120px;
+  position: relative;
+  z-index: 2;
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.cs-grid__item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  animation: cardReveal 0.6s ease-out forwards;
+}
+.cs-grid__item:nth-child(1) { animation-delay: 0.1s; }
+.cs-grid__item:nth-child(2) { animation-delay: 0.2s; }
+.cs-grid__item:nth-child(3) { animation-delay: 0.3s; }
+.cs-grid__item:nth-child(4) { animation-delay: 0.4s; }
+.cs-grid__item:nth-child(5) { animation-delay: 0.5s; }
+.cs-grid__item:nth-child(6) { animation-delay: 0.6s; }
+@keyframes cardReveal {
+  0% {
+    transform: translateY(50px) scale(0.8);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+}
+/* lego head sitting above each card */
+.cs-grid__head {
+  width: 72px;
+  margin-bottom: -12px;
+  position: relative;
+  z-index: 1;
+  filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.2));
+  animation: headBob 3s ease-in-out infinite;
+  transform-origin: center;
+}
+@keyframes headBob {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+/* the card itself */
+.cs-grid__card {
+  width: 100%;
+  overflow: hidden;
+  background: #8BE3D8;
+  border: 10px solid #3a968b;
+  transition: transform 0.22s ease, box-shadow 0.22s ease;
+  position: relative;
+}
+
+.cs-grid__img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* ── Hover lift ── */
+.cs-grid__item:hover .cs-grid__card {
+  transform: translateY(-6px);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.22);
+}
+
+/* ══════════════════════════════
+   LOCK / UNLOCK STYLES
+══════════════════════════════ */
+
+/* Lock overlay container */
+.cs-grid__lock-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  backdrop-filter: blur(2px);
+  transition: all 0.2s ease;
+  z-index: 10;
+}
+
+.cs-grid__item:hover .cs-grid__lock-overlay {
+  backdrop-filter: blur(2px);
+}
+
+/* Lock icon animation */
+.cs-grid__lock-icon {
+  font-size: 48px;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+  animation: lockPulse 2s ease-in-out infinite;
+}
+
+@keyframes lockPulse {
+  0%, 100% { 
+    transform: scale(1); 
+    opacity: 0.9;
+  }
+  50% { 
+    transform: scale(1.1); 
+    opacity: 1;
+  }
+}
+
+/* Price tag styling */
+.cs-grid__price-tag {
+  background: rgba(0, 0, 0, 0.8);
+  padding: 8px 16px;
+  border-radius: 40px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: bold;
+  backdrop-filter: blur(4px);
+  border: 1px solid rgba(255, 215, 0, 0.6);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+}
+
+.cs-grid__coin-icon {
+  font-size: 1.3rem;
+  filter: drop-shadow(0 0 2px gold);
+}
+
+.cs-grid__price-value {
+  color: #FFD700;
+  font-size: 1.2rem;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+}
+
+/* Hint text for unlocking */
+.cs-grid__unlock-hint {
+  font-size: 0.7rem;
+  color: white;
+  background: rgba(0, 0, 0, 0.7);
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-weight: 500;
+  opacity: 0.85;
+  transition: opacity 0.2s ease;
+}
+
+.cs-grid__item:hover .cs-grid__unlock-hint {
+  opacity: 1;
+}
+
+/* FREE badge for unlocked/free games */
+.cs-grid__free-badge {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: linear-gradient(135deg, #FFD700, #FFA500);
+  color: #1a1a1a;
+  font-weight: bold;
+  font-size: 0.75rem;
+  padding: 4px 12px;
+  border-radius: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  z-index: 5;
+  letter-spacing: 0.5px;
+}
+
+/* Disable pointer events on image inside locked card to allow overlay click */
+.cs-grid__item--locked .cs-grid__img {
+  pointer-events: none;
+}
+
+/* Hover effect on locked card overlay */
+.cs-grid__item--locked:hover .cs-grid__lock-overlay {
+  transform: scale(1.01);
+}
+
+/* Make locked cards still show hover effect on the card itself */
+.cs-grid__item--locked .cs-grid__card {
+  transition: transform 0.22s ease, box-shadow 0.22s ease;
+}
+
+.cs-grid__item--locked:hover .cs-grid__card {
+  transform: translateY(-6px);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.22);
+}
+
+/* Additional animation for price tag on hover */
+.cs-grid__item--locked:hover .cs-grid__price-tag {
+  transform: scale(1.02);
+  border-color: rgba(255, 215, 0, 0.9);
+  transition: transform 0.2s ease;
+}

@@ -1,0 +1,1405 @@
+/* ─── Modern Lego Builder ─────────────────────────────────────────────── */
+.modern-lego-builder {
+  position: relative;
+  height: 100vh;
+  background: #3AC7C1;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.builder-bg {
+  position: fixed;
+  inset: 0;
+  background: radial-gradient(circle at 20% 80%, rgba(255,235,200,0.3) 0%, transparent 50%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ─── Main 3-column layout ───────────────────────────────────────────── */
+.builder-main {
+  display: flex;
+  flex: 1;
+  gap: 14px;
+  padding: 14px;
+  height: 100vh;
+  overflow: hidden;
+  position: relative;
+  z-index: 1;
+}
+
+/* ─── Left Panel (Blueprint) ─────────────────────────────────────────── */
+.left-panel {
+  flex: 0 0 240px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  animation: slideInLeft 0.3s ease;
+}
+
+/* ─── Center Panel (Canvas + progress bar) ───────────────────────────── */
+.center-panel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+  overflow: hidden;
+  max-height: calc(100vh - 100px); 
+}
+
+/* ─── Right Panel (Brick Palette) ────────────────────────────────────── */
+.right-panel {
+  flex: 0 0 300px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: slideInRight 0.3s ease;
+  max-height: calc(100vh - 100px);
+}
+
+/* ─── Blueprint Card ─────────────────────────────────────────────────── */
+.blueprint-card {
+  background: #dbeafe;
+  border-radius: 20px;
+  padding: 16px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+  border: 1px solid rgba(255,255,255,0.4);
+}
+
+.blueprint-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 14px;
+}
+
+.blueprint-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: #4a5568;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  font-size: 18px;
+  cursor: pointer;
+  color: #718096;
+  transition: color 0.2s;
+  line-height: 1;
+  padding: 2px;
+}
+.close-btn:hover { color: #e53e3e; }
+
+.blueprint-preview { text-align: center; margin-bottom: 14px; }
+
+.preview-image {
+  width: 90px;
+  height: 90px;
+  margin: 0 auto 10px;
+  background: #fef7e0;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.05), 0 3px 8px rgba(0,0,0,0.08);
+}
+
+.lego-preview-icon { font-size: 50px; }
+
+.blueprint-title {
+  font-size: 20px;
+  font-weight: 800;
+  margin: 0;
+  letter-spacing: 1px;
+}
+
+.progress-section { margin-top: 14px; }
+
+.progress-label {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  color: #4a5568;
+  margin-bottom: 6px;
+}
+
+.progress-bar-bg {
+  background: #e2e8f0;
+  border-radius: 10px;
+  height: 7px;
+  overflow: hidden;
+}
+
+.progress-bar-fill {
+  background: linear-gradient(90deg, #48bb78, #38a169);
+  height: 100%;
+  border-radius: 10px;
+  transition: width 0.4s ease;
+}
+
+/* ─── Canvas Area ────────────────────────────────────────────────────── */
+.canvas-area {
+  position: relative;
+  flex: 1;
+  background: #f5f5dc;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+  /* Drop target highlight */
+  transition: box-shadow 0.2s;
+}
+
+.canvas-area.drag-over {
+  box-shadow: 0 0 0 3px #4299e1, 0 4px 20px rgba(0,0,0,0.08);
+}
+
+/* Canvas right controls */
+.canvas-controls-right {
+  position: absolute;
+  right: 14px;
+  top: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  z-index: 10;
+}
+
+.canvas-control-btn {
+  width: 36px;
+  height: 36px;
+  background: rgba(219,234,254,0.92);
+  backdrop-filter: blur(8px);
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 17px;
+  transition: all 0.15s;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.canvas-control-btn:hover {
+  transform: scale(1.06);
+  background: #dbeafe;
+}
+
+/* Canvas bottom pill bar */
+.canvas-controls-bottom {
+  position: absolute;
+  bottom: 14px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 4px;
+  z-index: 10;
+  background: rgba(255,255,255,0.92);
+  backdrop-filter: blur(8px);
+  padding: 6px 12px;
+  border-radius: 40px;
+  box-shadow: 0 3px 12px rgba(0,0,0,0.1);
+  white-space: nowrap;
+}
+
+.canvas-pill-btn {
+  background: none;
+  border: none;
+  padding: 6px 12px;
+  cursor: pointer;
+  font-size: 12px;
+  border-radius: 20px;
+  transition: all 0.15s;
+  font-weight: 500;
+  color: #4a5568;
+}
+.canvas-pill-btn:hover { background: #dbeafe; color: #2b6cb0; }
+
+/* ─── Drag-over ghost overlay on canvas ──────────────────────────────── */
+.canvas-drop-hint {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  z-index: 20;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+.canvas-area.drag-over .canvas-drop-hint {
+  opacity: 1;
+  animation: pulseHint 0.8s ease-in-out infinite;
+}
+.canvas-drop-hint span {
+  background: linear-gradient(135deg, rgba(66,153,225,0.95), rgba(66,153,225,0.85));
+  color: white;
+  padding: 14px 32px;
+  border-radius: 30px;
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  backdrop-filter: blur(6px);
+  box-shadow: 0 8px 32px rgba(66,153,225,0.3);
+  border: 2px solid rgba(255,255,255,0.2);
+}
+
+@keyframes pulseHint {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+/* ─── Bottom Progress Bar ────────────────────────────────────────────── */
+.bottom-progress {
+  background: white;
+  border-radius: 16px;
+  padding: 10px 16px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.building-label {
+  font-weight: 700;
+  color: #2d3748;
+  font-size: 12px;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 0;
+  flex-wrap: wrap;
+}
+
+.step-counter {
+  font-weight: 500;
+  color: #718096;
+  font-size: 11px;
+  letter-spacing: 0.3px;
+  white-space: nowrap;
+}
+
+.step-progress-bar {
+  flex: 1;
+  height: 5px;
+  background: #e2e8f0;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.step-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #4299e1, #3182ce);
+  border-radius: 3px;
+  transition: width 0.4s ease;
+}
+
+.step-percentage {
+  font-size: 11px;
+  font-weight: 700;
+  color: #4299e1;
+  min-width: 32px;
+  text-align: right;
+}
+
+/* ─── Brick Palette ──────────────────────────────────────────────────── */
+.brick-palette {
+  background: #dbeafe;
+  border-radius: 20px;
+  padding: 14px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.palette-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 10px;
+  flex-shrink: 0;
+}
+
+.palette-header h3 {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: 1px;
+}
+
+.palette-search {
+  margin-bottom: 6px;
+  flex-shrink: 0;
+  width: 100%;
+}
+
+.search-input {
+  width: 100%;
+  padding: 8px 11px;
+  border: none;
+  border-radius: 10px;
+  background: rgba(255,255,255,0.8);
+  font-size: 12px;
+  outline: none;
+  transition: all 0.2s;
+  box-sizing: border-box;
+}
+.search-input:focus {
+  background: white;
+  box-shadow: 0 0 0 2px #4299e1;
+}
+
+/* Color filter strip */
+.color-filter-strip {
+  display: flex;
+  gap: 5px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+  margin-bottom: 10px;
+  flex-shrink: 0;
+  scrollbar-width: none;
+}
+.color-filter-strip::-webkit-scrollbar { display: none; }
+
+.color-chip {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 9px;
+  border: none;
+  border-radius: 20px;
+  font-size: 9px;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  background: rgba(255,255,255,0.6);
+  color: #4a5568;
+  transition: all 0.15s;
+  letter-spacing: 0.3px;
+}
+.color-chip.active {
+  background: white;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.12);
+  color: #1a202c;
+}
+.color-chip-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  border: 0.5px solid rgba(0,0,0,0.15);
+  flex-shrink: 0;
+}
+
+/* ─── Brick grid — 2 columns, scrollable ─────────────────────────────── */
+.brick-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+  overflow-y: auto;
+  flex: 1;
+  padding-right: 2px;
+  align-content: start;
+}
+
+.brick-grid::-webkit-scrollbar { width: 4px; }
+.brick-grid::-webkit-scrollbar-track { background: transparent; }
+.brick-grid::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.12); border-radius: 2px; }
+
+/* ─── Brick tile — draggable ─────────────────────────────────────────── */
+.brick-tile {
+  background: rgba(255,255,255,0.85);
+  border-radius: 12px;
+  padding: 8px 6px 6px;
+  text-align: center;
+  cursor: grab;
+  transition: all 0.15s;
+  position: relative;
+  border: 1.5px solid transparent;
+  user-select: none;
+}
+
+.brick-tile:hover {
+  transform: translateY(-2px);
+  background: white;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.1);
+  border-color: rgba(66,153,225,0.3);
+}
+
+.brick-tile:active { cursor: grabbing; transform: scale(0.97); }
+
+.brick-tile.selected {
+  border-color: #4299e1;
+  background: white;
+  box-shadow: 0 0 0 3px rgba(66,153,225,0.2);
+}
+
+.brick-tile.dragging {
+  opacity: 0.45;
+  transform: scale(0.95);
+}
+
+.brick-tile.exhausted {
+  opacity: 0.5;
+  cursor: not-allowed;
+  filter: grayscale(0.3);
+}
+
+.brick-tile.exhausted:hover {
+  transform: none;
+  background: rgba(255,255,255,0.85);
+  box-shadow: none;
+  border-color: transparent;
+}
+
+.brick-tile.exhausted:active {
+  transform: none;
+  cursor: not-allowed;
+}
+
+/* Locked brick tile */
+.brick-tile.locked {
+  opacity: 0.55;
+  cursor: not-allowed;
+  filter: brightness(0.7);
+  position: relative;
+}
+
+.brick-tile.locked:hover {
+  transform: none;
+  background: rgba(255,255,255,0.75);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.brick-tile.locked:active {
+  transform: none;
+  cursor: not-allowed;
+}
+
+/* Lock overlay on locked pieces */
+.brick-lock-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 12px;
+  backdrop-filter: blur(1px);
+  z-index: 10;
+  pointer-events: none;
+}
+
+.brick-lock-icon {
+  font-size: 28px;
+  margin-bottom: 2px;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.brick-lock-price {
+  font-size: 8px;
+  font-weight: 700;
+  color: #fff;
+  background: rgba(0, 0, 0, 0.4);
+  padding: 2px 4px;
+  border-radius: 3px;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+  letter-spacing: 0.5px;
+}
+
+/* Quantity badge */
+.brick-qty-badge {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  background: rgba(0,0,0,0.07);
+  border-radius: 4px;
+  font-size: 8px;
+  font-weight: 700;
+  padding: 1px 4px;
+  color: #4a5568;
+}
+
+/* Part image */
+.brick-part-img {
+  width: 64px;
+  height: 64px;
+  object-fit: contain;
+  display: block;
+  margin: 0 auto 4px;
+  pointer-events: none;
+}
+
+.brick-color-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  display: inline-block;
+  margin: 0 auto 3px;
+  border: 0.5px solid rgba(0,0,0,0.12);
+}
+
+.brick-name {
+  font-size: 8px;
+  font-weight: 500;
+  color: #4a5568;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  line-height: 1.3;
+}
+
+/* No results */
+.brick-no-results {
+  grid-column: 1/-1;
+  text-align: center;
+  padding: 24px 12px;
+  color: #718096;
+  font-size: 12px;
+}
+
+/* ─── Selected piece info bar ────────────────────────────────────────── */
+.selected-piece-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+  padding: 8px 10px;
+  background: rgba(255,255,255,0.9);
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  flex-shrink: 0;
+}
+.selected-piece-bar img {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+.selected-piece-info { flex: 1; min-width: 0; }
+.selected-piece-name {
+  font-size: 10px;
+  font-weight: 700;
+  color: #2d3748;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.selected-piece-meta {
+  font-size: 9px;
+  color: #718096;
+  margin-top: 1px;
+}
+
+/* ─── Loading / error states ─────────────────────────────────────────── */
+.palette-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  gap: 10px;
+  color: #4a5568;
+}
+.palette-spinner {
+  width: 28px;
+  height: 28px;
+  border: 3px solid rgba(66,153,225,0.2);
+  border-top-color: #4299e1;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+.palette-loading-text { font-size: 13px; font-weight: 600; }
+.palette-loading-sub  { font-size: 10px; color: #718096; }
+
+.palette-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  gap: 8px;
+  text-align: center;
+  padding: 20px;
+}
+.palette-retry-btn {
+  padding: 6px 14px;
+  background: #4299e1;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 4px;
+}
+
+/* ─── Floating Action Buttons ────────────────────────────────────────── */
+.floating-actions {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  display: flex;
+  gap: 10px;
+  z-index: 200;
+}
+
+.float-btn {
+  width: 46px;
+  height: 46px;
+  background: white;
+  border: none;
+  border-radius: 23px;
+  font-size: 20px;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.14);
+  transition: all 0.18s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.float-btn:hover {
+  transform: scale(1.1);
+  box-shadow: 0 6px 18px rgba(0,0,0,0.18);
+}
+.float-btn.next { background: #4299e1; color: white; }
+
+/* ─── Step Complete Toast ────────────────────────────────────────────── */
+.step-complete-toast {
+  position: fixed;
+  bottom: 88px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #48bb78;
+  color: white;
+  padding: 10px 22px;
+  border-radius: 40px;
+  font-weight: 700;
+  font-size: 13px;
+  animation: slideUp 0.3s ease;
+  z-index: 200;
+  white-space: nowrap;
+}
+
+/* ─── Drag ghost ─────────────────────────────────────────────────────── */
+.drag-ghost {
+  position: fixed;
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0.85;
+  transform: translate(-50%, -50%) scale(1.1);
+  background: white;
+  border-radius: 10px;
+  padding: 6px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+  border: 2px solid #4299e1;
+}
+.drag-ghost img {
+  width: 52px;
+  height: 52px;
+  object-fit: contain;
+  display: block;
+}
+
+/* ─── Animations ─────────────────────────────────────────────────────── */
+@keyframes slideInLeft {
+  from { opacity: 0; transform: translateX(-16px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+@keyframes slideInRight {
+  from { opacity: 0; transform: translateX(16px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+@keyframes slideUp {
+  from { opacity: 0; transform: translateX(-50%) translateY(14px); }
+  to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ─── Scrollbars ─────────────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.12); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(0,0,0,0.22); }
+
+/* ===== CANVAS AREA STYLES ===== */
+.canvas-area {
+  position: relative;
+  flex: 1;
+  background: #e8f4f8;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+/* Floating controls group */
+.canvas-controls-group {
+  position: absolute;
+  bottom: 20px;
+  left: 20px;
+  display: flex;
+  gap: 10px;
+  z-index: 20;
+  background: rgba(255, 255, 255, 0.95);
+  padding: 8px 12px;
+  border-radius: 50px;
+  backdrop-filter: blur(8px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.canvas-control-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: white;
+  border: none;
+  cursor: pointer;
+  font-size: 20px;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+.canvas-control-btn:hover:not(:disabled) {
+  transform: scale(1.1);
+  background: #3AC7C1;
+  color: white;
+}
+
+.canvas-control-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.clear-btn:hover:not(:disabled) {
+  background: #e53e3e;
+  color: white;
+}
+
+/* Instruction button */
+.instruction-btn-container {
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
+  z-index: 20;
+}
+
+.instruction-floating-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 20px;
+  background: linear-gradient(135deg, #3AC7C1, #2ba89e);
+  border: none;
+  border-radius: 40px;
+  color: white;
+  cursor: pointer;
+  font-weight: 600;
+  box-shadow: 0 4px 15px rgba(58, 199, 193, 0.4);
+  transition: all 0.2s ease;
+}
+
+.instruction-floating-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(58, 199, 193, 0.5);
+}
+
+.instruction-icon {
+  font-size: 24px;
+}
+
+.instruction-label {
+  font-size: 14px;
+}
+
+/* Instruction Panel */
+.instruction-panel {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  bottom: 20px;
+  width: 380px;
+  background: white;
+  border-radius: 20px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  z-index: 30;
+  animation: slideInRight 0.3s ease;
+  transition: all 0.3s ease;
+}
+
+.instruction-panel.zoomed {
+  width: 90%;
+  right: 5%;
+  left: 5%;
+}
+
+.instruction-panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  background: linear-gradient(135deg, #3AC7C1, #2ba89e);
+  color: white;
+}
+
+.instruction-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+}
+
+.instruction-step-badge {
+  background: rgba(255, 255, 255, 0.2);
+  padding: 4px 8px;
+  border-radius: 20px;
+  font-size: 12px;
+}
+
+.instruction-panel-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.icon-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  color: white;
+  cursor: pointer;
+  font-size: 18px;
+  transition: all 0.2s;
+}
+
+.icon-btn:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: scale(1.05);
+}
+
+.instruction-page-container {
+  flex: 1;
+  background: #f5f5f0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.instruction-page-img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.instruction-page-img.loaded {
+  opacity: 1;
+}
+
+.instruction-loading {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  color: #718096;
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid #e2e8f0;
+  border-top-color: #3AC7C1;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+.instruction-thumbnails {
+  display: flex;
+  gap: 8px;
+  padding: 12px;
+  background: #f8f8f8;
+  border-top: 1px solid #e2e8f0;
+  overflow-x: auto;
+}
+
+.thumbnail-item {
+  flex-shrink: 0;
+  width: 70px;
+  cursor: pointer;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 2px solid transparent;
+  transition: all 0.2s;
+  position: relative;
+}
+
+.thumbnail-item.active {
+  border-color: #3AC7C1;
+  transform: scale(1.02);
+}
+
+.thumbnail-item img {
+  width: 100%;
+  height: 60px;
+  object-fit: cover;
+}
+
+.thumbnail-page {
+  position: absolute;
+  bottom: 2px;
+  right: 4px;
+  background: rgba(0, 0, 0, 0.6);
+  color: white;
+  font-size: 9px;
+  padding: 1px 4px;
+  border-radius: 4px;
+}
+
+.instruction-controls {
+  display: flex;
+  gap: 10px;
+  padding: 12px;
+  background: white;
+  border-top: 1px solid #e2e8f0;
+}
+
+.ctrl-btn {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.2s;
+}
+
+.ctrl-btn.prev, .ctrl-btn.next {
+  background: #e2e8f0;
+  color: #4a5568;
+}
+
+.ctrl-btn.prev:hover:not(:disabled),
+.ctrl-btn.next:hover:not(:disabled) {
+  background: #cbd5e0;
+}
+
+.ctrl-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.page-jump {
+  flex: 1;
+  display: flex;
+  gap: 6px;
+}
+
+.page-jump input {
+  flex: 1;
+  padding: 8px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  text-align: center;
+}
+
+.ctrl-btn.small {
+  padding: 8px 12px;
+  background: #3AC7C1;
+  color: white;
+}
+
+.instruction-progress {
+  padding: 12px;
+  background: #f8f8f8;
+  border-top: 1px solid #e2e8f0;
+}
+
+.progress-bar {
+  height: 4px;
+  background: #e2e8f0;
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #3AC7C1, #2ba89e);
+  border-radius: 2px;
+  transition: width 0.3s;
+}
+
+.progress-text {
+  font-size: 11px;
+  color: #718096;
+  text-align: center;
+  margin-top: 6px;
+}
+
+/* Drop zone overlay */
+.drop-zone-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(58, 199, 193, 0.2);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s;
+  z-index: 25;
+}
+
+.drop-zone-overlay.active {
+  opacity: 1;
+}
+
+.drop-zone-message {
+  background: rgba(255, 255, 255, 0.95);
+  padding: 20px 40px;
+  border-radius: 60px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  font-size: 20px;
+  font-weight: 700;
+  color: #3AC7C1;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  animation: bounce 0.5s ease;
+}
+
+.drop-icon {
+  font-size: 32px;
+}
+
+/* Build status indicator */
+.build-status {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  z-index: 20;
+}
+
+.status-badge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(8px);
+  padding: 8px 16px;
+  border-radius: 40px;
+  color: white;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.status-icon {
+  font-size: 18px;
+}
+
+/* Animations */
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(50px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes bounce {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ===== GUIDED PLACEMENT STYLES ===== */
+.canvas-area-wrapper {
+  position: relative;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  height: 100%;
+}
+
+.canvas-container {
+  position: relative;
+  flex: 1;
+  background: #e8f4f8;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+/* Placement guide overlay */
+.placement-guide-overlay {
+  position: absolute;
+  inset: 0;
+  cursor: crosshair;
+  z-index: 15;
+}
+
+/* Step indicator */
+.step-indicator {
+  background: white;
+  border-radius: 16px;
+  padding: 12px 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.step-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+}
+
+.step-nav-btn {
+  padding: 8px 20px;
+  border: none;
+  border-radius: 30px;
+  background: #e2e8f0;
+  color: #4a5568;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.step-nav-btn:hover:not(:disabled) {
+  background: #cbd5e0;
+  transform: translateY(-1px);
+}
+
+.step-nav-btn.next {
+  background: #3AC7C1;
+  color: white;
+}
+
+.step-nav-btn.next:hover:not(:disabled) {
+  background: #2ba89e;
+}
+
+.step-nav-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.step-info {
+  text-align: center;
+}
+
+.step-badge {
+  display: block;
+  font-weight: 800;
+  font-size: 18px;
+  color: #2d3748;
+}
+
+.step-pieces {
+  display: block;
+  font-size: 11px;
+  color: #718096;
+}
+
+.step-progress {
+  margin-top: 10px;
+}
+
+.step-progress-bar {
+  height: 6px;
+  background: #e2e8f0;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.step-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #3AC7C1, #2ba89e);
+  border-radius: 3px;
+  transition: width 0.3s ease;
+}
+
+/* Instruction card */
+.instruction-card {
+  position: absolute;
+  bottom: 80px;
+  left: 20px;
+  background: white;
+  border-radius: 16px;
+  padding: 16px;
+  width: 260px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  z-index: 20;
+  animation: slideInLeft 0.3s ease;
+  border-left: 4px solid #3AC7C1;
+}
+
+.instruction-card-header {
+  margin-bottom: 12px;
+}
+
+.instruction-step {
+  font-size: 10px;
+  text-transform: uppercase;
+  color: #3AC7C1;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+
+.instruction-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: #2d3748;
+  display: block;
+}
+
+.instruction-piece-preview {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.piece-preview-3d {
+  width: 60px;
+  height: 60px;
+  background: #f7fafc;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.preview-placeholder {
+  width: 50px;
+  height: 50px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 700;
+  color: white;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+}
+
+.piece-details {
+  flex: 1;
+}
+
+.piece-name {
+  font-size: 12px;
+  font-weight: 600;
+  color: #2d3748;
+  margin-bottom: 4px;
+}
+
+.piece-part {
+  font-size: 9px;
+  color: #a0aec0;
+  font-family: monospace;
+  margin-bottom: 2px;
+}
+
+.piece-color {
+  font-size: 10px;
+  font-weight: 500;
+}
+
+.instruction-hint {
+  font-size: 10px;
+  color: #718096;
+  padding: 8px;
+  background: #f7fafc;
+  border-radius: 8px;
+  text-align: center;
+}
+
+/* Highlight cell animation */
+@keyframes pulse {
+  0%, 100% {
+    opacity: 0.7;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+/* Floating controls */
+.canvas-controls-group {
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
+  display: flex;
+  gap: 8px;
+  z-index: 20;
+}
+
+.canvas-control-btn {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: white;
+  border: none;
+  cursor: pointer;
+  font-size: 20px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.canvas-control-btn:hover {
+  transform: scale(1.08);
+  background: #3AC7C1;
+  color: white;
+}
+
+@keyframes slideInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}

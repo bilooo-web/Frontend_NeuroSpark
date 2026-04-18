@@ -11,17 +11,19 @@
 .header-container {
     display: flex;
     align-items: center;
-    justify-content: space-between;
     max-width: 1200px;
     margin: 0 auto;
     padding: 0 20px;
+    position: relative;
 }
 
+/* Logo anchored to the left */
 .logo {
     display: flex;
     align-items: center;
-    margin-left: -90px;
     cursor: pointer;
+    flex-shrink: 0;
+    z-index: 1;
 }
 
 .logo img {
@@ -35,20 +37,27 @@
     transform: scale(1.05);
 }
 
+/* Nav centered absolutely so logo & right-side don't affect it */
 .nav {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
     display: flex;
-    gap: 30px;
+    gap: 24px;
     flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
 }
 
 .nav a {
     text-decoration: none;
     color: #2D3748;
     font-weight: 600;
-    font-size: 16px;
+    font-size: 15px;
     padding: 8px 0;
     position: relative;
     transition: color 0.3s ease;
+    white-space: nowrap;
 }
 
 .nav a:hover {
@@ -78,20 +87,24 @@
     width: 100%;
 }
 
+/* Right-side controls pushed to the far right */
 .header-right {
     display: flex;
     align-items: center;
     gap: 15px;
+    margin-left: auto;
+    flex-shrink: 0;
+    z-index: 1;
 }
 
 .header-right .header-btn {
-    padding: 12px 30px;
+    padding: 10px 22px;
     color: #1CC4AF;
     background-color: #E1FFFB;
     border: 3px solid #1CC4AF;
     border-radius: 50px;
     font-weight: 600;
-    font-size: 16px;
+    font-size: 15px;
     cursor: pointer;
     transition: all 0.3s ease;
     box-shadow: 0 4px 15px rgba(79, 209, 197, 0.3);
@@ -142,30 +155,36 @@
     color: #38B2AC;
     cursor: pointer;
     z-index: 1001;
+    margin-left: auto;
 }
 
+/* ─── Responsive ─── */
 @media (max-width: 1024px) {
     .header-container {
         padding: 0 15px;
         flex-wrap: wrap;
+        position: relative;
     }
-    
+
     .logo {
-        margin-left: 0;
+        order: 0;
     }
-    
+
     .hamburger-btn {
         display: block;
         order: 2;
         margin-left: 15px;
     }
-    
+
     .header-right {
         order: 1;
         margin-left: auto;
     }
-    
+
+    /* On tablet/mobile, nav goes back to normal flow */
     .nav {
+        position: static;
+        transform: none;
         display: none;
         width: 100%;
         order: 3;
@@ -176,7 +195,7 @@
         border-top: 1px solid rgba(56, 178, 172, 0.2);
         margin-top: 15px;
     }
-    
+
     .nav.mobile-open {
         display: flex;
     }
@@ -186,16 +205,16 @@
     .header-container {
         padding: 15px;
     }
-    
+
     .logo img {
         height: 40px;
     }
-    
+
     .header-right .header-btn {
-        padding: 10px 20px;
+        padding: 10px 18px;
         font-size: 14px;
     }
-    
+
     .profile-img {
         width: 40px;
         height: 40px;
@@ -208,22 +227,21 @@
         align-items: center;
         gap: 10px;
     }
-    
+
     .nav a {
         padding: 5px 0;
     }
-    
+
     .header-right {
-        flex-direction: column;
+        flex-direction: row;
         gap: 10px;
     }
-    
+
     .header-right .header-btn {
-        width: 80%;
-        max-width: 200px;
-        justify-content: center;
+        padding: 8px 14px;
+        font-size: 13px;
     }
-    
+
     .profile-container {
         order: -1;
     }

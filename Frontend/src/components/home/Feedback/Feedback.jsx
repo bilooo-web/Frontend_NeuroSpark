@@ -36,32 +36,16 @@ function Feedback() {
   useEffect(() => {
     const fetchFeatured = async () => {
       try {
-        const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api';
-        const token    = localStorage.getItem('token');
-
-        // Use admin endpoint with token if available, otherwise skip
-        if (!token) { setLoading(false); return; }
-
-        const res = await fetch(
-          `${API_BASE}/admin/feedback/all?limit=20`,
-          { headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' } }
-        );
-
-        if (!res.ok) { setLoading(false); return; }
-
-        const json = await res.json();
-        const featured = (json.data || []).filter(f => f.is_featured);
-
+        const featured = await feedbackService.getFeaturedFeedback(6);
         if (featured.length > 0) {
-          setCards(featured.slice(0, 6).map(fb => ({
+          setCards(featured.map(fb => ({
             name: fb.guardian?.user?.full_name || fb.guardian?.user?.name || 'NeuroSpark User',
-            role: '',   // not stored — could add later
+            role: '',
             text: fb.text || '',
           })));
         }
-        // if none featured → keep FALLBACK
       } catch {
-        // network error → keep FALLBACK silently
+        // Keep FALLBACK if public featured feedback load fails.
       } finally {
         setLoading(false);
       }

@@ -284,7 +284,7 @@ export default function FacesNamesGame({
       g.connect(ctx.destination); 
       o.start(now); 
       o.stop(now+0.5);
-    } catch(e){}
+    } catch(error){void error;}
   };
 
   const buildRound = useCallback((idx) => {
@@ -320,172 +320,8 @@ export default function FacesNamesGame({
     setScreen("intro");
   }, []);
 
-  // Breathing instruction cycle on intro screen
-  useEffect(() => {
-    if (screen === "intro") {
-      
-      let index = 0;
-      
-      const speakInstruction = (text) => {
-        setBreathingInstruction(text);
-        const utterance = new SpeechSynthesisUtterance(text);
-        utterance.rate = 0.9;
-        utterance.pitch = 1;
-        utterance.volume = 1;
-        window.speechSynthesis.speak(utterance);
-      };
-
-      const runBreathingCycle = () => {
-        if (index < instructions.length) {
-          speakInstruction(instructions[index].text);
-          breathingIntervalRef.current = setTimeout(() => {
-            index++;
-            runBreathingCycle();
-          }, instructions[index].duration);
-        }
-      };
-
-      setTimeout(runBreathingCycle, 1000);
-
-      return () => {
-        if (breathingIntervalRef.current) {
-          clearTimeout(breathingIntervalRef.current);
-        }
-        window.speechSynthesis.cancel();
-      };
-    }
-  }, [screen]);
-
-  // Breathing sounds using Web Audio API with brown noise
-  useEffect(() => {
-    if (screen === "intro") {
-      
-      const playBreathingSounds = async () => {
-        const Ctx = window.AudioContext || window.webkitAudioContext;
-        if (!Ctx) return;
-        
-        const audioCtx = new Ctx();
-        breathingAudioCtxRef.current = audioCtx;
-        
-        // Function to create breathing sound (inhale)
-        const createInhaleSound = (startTime) => {
-          const now = audioCtx.currentTime;
-          
-          // Brown noise for realistic breath
-          const bufferSize = 2 * audioCtx.sampleRate;
-          const noiseBuffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
-          const output = noiseBuffer.getChannelData(0);
-          
-          // Brown noise (more realistic for breathing)
-          let lastOut = 0;
-          for (let i = 0; i < bufferSize; i++) {
-            const white = Math.random() * 2 - 1;
-            output[i] = (lastOut + (0.02 * white)) / 1.02;
-            lastOut = output[i];
-          }
-          
-          const noise = audioCtx.createBufferSource();
-          noise.buffer = noiseBuffer;
-          
-          const gainNode = audioCtx.createGain();
-          const filter = audioCtx.createBiquadFilter();
-          filter.type = 'lowpass';
-          filter.frequency.value = 800; // Lower frequency for deeper breath
-          
-          noise.connect(filter);
-          filter.connect(gainNode);
-          gainNode.connect(audioCtx.destination);
-          
-          // Inhale: volume rises then falls slightly
-          gainNode.gain.setValueAtTime(0, now + startTime);
-          gainNode.gain.linearRampToValueAtTime(0.15, now + startTime + 1.5);
-          gainNode.gain.linearRampToValueAtTime(0.08, now + startTime + 2.5);
-          gainNode.gain.linearRampToValueAtTime(0, now + startTime + 3.5);
-          
-          noise.start(now + startTime);
-          noise.stop(now + startTime + 3.5);
-        };
-        
-        // Function to create breathing sound (exhale)
-        const createExhaleSound = (startTime) => {
-          const now = audioCtx.currentTime;
-          
-          // Slightly different noise for exhale
-          const bufferSize = 2 * audioCtx.sampleRate;
-          const noiseBuffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
-          const output = noiseBuffer.getChannelData(0);
-          
-          let lastOut = 0;
-          for (let i = 0; i < bufferSize; i++) {
-            const white = Math.random() * 2 - 1;
-            output[i] = (lastOut + (0.03 * white)) / 1.03;
-            lastOut = output[i];
-          }
-          
-          const noise = audioCtx.createBufferSource();
-          noise.buffer = noiseBuffer;
-          
-          const gainNode = audioCtx.createGain();
-          const filter = audioCtx.createBiquadFilter();
-          filter.type = 'lowpass';
-          filter.frequency.value = 600; // Lower for exhale
-          
-          noise.connect(filter);
-          filter.connect(gainNode);
-          gainNode.connect(audioCtx.destination);
-          
-          // Exhale: starts softer, peaks, then fades
-          gainNode.gain.setValueAtTime(0, now + startTime);
-          gainNode.gain.linearRampToValueAtTime(0.12, now + startTime + 1.8);
-          gainNode.gain.linearRampToValueAtTime(0.05, now + startTime + 2.8);
-          gainNode.gain.linearRampToValueAtTime(0, now + startTime + 4);
-          
-          noise.start(now + startTime);
-          noise.stop(now + startTime + 4);
-        };
-        
-        // Schedule a full breathing cycle (4 seconds inhale, 4 seconds exhale)
-        // Repeat 4 times (about 32 seconds)
-        for (let cycle = 0; cycle < 4; cycle++) {
-          const cycleStart = cycle * 8; // 8 seconds per cycle
-          
-          // Inhale (first 4 seconds of cycle)
-          createInhaleSound(cycleStart + 1); // Start after 1 sec
-          
-          // Exhale (next 4 seconds of cycle)
-          createExhaleSound(cycleStart + 5); // Start at 5 sec
-        }
-      };
-      
-      playBreathingSounds();
-      
-      return () => {
-        // Clean up audio when leaving intro screen
-        if (breathingAudioCtxRef.current) {
-          breathingAudioCtxRef.current.close();
-          breathingAudioCtxRef.current = null;
-        }
-      };
-    }
-  }, [screen]);
-
+  
   const startGameFromIntro = () => {
-    // Stop breathing audio and instructions
-    if (breathingIntervalRef.current) {
-      clearTimeout(breathingIntervalRef.current);
-    }
-    window.speechSynthesis.cancel();
-    
-    // Close breathing audio context
-    if (breathingAudioCtxRef.current) {
-      breathingAudioCtxRef.current.close();
-      breathingAudioCtxRef.current = null;
-    }
-    
-    // Pause video
-    if (videoRef.current) {
-      videoRef.current.pause();
-    }
     buildRound(0);
   };
 
@@ -587,52 +423,6 @@ export default function FacesNamesGame({
     }, 250);
     return () => clearInterval(memTimerRef.current);
   }, [screen, paused]);
-
-  const onDragStart=(n)=>{
-    ensureAudio();
-    setDragging(n);
-    lastActivityTime.current = Date.now();
-  };
-  
-  const onDragEnd=()=>{
-    setDragging(null);
-    setDragOver(null);
-  };
-  
-  const onDragOverFn=(e,fid)=>{
-    e.preventDefault();
-    setDragOver(fid);
-  };
-  
-  const onDragLeave=()=>setDragOver(null);
-  
-  const onDrop=(e,fid)=>{
-    e.preventDefault(); 
-    ensureAudio();
-    if(!dragging||paused) return; 
-    if(feedback[fid]==="correct") return;
-    
-    lastActivityTime.current=Date.now();
-    
-    const now = Date.now();
-    const rt = now - lastActionTime.current;
-    if (rt >= 500 && rt <= 60000) {
-      responseTimes.current.push(rt);
-    }
-    lastActionTime.current = now;
-    
-    totalAttemptsRef.current++;
-    
-    const prev=Object.keys(assignments).find(k=>assignments[k]===dragging);
-    if(prev){
-      setAssignments(p=>{const n={...p};delete n[prev];return n;});
-      setFeedback(p=>{const n={...p};delete n[prev];return n;});
-    }
-    setAssignments(p=>({...p,[fid]:dragging}));
-    setFeedback(p=>{const n={...p};delete n[fid];return n;});
-    setDragging(null);
-    setDragOver(null);
-  };
 
   useEffect(() => {
     if (screen!=="recall"||faces.length===0||paused) return;
@@ -785,7 +575,7 @@ export default function FacesNamesGame({
         <div className="stars-bg"></div>
         {paused && renderPause()}
         
-        {/* Intro Breathing Video Screen with imported video */}
+        {/* Intro Screen */}
         {screen === "intro" && (
           <div className="fn-intro-screen">
             <video 
@@ -797,7 +587,6 @@ export default function FacesNamesGame({
               onEnded={startGameFromIntro}
             />
             {/* Breathing instruction that changes */}
-            
           </div>
         )}
         
@@ -876,40 +665,249 @@ export default function FacesNamesGame({
         {screen === "recall" && (
           <>
             <div className="fn-phase-label">Who is who?</div>
-            <div className={`fn-faces-grid${isCompact?" fn-compact":""}`}>
+            {/* FACE CARDS with Enhanced Drop Zones */}
+            <div className={`fn-faces-grid${isCompact ? " fn-compact" : ""}`}>
               {faces.map(face => {
-                const assigned=assignments[face.id]; 
-                const fb=feedback[face.id];
-                let dropClass="fn-drop-zone";
-                if(dragOver===face.id) dropClass+=" fn-drag-over";
-                if(assigned&&!fb) dropClass+=" fn-filled";
-                if(fb==="correct") dropClass+=" fn-filled fn-filled-correct";
-                if(fb==="wrong") dropClass+=" fn-filled fn-filled-wrong";
-                let cardClass="fn-face-card";
-                if(fb==="correct") cardClass+=" fn-correct";
-                if(fb==="wrong") cardClass+=" fn-wrong";
+                const assigned = assignments[face.id];
+                const fb = feedback[face.id];
+                let dropClass = "fn-drop-zone";
+                if (dragOver === face.id) dropClass += " fn-drag-over";
+                if (dragging && !assigned && feedback[face.id] !== "correct") dropClass += " fn-awaiting-drop";
+                if (assigned && !fb) dropClass += " fn-filled";
+                if (fb === "correct") dropClass += " fn-filled fn-filled-correct";
+                if (fb === "wrong") dropClass += " fn-filled fn-filled-wrong";
+                let cardClass = "fn-face-card";
+                if (fb === "correct") cardClass += " fn-correct";
+                if (fb === "wrong") cardClass += " fn-wrong";
+
                 return (
-                  <div key={face.id} className={cardClass} onDragOver={e=>onDragOverFn(e,face.id)} onDragLeave={onDragLeave} onDrop={e=>onDrop(e,face.id)}>
+                  <div
+                    key={face.id}
+                    className={cardClass}
+                    onDragEnter={(e) => {
+                      e.preventDefault();
+                      setDragOver(face.id);
+                    }}
+                    onDragOver={(e) => {
+                      e.preventDefault(); // 🔥 REQUIRED
+                      e.dataTransfer.dropEffect = "move"; // optional but better UX
+                      setDragOver(face.id);
+                    }}
+                    onDragLeave={(e) => {
+                      if (e.currentTarget.contains(e.relatedTarget)) return;
+                      setDragOver(null);
+                    }}
+                    onDrop={(e) => {
+                      e.preventDefault(); // 🔥 REQUIRED
+                      const draggedName =
+                        dragging || e.dataTransfer.getData("text/plain");
+
+                      if (!draggedName || paused) return;
+                      if (feedback[face.id] === "correct") return;
+
+                      ensureAudio();
+                      lastActivityTime.current = Date.now();
+
+                      const now = Date.now();
+                      const rt = now - lastActionTime.current;
+                      if (rt >= 500 && rt <= 60000) {
+                        responseTimes.current.push(rt);
+                      }
+                      lastActionTime.current = now;
+
+                      totalAttemptsRef.current++;
+
+                      const prev = Object.keys(assignments).find(k => assignments[k] === draggedName);
+                      if (prev) {
+                        setAssignments(p => {
+                          const n = { ...p };
+                          delete n[prev];
+                          return n;
+                        });
+                        setFeedback(p => {
+                          const n = { ...p };
+                          delete n[prev];
+                          return n;
+                        });
+                      }
+
+                      setAssignments(p => ({ ...p, [face.id]: draggedName }));
+                      setFeedback(p => {
+                        const n = { ...p };
+                        delete n[face.id];
+                        return n;
+                      });
+                      setDragging(null);
+                      setDragOver(null);
+                    }}
+                    onClick={(e) => {
+                      // Fallback for environments where HTML5 DnD is unreliable:
+                      // click a name chip to "select", then click a face card to assign.
+                      if (!dragging || paused) return;
+                      if (feedback[face.id] === "correct") return;
+                      e.preventDefault();
+
+                      const draggedName = dragging;
+
+                      ensureAudio();
+                      lastActivityTime.current = Date.now();
+
+                      const now = Date.now();
+                      const rt = now - lastActionTime.current;
+                      if (rt >= 500 && rt <= 60000) {
+                        responseTimes.current.push(rt);
+                      }
+                      lastActionTime.current = now;
+
+                      totalAttemptsRef.current++;
+
+                      const prev = Object.keys(assignments).find(k => assignments[k] === draggedName);
+                      if (prev) {
+                        setAssignments(p => {
+                          const n = { ...p };
+                          delete n[prev];
+                          return n;
+                        });
+                        setFeedback(p => {
+                          const n = { ...p };
+                          delete n[prev];
+                          return n;
+                        });
+                      }
+
+                      setAssignments(p => ({ ...p, [face.id]: draggedName }));
+                      setFeedback(p => {
+                        const n = { ...p };
+                        delete n[face.id];
+                        return n;
+                      });
+                      setDragging(null);
+                      setDragOver(null);
+                    }}
+                    // Touch support for mobile
+                    onTouchEnd={(e) => {
+                      // This helps with mobile touch drag simulation
+                      if (dragging && !feedback[face.id]) {
+                        e.preventDefault();
+                        const draggedName = dragging;
+
+                        if (!draggedName || paused) return;
+                        if (feedback[face.id] === "correct") return;
+
+                        ensureAudio();
+                        lastActivityTime.current = Date.now();
+
+                        const now = Date.now();
+                        const rt = now - lastActionTime.current;
+                        if (rt >= 500 && rt <= 60000) {
+                          responseTimes.current.push(rt);
+                        }
+                        lastActionTime.current = now;
+
+                        totalAttemptsRef.current++;
+
+                        const prev = Object.keys(assignments).find(k => assignments[k] === draggedName);
+                        if (prev) {
+                          setAssignments(p => {
+                            const n = { ...p };
+                            delete n[prev];
+                            return n;
+                          });
+                          setFeedback(p => {
+                            const n = { ...p };
+                            delete n[prev];
+                            return n;
+                          });
+                        }
+
+                        setAssignments(p => ({ ...p, [face.id]: draggedName }));
+                        setFeedback(p => {
+                          const n = { ...p };
+                          delete n[face.id];
+                          return n;
+                        });
+                        setDragging(null);
+                        setDragOver(null);
+                      }
+                    }}
+                  >
                     <div className="fn-face-img-wrap">{face.emoji}</div>
                     <div className="fn-name-badge">
                       <div className={dropClass}>
                         {assigned ? (
-                          (fb==="correct" ? "✓ " : fb==="wrong" ? "✗ " : "") + assigned
-                        ) :
-                          "drop here"
-                        }
+                          (fb === "correct" ? "✓ " : fb === "wrong" ? "✗ " : "") + assigned
+                        ) : (
+                          "⬇️ drop here"
+                        )}
                       </div>
                     </div>
                   </div>
                 );
               })}
             </div>
+
+            {/* NAMES POOL - Enhanced draggable name chips */}
             <div className="fn-names-pool">
-              {namePool.map(name => (
-                <div key={name} className={`fn-name-chip${usedNamesSet.has(name)?" fn-used":""}${dragging===name?" fn-dragging":""}`}
-                  draggable={!usedNamesSet.has(name)} onDragStart={()=>onDragStart(name)} onDragEnd={onDragEnd}
-                >{name}</div>
-              ))}
+              {namePool.map(name => {
+                const isUsed = usedNamesSet.has(name);
+                const isDragging = dragging === name;
+
+                return (
+                  <div
+                    key={name}
+                    className={`fn-name-chip${isUsed ? " fn-used" : ""}${isDragging ? " fn-dragging fn-selected" : ""}`}
+                    draggable={!isUsed}
+                    onPointerDown={(e) => {
+                      if (isUsed) return;
+                      // Desktop/pen fallback: click-to-select a name, then click a face.
+                      if (e.pointerType === 'mouse' || e.pointerType === 'pen') {
+                        setDragging(name); // no toggle
+                        lastActivityTime.current = Date.now();
+                      }
+                    }}
+                    onDragStart={(e) => {
+                      if (!isUsed) {
+                        e.dataTransfer.setData("text/plain", name);
+                        e.dataTransfer.effectAllowed = "move";
+                        document.body.style.cursor = "grabbing"; // 🔥 FORCE cursor
+                        try {
+                          e.dataTransfer.setDragImage(e.currentTarget, 20, 20);
+                        } catch {}
+                        setDragging(name);
+                        lastActivityTime.current = Date.now();
+                      } else {
+                        e.preventDefault();
+                        return false;
+                      }
+                    }}
+                    onDragEnd={() => {
+                      document.body.style.cursor = "default"; // 🔥 RESET
+                      setDragging(null);
+                      setDragOver(null);
+                    }}
+                    // Make the element visually indicate it's draggable
+                    style={{
+                      cursor: isUsed ? 'default' : 'grab',
+                      opacity: isUsed ? 0.4 : 1,
+                      transition: 'all 0.2s ease'
+                    }}
+                    // Touch support for mobile devices
+                    onTouchStart={(e) => {
+                      if (isUsed) return;
+                      const element = e.currentTarget;
+                      setDragging(name);
+                      lastActivityTime.current = Date.now();
+                      // Visual feedback for touch
+                      element.style.transform = 'scale(0.98)';
+                      setTimeout(() => {
+                        element.style.transform = '';
+                      }, 150);
+                    }}
+                  >
+                    {name}
+                  </div>
+                );
+              })}
             </div>
           </>
         )}
@@ -927,8 +925,6 @@ export default function FacesNamesGame({
           const goEm = accuracy>=80?"🧠":accuracy>=60?"🏆":accuracy>=40?"⭐":"💪";
           const goTi = accuracy>=80?"Brilliant Memory!":accuracy>=60?"Great Job!":accuracy>=40?"Good Try!":"Great Effort!";
           const goSu = accuracy>=80?"You are a memory superstar!":accuracy>=60?"Your brain is getting stronger!":accuracy>=40?"Every round makes you better!":"You showed up and tried — that's what matters!";
-          const bgGrad = 'linear-gradient(135deg, #8BE3D8, #6BC5B8)';
-          
           const coinsEarned = earnedCoins || 0;
           
           return (

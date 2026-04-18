@@ -72,13 +72,13 @@ const AdminHeader = ({ onMenuClick }) => {
   };
 
   return (
-    <header className="admin-header">
-      <div className="header-left">
-        <button onClick={onMenuClick} className="header-menu-btn">
+    <header className="ad-header">
+      <div className="ad-header-left">
+        <button onClick={onMenuClick} className="ad-header-menu-btn">
           <Menu style={{ height: 20, width: 20 }} />
         </button>
 
-        <div className={`header-search ${searchFocused ? "focused" : ""}`} ref={searchRef}>
+        <div className={`ad-header-search ${searchFocused ? "ad-focused" : ""}`} ref={searchRef}>
           <Search size={18} />
           <input
             type="text"
@@ -92,47 +92,47 @@ const AdminHeader = ({ onMenuClick }) => {
             onBlur={() => setSearchFocused(false)}
           />
           {searchValue && (
-            <button className="header-search-clear" onClick={handleClear}>
+            <button className="ad-header-search-clear" onClick={handleClear}>
               <X size={12} />
             </button>
           )}
 
           {/* Search Results Dropdown */}
           {showResults && (
-            <div className="header-search-dropdown">
+            <div className="ad-header-search-dropdown">
               {searchLoading ? (
-                <div className="header-search-loading">Searching...</div>
+                <div className="ad-header-search-loading">Searching...</div>
               ) : searchResults.length > 0 ? (
                 <>
                   {searchResults.map((result, i) => (
                     <div
                       key={`${result.type}-${result.id}-${i}`}
-                      className="header-search-result"
+                      className="ad-header-search-result"
                       onMouseDown={() => handleResultClick(result)}
                     >
-                      <span className="header-search-result-icon">{typeIcon[result.type] || "📄"}</span>
-                      <div className="header-search-result-text">
-                        <div className="header-search-result-title">{result.title}</div>
-                        <div className="header-search-result-subtitle">{result.subtitle}</div>
+                      <span className="ad-header-search-result-icon">{typeIcon[result.type] || "📄"}</span>
+                      <div className="ad-header-search-result-text">
+                        <div className="ad-header-search-result-title">{result.title}</div>
+                        <div className="ad-header-search-result-subtitle">{result.subtitle}</div>
                       </div>
-                      <span className="header-search-result-type">{result.type}</span>
+                      <span className="ad-header-search-result-type">{result.type}</span>
                     </div>
                   ))}
                 </>
               ) : (
-                <div className="header-search-empty">No results found for "{searchValue}"</div>
+                <div className="ad-header-search-empty">No results found for "{searchValue}"</div>
               )}
             </div>
           )}
         </div>
       </div>
 
-      <div className="header-right">
-        <button className="header-notif-btn">
+      <div className="ad-header-right">
+        <button className="ad-header-notif-btn">
           <Bell size={20} />
-          <span className="header-notif-dot" />
+          <span className="ad-header-notif-dot" />
         </button>
-        <span className="header-date">
+        <span className="ad-header-date">
           {new Date().toLocaleDateString("en-US", {
             weekday: "short",
             month: "short",

@@ -83,18 +83,67 @@ const validatePassword = (password) => {
 };
 
 /**
- * Validate phone number (E.164 format expected: +<country><digits>)
- * Accepts +<1-4 digit dial code><6-15 digit national number>
+ * Minimum national number digits per country (ITU-T E.164 / national numbering plans).
+ * Countries not listed default to 6 minimum digits.
  */
-const validatePhoneNumber = (phone) => {
+const COUNTRY_MIN_DIGITS = {
+  US: 10, CA: 10, // NANP
+  GB: 10, FR: 9, DE: 10, IT: 9, ES: 9, PT: 9, NL: 9, BE: 9,
+  AT: 10, CH: 9, SE: 9, NO: 8, DK: 8, FI: 9, PL: 9,
+  IE: 9, GR: 10, CZ: 9, HU: 9, RO: 9, BG: 9, HR: 9,
+  SK: 9, SI: 8, EE: 7, LV: 8, LT: 8, LU: 9, MT: 8,
+  CY: 8, IS: 7, LI: 7, MC: 8, SM: 10, ME: 8, RS: 9,
+  BA: 8, MK: 8, AL: 9, UA: 9, BY: 9, MD: 8, GE: 9,
+  AM: 8, AZ: 9,
+  RU: 10, KZ: 10,
+  TR: 10,
+  IN: 10, PK: 10, BD: 10, LK: 9, NP: 10,
+  CN: 11, JP: 10, KR: 10, TW: 9, HK: 8, MO: 8,
+  TH: 9, VN: 9, MY: 9, SG: 8, ID: 10, PH: 10,
+  KH: 8, LA: 8, MM: 9, BN: 7,
+  AU: 9, NZ: 9, FJ: 7,
+  SA: 9, AE: 9, QA: 8, KW: 8, BH: 8, OM: 8,
+  JO: 9, LB: 8, IQ: 10, SY: 9, PS: 9, IL: 9, IR: 10,
+  YE: 9,
+  EG: 10, MA: 9, DZ: 9, TN: 8, LY: 9,
+  NG: 10, GH: 9, KE: 9, TZ: 9, UG: 9, ET: 9,
+  ZA: 9, CM: 8, CI: 8, SN: 9, ML: 8, BF: 8,
+  SD: 9, SS: 9, SO: 8, RW: 9, BI: 8, MG: 9,
+  MZ: 9, ZM: 9, ZW: 9, BW: 8, NA: 9,
+  MW: 9, LS: 8, SZ: 8, MU: 8, SC: 7,
+  BR: 11, MX: 10, AR: 10, CO: 10, CL: 9,
+  PE: 9, VE: 10, EC: 9, BO: 8, PY: 9,
+  UY: 8, GY: 7, SR: 7,
+  CR: 8, PA: 8, HN: 8, GT: 8, SV: 8, NI: 8, BZ: 7,
+  DO: 10, JM: 10, TT: 10, BB: 10, BS: 10,
+  CU: 8, HT: 8,
+  MN: 8, KG: 9, TJ: 9, TM: 8, UZ: 9,
+  AF: 9,
+};
+
+/**
+ * Validate phone number (E.164 format expected: +<country><digits>)
+ * Accepts +<1-4 digit dial code><national digits>
+ * Minimum national digits depend on the selected country.
+ */
+const validatePhoneNumber = (phone, countryCode) => {
   if (!phone) return 'Phone number is required';
   // Must start with + and contain only digits after
   if (!/^\+[0-9]{7,18}$/.test(phone)) {
     return 'Please enter a valid phone number';
   }
-  // National part should be at least 6 digits (after dial code of 1-4 digits)
+  // National part should be at least the country-specific minimum
+  const country = COUNTRIES.find(c => c.code === countryCode);
+  const dialLen = country ? country.dial.replace('+', '').length : 1;
+  const nationalDigits = phone.replace(/^\+/, '').slice(dialLen);
+  const minDigits = (countryCode && COUNTRY_MIN_DIGITS[countryCode]) || 6;
+
+  if (nationalDigits.length < minDigits) {
+    const countryName = country ? country.name : 'this country';
+    return `Phone number for ${countryName} must be at least ${minDigits} digits`;
+  }
+
   const digitsOnly = phone.replace(/^\+/, '');
-  if (digitsOnly.length < 7) return 'Phone number is too short';
   if (digitsOnly.length > 18) return 'Phone number is too long';
   return null;
 };
@@ -428,7 +477,7 @@ const COUNTRIES = [
 const DEFAULT_COUNTRY_CODE = 'LB'; // Lebanon as default
 
 // ============= PHONE INPUT WITH INTERNATIONAL DROPDOWN =============
-const PhoneInput = ({ value, onChange, onBlur, label, error, touched, disabled }) => {
+const PhoneInput = ({ value, onChange, onBlur, label, error, touched, disabled, onCountryChange }) => {
   const [inputId] = useState(() => `phone-${Math.random().toString(36).substr(2, 9)}`);
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState('');
@@ -484,6 +533,7 @@ const PhoneInput = ({ value, onChange, onBlur, label, error, touched, disabled }
     setSearch('');
     // Rebuild value with new dial code + existing national digits
     onChange(`${c.dial}${national}`);
+    if (onCountryChange) onCountryChange(c.code);
   };
 
   const handleNationalChange = (e) => {
@@ -576,6 +626,18 @@ const PhoneInput = ({ value, onChange, onBlur, label, error, touched, disabled }
       )}
 
       {error && touched && <div className="field-error-message">{error}</div>}
+      {!error && national.length > 0 && (() => {
+        const minDigits = (COUNTRY_MIN_DIGITS[country.code]) || 6;
+        const remaining = minDigits - national.length;
+        if (remaining > 0) {
+          return (
+            <div className="field-helper-text" style={{ fontSize: '12px', color: '#e67e22', marginTop: '4px', paddingLeft: '5px' }}>
+              {remaining} more digit{remaining > 1 ? 's' : ''} needed for {country.name}
+            </div>
+          );
+        }
+        return null;
+      })()}
     </div>
   );
 };
@@ -872,6 +934,9 @@ const AuthModal = ({ onClose, initialMode = 'signin' }) => {
 
   // Therapist specific
   const [hasChild, setHasChild] = useState(false);
+  
+  // Phone country tracking
+  const [phoneCountryCode, setPhoneCountryCode] = useState(DEFAULT_COUNTRY_CODE);
 
   // Forgot Password state
   const [resetIdentifier, setResetIdentifier] = useState(''); // Can be email or username
@@ -969,7 +1034,7 @@ const AuthModal = ({ onClose, initialMode = 'signin' }) => {
   // Validate all fields on the fly
   useEffect(() => {
     validateAllFields();
-  }, [fullName, username, phoneNumber, signUpEmail, signUpPassword, signUpConfirmPassword, 
+  }, [fullName, username, phoneNumber, phoneCountryCode, signUpEmail, signUpPassword, signUpConfirmPassword, 
       childName, childUsername, childPassword, childConfirmPassword, childDob, therapistEmail, role, hasTherapist, hasChild]);
 
   const validateAllFields = () => {
@@ -987,7 +1052,7 @@ const AuthModal = ({ onClose, initialMode = 'signin' }) => {
     }
     
     if (phoneNumber || touchedFields.phoneNumber) {
-      const phoneError = validatePhoneNumber(phoneNumber);
+      const phoneError = validatePhoneNumber(phoneNumber, phoneCountryCode);
       if (phoneError) errors.phoneNumber = phoneError;
     }
     
@@ -1740,6 +1805,7 @@ const handleResendCode = async () => {
     setHasTherapist(null);
     setTherapistEmail('');
     setHasChild(false);
+    setPhoneCountryCode(DEFAULT_COUNTRY_CODE);
     setFieldErrors({});
     setTouchedFields({});
     setResetIdentifier('');
@@ -1834,7 +1900,7 @@ const handleResendCode = async () => {
         style={{ animationDelay: '0.4s' }}
         disabled={isLoading}
       >
-        {isLoading ? <span className="spinner"></span> : 'Sign in'}
+        {isLoading ? <span className="auth-spinner"></span> : 'Sign in'}
       </button>
       
       <p className="switch-prompt slide-up" style={{ animationDelay: '0.5s' }}>
@@ -1891,6 +1957,7 @@ const handleResendCode = async () => {
         value={phoneNumber}
         onChange={(v) => setPhoneNumber(v)}
         onBlur={() => handleFieldBlur('phoneNumber')}
+        onCountryChange={(code) => setPhoneCountryCode(code)}
         label="Phone Number"
         error={fieldErrors.phoneNumber}
         touched={touchedFields.phoneNumber}
@@ -2225,7 +2292,7 @@ const handleResendCode = async () => {
         style={{ animationDelay: '0.4s' }}
         disabled={isLoading || !role}
       >
-        {isLoading ? <span className="spinner"></span> : 'Create your Account'}
+        {isLoading ? <span className="auth-spinner"></span> : 'Create your Account'}
       </button>
       
       <p className="switch-prompt slide-up" style={{ animationDelay: '0.5s' }}>
@@ -2298,7 +2365,7 @@ const handleResendCode = async () => {
       style={{ animationDelay: '0.2s' }}
       disabled={isLoading || !resetIdentifier}
     >
-      {isLoading ? <span className="spinner"></span> : 'Send Reset Code'}
+      {isLoading ? <span className="auth-spinner"></span> : 'Send Reset Code'}
     </button>
   </form>
 )}
@@ -2356,7 +2423,7 @@ const handleResendCode = async () => {
       style={{ animationDelay: '0.2s' }}
       disabled={isLoading || resetCode.length !== 6}
     >
-      {isLoading ? <span className="spinner"></span> : 'Verify Code'}
+      {isLoading ? <span className="auth-spinner"></span> : 'Verify Code'}
     </button>
 
     <button 
@@ -2412,7 +2479,7 @@ const handleResendCode = async () => {
           style={{ animationDelay: '0.2s' }}
           disabled={isLoading}
         >
-          {isLoading ? <span className="spinner"></span> : 'Reset Password'}
+          {isLoading ? <span className="auth-spinner"></span> : 'Reset Password'}
         </button>
       </form>
     )}

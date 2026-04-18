@@ -1,4 +1,4 @@
-// FeedbackDashboard.jsx - Updated with inline approve/reject buttons
+// FeedbackDashboard.jsx - Updated with ad- prefixed class names
 import { useState, useEffect } from "react";
 import {
   MessageSquare,
@@ -16,7 +16,7 @@ import {
   XCircle,
   Clock,
   Filter
-} from "lucide-react"; // Removed Star import
+} from "lucide-react";
 import {
   AreaChart,
   Area,
@@ -33,9 +33,9 @@ import Modal from "../../components/admin/Modal";
 import feedbackService from "../../services/feedbackService";
 
 const COLORS = {
-  positive: "#10b981", // Green
-  neutral: "#f59e0b",  // Amber
-  negative: "#ef4444"   // Red
+  positive: "#10b981",
+  neutral: "#f59e0b",
+  negative: "#ef4444"
 };
 
 const FeedbackDashboard = () => {
@@ -96,7 +96,7 @@ const FeedbackDashboard = () => {
     try {
       setActionLoading(prev => ({ ...prev, [id]: 'approve' }));
       await feedbackService.approveFeedback(id, isFeatured);
-      await fetchData(); // Refresh data
+      await fetchData();
     } catch (err) {
       console.error("Approve error:", err);
       alert('Failed to approve feedback');
@@ -113,7 +113,7 @@ const FeedbackDashboard = () => {
     try {
       setActionLoading(prev => ({ ...prev, [id]: 'reject' }));
       await feedbackService.rejectFeedback(id);
-      await fetchData(); // Refresh data
+      await fetchData();
     } catch (err) {
       console.error("Reject error:", err);
       alert('Failed to reject feedback');
@@ -167,14 +167,12 @@ const FeedbackDashboard = () => {
     }
   };
 
-  // Filter feedback by search term
   const filteredFeedback = feedback.filter(item => 
     item.text?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     item.userName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     item.childName?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  // Prepare chart data
   const pieData = stats ? [
     { name: 'Positive', value: stats.breakdown?.positive || 0, color: COLORS.positive },
     { name: 'Neutral', value: stats.breakdown?.neutral || 0, color: COLORS.neutral },
@@ -183,9 +181,9 @@ const FeedbackDashboard = () => {
 
   if (loading && !feedback.length) {
     return (
-      <div className="page-section">
-        <div className="admin-loading-page">
-          <div className="admin-spinner" />
+      <div className="ad-page-section">
+        <div className="ad-loading-page">
+          <div className="ad-spinner" />
           <p>Loading feedback data...</p>
         </div>
       </div>
@@ -193,16 +191,16 @@ const FeedbackDashboard = () => {
   }
 
   return (
-    <div className="page-section">
+    <div className="ad-page-section">
       {/* Header */}
-      <div className="page-header">
-        <div >
+      <div className="ad-page-header">
+        <div>
           <h1>Feedback & Sentiment Analysis</h1>
           <p>Review and manage user feedback. Approved feedback will appear on the homepage.</p>
         </div>
         <div style={{ display: "flex", gap: 12 }}>
           <button 
-            className="btn btn-outline" 
+            className="ad-btn ad-btn-outline" 
             onClick={fetchData}
             disabled={loading}
           >
@@ -210,13 +208,13 @@ const FeedbackDashboard = () => {
             Refresh
           </button>
           <button 
-            className="btn btn-primary" 
+            className="ad-btn ad-btn-primary" 
             onClick={handleExport}
             disabled={exportLoading}
           >
             {exportLoading ? (
               <>
-                <div className="admin-spinner-sm" style={{ marginRight: 8 }} />
+                <div className="ad-spinner-sm" style={{ marginRight: 8 }} />
                 Exporting...
               </>
             ) : (
@@ -231,68 +229,68 @@ const FeedbackDashboard = () => {
 
       {/* Error State */}
       {error && (
-        <div className="glass-card" style={{ 
+        <div className="ad-glass-card" style={{ 
           background: 'rgba(239, 68, 68, 0.05)', 
           borderColor: 'rgba(239, 68, 68, 0.2)',
           padding: 20,
           marginBottom: 24
         }}>
           <p style={{ color: COLORS.negative, marginBottom: 12 }}>{error}</p>
-          <button className="btn btn-primary" onClick={fetchData}>
+          <button className="ad-btn ad-btn-primary" onClick={fetchData}>
             Retry
           </button>
         </div>
       )}
 
       {/* Stats Cards */}
-      <div className="grid-4">
-        <div className="admin-summary-card">
-          <div className="admin-summary-card-icon" style={{ background: 'rgba(16, 185, 129, 0.1)', color: COLORS.positive }}>
+      <div className="ad-grid-4">
+        <div className="ad-summary-card">
+          <div className="ad-summary-card-icon" style={{ background: 'rgba(16, 185, 129, 0.1)', color: COLORS.positive }}>
             <MessageSquare size={24} />
           </div>
-          <div className="admin-summary-card-content">
-            <div className="admin-summary-card-label">Total Feedback</div>
-            <div className="admin-summary-card-value">{stats?.total || 0}</div>
+          <div className="ad-summary-card-content">
+            <div className="ad-summary-card-label">Total Feedback</div>
+            <div className="ad-summary-card-value">{stats?.total || 0}</div>
           </div>
         </div>
 
-        <div className="admin-summary-card">
-          <div className="admin-summary-card-icon" style={{ background: 'rgba(16, 185, 129, 0.1)', color: COLORS.positive }}>
+        <div className="ad-summary-card">
+          <div className="ad-summary-card-icon" style={{ background: 'rgba(16, 185, 129, 0.1)', color: COLORS.positive }}>
             <CheckCircle size={24} />
           </div>
-          <div className="admin-summary-card-content">
-            <div className="admin-summary-card-label">Approved</div>
-            <div className="admin-summary-card-value">
+          <div className="ad-summary-card-content">
+            <div className="ad-summary-card-label">Approved</div>
+            <div className="ad-summary-card-value">
               {stats?.breakdown ? Object.values(stats.breakdown).reduce((a, b) => a + b, 0) : 0}
             </div>
           </div>
         </div>
 
-        <div className="admin-summary-card">
-          <div className="admin-summary-card-icon" style={{ background: 'rgba(245, 158, 11, 0.1)', color: COLORS.neutral }}>
+        <div className="ad-summary-card">
+          <div className="ad-summary-card-icon" style={{ background: 'rgba(245, 158, 11, 0.1)', color: COLORS.neutral }}>
             <Clock size={24} />
           </div>
-          <div className="admin-summary-card-content">
-            <div className="admin-summary-card-label">Pending Review</div>
-            <div className="admin-summary-card-value">0</div>
+          <div className="ad-summary-card-content">
+            <div className="ad-summary-card-label">Pending Review</div>
+            <div className="ad-summary-card-value">0</div>
           </div>
         </div>
 
-        <div className="admin-summary-card">
-          <div className="admin-summary-card-icon" style={{ background: 'rgba(239, 68, 68, 0.1)', color: COLORS.negative }}>
+        <div className="ad-summary-card">
+          <div className="ad-summary-card-icon" style={{ background: 'rgba(239, 68, 68, 0.1)', color: COLORS.negative }}>
             <ThumbsUp size={24} />
           </div>
-          <div className="admin-summary-card-content">
-            <div className="admin-summary-card-label">Positive Rate</div>
-            <div className="admin-summary-card-value">{stats?.percentages?.positive || 0}%</div>
+          <div className="ad-summary-card-content">
+            <div className="ad-summary-card-label">Positive Rate</div>
+            <div className="ad-summary-card-value">{stats?.percentages?.positive || 0}%</div>
           </div>
         </div>
       </div>
 
       {/* Charts Section */}
-      <div className="grid-charts">
+      <div className="ad-grid-charts">
         {/* Sentiment Distribution Pie Chart */}
-        <div className="glass-card chart-card">
+        <div className="ad-glass-card ad-chart-card">
           <h3 style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 20 }}>
             <Filter size={20} />
             Sentiment Distribution
@@ -318,11 +316,11 @@ const FeedbackDashboard = () => {
                   <Tooltip />
                 </RePieChart>
               </ResponsiveContainer>
-              <div className="pie-legend">
+              <div className="ad-pie-legend">
                 {pieData.map((item, i) => (
-                  <div key={i} className="pie-legend-item">
-                    <div className="pie-legend-dot" style={{ background: item.color }} />
-                    <span className="pie-legend-label">
+                  <div key={i} className="ad-pie-legend-item">
+                    <div className="ad-pie-legend-dot" style={{ background: item.color }} />
+                    <span className="ad-pie-legend-label">
                       {item.name}: {item.value} ({((item.value / stats.total) * 100).toFixed(1)}%)
                     </span>
                   </div>
@@ -330,28 +328,28 @@ const FeedbackDashboard = () => {
               </div>
             </div>
           ) : (
-            <div className="empty-state">
+            <div className="ad-empty-state">
               <p>No feedback data available yet</p>
             </div>
           )}
         </div>
 
         {/* Sentiment Trends Chart */}
-        <div className="glass-card chart-card">
+        <div className="ad-glass-card ad-chart-card">
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
             <h3 style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <TrendingUp size={20} />
               Sentiment Trends
             </h3>
-            <div className="filter-group">
+            <div className="ad-filter-group">
               <button 
-                className={`filter-btn ${period === 'week' ? 'active' : ''}`}
+                className={`ad-filter-btn ${period === 'week' ? 'ad-active' : ''}`}
                 onClick={() => setPeriod('week')}
               >
                 Week
               </button>
               <button 
-                className={`filter-btn ${period === 'month' ? 'active' : ''}`}
+                className={`ad-filter-btn ${period === 'month' ? 'ad-active' : ''}`}
                 onClick={() => setPeriod('month')}
               >
                 Month
@@ -404,7 +402,7 @@ const FeedbackDashboard = () => {
               </AreaChart>
             </ResponsiveContainer>
           ) : (
-            <div className="empty-state">
+            <div className="ad-empty-state">
               <p>No trend data available</p>
             </div>
           )}
@@ -412,9 +410,9 @@ const FeedbackDashboard = () => {
       </div>
 
       {/* Filters */}
-      <div className="filters-row">
-        <div className="search-box" style={{ maxWidth: 350 }}>
-          <Search size={16} style={{ color: 'var(--muted-foreground)' }} />
+      <div className="ad-filters-row">
+        <div className="ad-search-box" style={{ maxWidth: 350 }}>
+          <Search size={16} style={{ color: 'var(--ad-muted-foreground)' }} />
           <input
             type="text"
             placeholder="Search feedback or user..."
@@ -423,29 +421,29 @@ const FeedbackDashboard = () => {
           />
         </div>
         
-        <div className="filter-group">
+        <div className="ad-filter-group">
           <button 
-            className={`filter-btn ${filterSentiment === 'all' ? 'active' : ''}`}
+            className={`ad-filter-btn ${filterSentiment === 'all' ? 'ad-active' : ''}`}
             onClick={() => setFilterSentiment('all')}
           >
             All Sentiments
           </button>
           <button 
-            className={`filter-btn ${filterSentiment === 'positive' ? 'active' : ''}`}
+            className={`ad-filter-btn ${filterSentiment === 'positive' ? 'ad-active' : ''}`}
             onClick={() => setFilterSentiment('positive')}
           >
             <ThumbsUp size={14} style={{ marginRight: 6 }} />
             Positive
           </button>
           <button 
-            className={`filter-btn ${filterSentiment === 'neutral' ? 'active' : ''}`}
+            className={`ad-filter-btn ${filterSentiment === 'neutral' ? 'ad-active' : ''}`}
             onClick={() => setFilterSentiment('neutral')}
           >
             <Minus size={14} style={{ marginRight: 6 }} />
             Neutral
           </button>
           <button 
-            className={`filter-btn ${filterSentiment === 'negative' ? 'active' : ''}`}
+            className={`ad-filter-btn ${filterSentiment === 'negative' ? 'ad-active' : ''}`}
             onClick={() => setFilterSentiment('negative')}
           >
             <ThumbsDown size={14} style={{ marginRight: 6 }} />
@@ -453,22 +451,22 @@ const FeedbackDashboard = () => {
           </button>
         </div>
 
-        <div className="filter-group">
+        <div className="ad-filter-group">
           <button 
-            className={`filter-btn ${filterApproval === 'all' ? 'active' : ''}`}
+            className={`ad-filter-btn ${filterApproval === 'all' ? 'ad-active' : ''}`}
             onClick={() => setFilterApproval('all')}
           >
             All Status
           </button>
           <button 
-            className={`filter-btn ${filterApproval === 'approved' ? 'active' : ''}`}
+            className={`ad-filter-btn ${filterApproval === 'approved' ? 'ad-active' : ''}`}
             onClick={() => setFilterApproval('approved')}
           >
             <CheckCircle size={14} style={{ marginRight: 6 }} />
             Approved
           </button>
           <button 
-            className={`filter-btn ${filterApproval === 'pending' ? 'active' : ''}`}
+            className={`ad-filter-btn ${filterApproval === 'pending' ? 'ad-active' : ''}`}
             onClick={() => setFilterApproval('pending')}
           >
             <Clock size={14} style={{ marginRight: 6 }} />
@@ -477,10 +475,10 @@ const FeedbackDashboard = () => {
         </div>
       </div>
 
-      {/* Feedback Table with Inline Approve/Reject Buttons */}
-      <div className="glass-card" style={{ padding: 0, overflow: 'hidden' }}>
-        <div className="data-table-wrapper">
-          <table className="data-table">
+      {/* Feedback Table */}
+      <div className="ad-glass-card" style={{ padding: 0, overflow: 'hidden' }}>
+        <div className="ad-data-table-wrapper">
+          <table className="ad-data-table">
             <thead>
               <tr>
                 <th style={{ width: '30%' }}>Feedback</th>
@@ -507,8 +505,8 @@ const FeedbackDashboard = () => {
                     </td>
                     <td>
                       <div>
-                        <div className="font-medium">{item.userName || 'Anonymous'}</div>
-                        <div className="text-xs text-muted" style={{ textTransform: 'capitalize' }}>
+                        <div className="ad-font-medium">{item.userName || 'Anonymous'}</div>
+                        <div className="ad-text-xs ad-text-muted" style={{ textTransform: 'capitalize' }}>
                           {item.userType || 'user'}
                           {item.childName && ` • ${item.childName}`}
                         </div>
@@ -516,7 +514,7 @@ const FeedbackDashboard = () => {
                     </td>
                     <td>
                       <span 
-                        className="badge" 
+                        className="ad-badge" 
                         style={{ 
                           background: getSentimentBg(item.sentiment),
                           color: getSentimentColor(item.sentiment),
@@ -534,24 +532,24 @@ const FeedbackDashboard = () => {
                     </td>
                     <td>
                       {item.isApproved ? (
-                        <span className="badge" style={{ background: 'rgba(16,185,129,0.1)', color: '#10b981' }}>
+                        <span className="ad-badge" style={{ background: 'rgba(16,185,129,0.1)', color: '#10b981' }}>
                           <CheckCircle size={12} style={{ marginRight: 4 }} />
                           Approved
                         </span>
                       ) : (
-                        <span className="badge" style={{ background: 'rgba(245,158,11,0.1)', color: '#f59e0b' }}>
+                        <span className="ad-badge" style={{ background: 'rgba(245,158,11,0.1)', color: '#f59e0b' }}>
                           <Clock size={12} style={{ marginRight: 4 }} />
                           Pending
                         </span>
                       )}
                     </td>
-                    <td className="text-muted">
+                    <td className="ad-text-muted">
                       {new Date(item.timestamp).toLocaleDateString()}
                     </td>
                     <td>
                       <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
                         <button 
-                          className="btn-ghost"
+                          className="ad-btn-ghost"
                           onClick={() => handleViewFeedback(item)}
                           title="View details"
                         >
@@ -561,27 +559,27 @@ const FeedbackDashboard = () => {
                         {!item.isApproved ? (
                           <>
                             <button 
-                              className="btn-ghost" 
+                              className="ad-btn-ghost" 
                               style={{ color: '#10b981' }}
                               onClick={() => handleApprove(item.id, false)}
                               disabled={actionLoading[item.id] === 'approve'}
                               title="Approve (will show on homepage)"
                             >
                               {actionLoading[item.id] === 'approve' ? (
-                                <div className="admin-spinner-sm" style={{ width: 18, height: 18 }} />
+                                <div className="ad-spinner-sm" style={{ width: 18, height: 18 }} />
                               ) : (
                                 <CheckCircle size={18} />
                               )}
                             </button>
                             <button 
-                              className="btn-ghost" 
+                              className="ad-btn-ghost" 
                               style={{ color: '#ef4444' }}
                               onClick={() => handleReject(item.id)}
                               disabled={actionLoading[item.id] === 'reject'}
                               title="Reject"
                             >
                               {actionLoading[item.id] === 'reject' ? (
-                                <div className="admin-spinner-sm" style={{ width: 18, height: 18 }} />
+                                <div className="ad-spinner-sm" style={{ width: 18, height: 18 }} />
                               ) : (
                                 <XCircle size={18} />
                               )}
@@ -589,14 +587,14 @@ const FeedbackDashboard = () => {
                           </>
                         ) : (
                           <button 
-                            className="btn-ghost" 
+                            className="ad-btn-ghost" 
                             style={{ color: '#ef4444' }}
                             onClick={() => handleReject(item.id)}
                             disabled={actionLoading[item.id] === 'reject'}
                             title="Remove from homepage"
                           >
                             {actionLoading[item.id] === 'reject' ? (
-                              <div className="admin-spinner-sm" style={{ width: 18, height: 18 }} />
+                              <div className="ad-spinner-sm" style={{ width: 18, height: 18 }} />
                             ) : (
                               <XCircle size={18} />
                             )}
@@ -609,8 +607,8 @@ const FeedbackDashboard = () => {
               ) : (
                 <tr>
                   <td colSpan="6" style={{ textAlign: 'center', padding: 48 }}>
-                    <MessageSquare size={32} style={{ margin: '0 auto 12px', color: 'var(--muted-foreground)' }} />
-                    <p className="text-muted">No feedback found</p>
+                    <MessageSquare size={32} style={{ margin: '0 auto 12px', color: 'var(--ad-muted-foreground)' }} />
+                    <p className="ad-text-muted">No feedback found</p>
                   </td>
                 </tr>
               )}
@@ -620,11 +618,11 @@ const FeedbackDashboard = () => {
 
         {/* Pagination */}
         {totalPages > 1 && (
-          <div className="table-pagination">
-            <div className="text-muted">
+          <div className="ad-table-pagination">
+            <div className="ad-text-muted">
               Page {currentPage} of {totalPages}
             </div>
-            <div className="table-pagination-btns">
+            <div className="ad-table-pagination-btns">
               <button 
                 onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                 disabled={currentPage === 1}
@@ -651,10 +649,10 @@ const FeedbackDashboard = () => {
         {selectedFeedback && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
             {/* Feedback Text */}
-            <div className="modal-field">
-              <div className="modal-field-label">Feedback</div>
-              <div className="modal-field-value" style={{ 
-                background: 'var(--muted)',
+            <div className="ad-modal-field">
+              <div className="ad-modal-field-label">Feedback</div>
+              <div className="ad-modal-field-value" style={{ 
+                background: 'var(--ad-muted)',
                 padding: 16,
                 borderRadius: 8,
                 whiteSpace: 'pre-wrap',
@@ -665,16 +663,16 @@ const FeedbackDashboard = () => {
             </div>
 
             {/* Status */}
-            <div className="modal-field">
-              <div className="modal-field-label">Status</div>
+            <div className="ad-modal-field">
+              <div className="ad-modal-field-label">Status</div>
               <div>
                 {selectedFeedback.isApproved ? (
-                  <span className="badge" style={{ background: 'rgba(16,185,129,0.1)', color: '#10b981' }}>
+                  <span className="ad-badge" style={{ background: 'rgba(16,185,129,0.1)', color: '#10b981' }}>
                     <CheckCircle size={14} style={{ marginRight: 6 }} />
                     Approved for Homepage
                   </span>
                 ) : (
-                  <span className="badge" style={{ background: 'rgba(245,158,11,0.1)', color: '#f59e0b' }}>
+                  <span className="ad-badge" style={{ background: 'rgba(245,158,11,0.1)', color: '#f59e0b' }}>
                     <Clock size={14} style={{ marginRight: 6 }} />
                     Pending Review
                   </span>
@@ -683,11 +681,11 @@ const FeedbackDashboard = () => {
             </div>
 
             {/* Sentiment Badge */}
-            <div className="modal-field">
-              <div className="modal-field-label">Sentiment Analysis</div>
+            <div className="ad-modal-field">
+              <div className="ad-modal-field-label">Sentiment Analysis</div>
               <div style={{ display: 'flex', gap: 20, alignItems: 'center', flexWrap: 'wrap' }}>
                 <span 
-                  className="badge" 
+                  className="ad-badge" 
                   style={{ 
                     background: getSentimentBg(selectedFeedback.sentiment),
                     color: getSentimentColor(selectedFeedback.sentiment),
@@ -703,7 +701,7 @@ const FeedbackDashboard = () => {
                     {selectedFeedback.sentiment}
                   </span>
                 </span>
-                <span className="text-muted">
+                <span className="ad-text-muted">
                   Confidence: {(selectedFeedback.confidence * 100).toFixed(1)}%
                 </span>
               </div>
@@ -711,8 +709,8 @@ const FeedbackDashboard = () => {
 
             {/* Detailed Scores */}
             {selectedFeedback.scores && (
-              <div className="modal-field">
-                <div className="modal-field-label">Detailed Sentiment Scores</div>
+              <div className="ad-modal-field">
+                <div className="ad-modal-field-label">Detailed Sentiment Scores</div>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16 }}>
                   <div style={{ 
                     textAlign: 'center', 
@@ -758,23 +756,23 @@ const FeedbackDashboard = () => {
             )}
 
             {/* User Info */}
-            <div className="modal-field">
-              <div className="modal-field-label">User Information</div>
+            <div className="ad-modal-field">
+              <div className="ad-modal-field-label">User Information</div>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 16 }}>
                 <div>
-                  <div className="text-muted text-sm">Name</div>
-                  <div className="font-medium">{selectedFeedback.userName || 'Anonymous'}</div>
+                  <div className="ad-text-muted ad-text-sm">Name</div>
+                  <div className="ad-font-medium">{selectedFeedback.userName || 'Anonymous'}</div>
                 </div>
                 <div>
-                  <div className="text-muted text-sm">Type</div>
-                  <div className="font-medium" style={{ textTransform: 'capitalize' }}>
+                  <div className="ad-text-muted ad-text-sm">Type</div>
+                  <div className="ad-font-medium" style={{ textTransform: 'capitalize' }}>
                     {selectedFeedback.userType || 'user'}
                   </div>
                 </div>
                 {selectedFeedback.childName && (
                   <div>
-                    <div className="text-muted text-sm">Child</div>
-                    <div className="font-medium">
+                    <div className="ad-text-muted ad-text-sm">Child</div>
+                    <div className="ad-font-medium">
                       {selectedFeedback.childName}
                       {selectedFeedback.childAge && ` (${selectedFeedback.childAge} years)`}
                     </div>
@@ -784,9 +782,9 @@ const FeedbackDashboard = () => {
             </div>
 
             {/* Timestamp */}
-            <div className="modal-field">
-              <div className="modal-field-label">Submitted</div>
-              <div className="modal-field-value">
+            <div className="ad-modal-field">
+              <div className="ad-modal-field-label">Submitted</div>
+              <div className="ad-modal-field-value">
                 {new Date(selectedFeedback.timestamp).toLocaleString()}
               </div>
             </div>
@@ -796,7 +794,7 @@ const FeedbackDashboard = () => {
               {!selectedFeedback.isApproved ? (
                 <>
                   <button 
-                    className="btn btn-primary"
+                    className="ad-btn ad-btn-primary"
                     onClick={() => {
                       handleApprove(selectedFeedback.id, false);
                       setModalOpen(false);
@@ -806,7 +804,7 @@ const FeedbackDashboard = () => {
                     Approve for Homepage
                   </button>
                   <button 
-                    className="btn btn-outline"
+                    className="ad-btn ad-btn-outline"
                     style={{ color: '#ef4444' }}
                     onClick={() => {
                       handleReject(selectedFeedback.id);
@@ -819,7 +817,7 @@ const FeedbackDashboard = () => {
                 </>
               ) : (
                 <button 
-                  className="btn btn-outline"
+                  className="ad-btn ad-btn-outline"
                   style={{ color: '#ef4444' }}
                   onClick={() => {
                     handleReject(selectedFeedback.id);

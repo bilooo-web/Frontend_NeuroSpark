@@ -10,13 +10,13 @@ const AdminLayout = () => {
   const [profileModalOpen, setProfileModalOpen] = useState(false);
 
   return (
-    <div className="admin-layout" style={{ backgroundColor: "#8BE3D8" }}>
-      <div className="stars-bg" />
+    <div className="ad-layout" style={{ backgroundColor: "#8BE3D8" }}>
+      <div className="ad-stars-bg" />
       {sidebarOpen && (
-        <div className="admin-overlay" onClick={() => setSidebarOpen(false)} />
+        <div className="ad-overlay" onClick={() => setSidebarOpen(false)} />
       )}
 
-      <aside className={`admin-sidebar-wrapper ${sidebarOpen ? "open" : ""}`}>
+      <aside className={`ad-sidebar-wrapper ${sidebarOpen ? "ad-open" : ""}`}>
         <AdminSidebar
           onClose={() => setSidebarOpen(false)}
           onProfileClick={() => {
@@ -26,9 +26,9 @@ const AdminLayout = () => {
         />
       </aside>
 
-      <div className="admin-main">
+      <div className="ad-main">
         <AdminHeader onMenuClick={() => setSidebarOpen(true)} />
-        <main className="admin-content">
+        <main className="ad-content">
           <Outlet />
         </main>
       </div>

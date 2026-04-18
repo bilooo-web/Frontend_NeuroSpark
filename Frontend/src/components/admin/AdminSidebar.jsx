@@ -72,24 +72,24 @@ const AdminSidebar = ({ onClose , onProfileClick }) => {
   };
 
   return (
-    <div className="sidebar">
-      <div className="sidebar-logo">
-        <div className="sidebar-logo-container">
+    <div className="ad-sidebar">
+      <div className="ad-sidebar-logo">
+        <div className="ad-sidebar-logo-container">
           <img
             src={logoImg}
             alt="NeuroSpark"
-            className="sidebar-logo-img"
+            className="ad-sidebar-logo-img"
           />
-          <div className="sidebar-logo-text">
+          <div className="ad-sidebar-logo-text">
             <p>Admin Dashboard</p>
           </div>
         </div>
-        <button onClick={onClose} className="sidebar-close-btn">
+        <button onClick={onClose} className="ad-sidebar-close-btn">
           <X style={{ height: 20, width: 20 }} />
         </button>
       </div>
 
-      <nav className="sidebar-nav">
+      <nav className="ad-sidebar-nav">
         {navItems.map((item) => (
           <NavLink
             key={item.path}
@@ -97,14 +97,14 @@ const AdminSidebar = ({ onClose , onProfileClick }) => {
             end={item.end}
             onClick={onClose}
             className={({ isActive }) =>
-              `sidebar-link ${isActive ? "active" : ""}`
+              `ad-sidebar-link ${isActive ? "ad-active" : ""}`
             }
           >
             {({ isActive }) => (
               <>
                 <item.icon style={{ height: 18, width: 18 }} />
                 <span>{item.label}</span>
-                {isActive && <div className="sidebar-link-dot" />}
+                {isActive && <div className="ad-sidebar-link-dot" />}
               </>
             )}
           </NavLink>
@@ -112,20 +112,20 @@ const AdminSidebar = ({ onClose , onProfileClick }) => {
       </nav>
 
       {/* Action Buttons */}
-      <div className="sidebar-action-btns">
-        <button className="sidebar-action-btn home-btn" onClick={() => navigate("/")}>
+      <div className="ad-sidebar-action-btns">
+        <button className="ad-sidebar-action-btn ad-home-btn" onClick={() => navigate("/")}>
           <Home style={{ height: 18, width: 18, color: "#1CC4AF" }} />
           <span style={{ color: "#1CC4AF" }}>Back to Home</span>
         </button>
-        <button className="sidebar-action-btn logout-btn" onClick={handleLogout}>
+        <button className="ad-sidebar-action-btn ad-logout-btn" onClick={handleLogout}>
           <LogOut style={{ height: 18, width: 18 }} />
           <span>Logout</span>
         </button>
       </div>
 
-      <div className="sidebar-footer" onClick={onProfileClick} style={{ cursor: 'pointer' }}>
-        <div className="sidebar-avatar">{adminInitial}</div>
-        <div className="sidebar-footer-info">
+      <div className="ad-sidebar-footer" onClick={onProfileClick} style={{ cursor: 'pointer' }}>
+        <div className="ad-sidebar-avatar">{adminInitial}</div>
+        <div className="ad-sidebar-footer-info">
           <p>{adminName}</p>
           <p>{adminEmail}</p>
         </div>

@@ -38,10 +38,10 @@ const AdminReports = () => {
 
   if (loading) {
     return (
-      <div className="page-section">
+      <div className="ad-page-section">
         <div style={{ textAlign: "center", padding: 80 }}>
-          <div className="admin-spinner" />
-          <p className="text-muted" style={{ marginTop: 16 }}>Loading reports...</p>
+          <div className="ad-spinner" />
+          <p className="ad-text-muted" style={{ marginTop: 16 }}>Loading reports...</p>
         </div>
       </div>
     );
@@ -72,25 +72,8 @@ const AdminReports = () => {
   /* ═══ Engagement Tab computations ═══ */
   const totalChildren = perf.total_children || 1;
 
-  /*
-   * Sessions/Child = completed_sessions / total_children
-   * Already computed server-side as avg_sessions_per_child
-   */
-
-  /*
-   * Completion Rate = (completed_sessions / total_sessions) × 100
-   * Already computed server-side as completion_rate
-   */
   const completionRate = perf.completion_rate || 0;
 
-  /*
-   * Engagement Score (composite 0-100):
-   *   - 30% from avg_sessions_per_child (capped at 10 → 30pts)
-   *   - 20% from completion_rate (out of 100 → 20pts)
-   *   - 25% from avg_game_score (out of 100 → 25pts)
-   *   - 15% from active_children_7d / total_children ratio (→ 15pts)
-   *   - 10% from voice engagement ratio (→ 10pts)
-   */
   const sessionsScore = Math.min(30, (parseFloat(avgSessionsPerChild) / 10) * 30);
   const completionScore = (completionRate / 100) * 20;
   const gameScoreContrib = ((perf.avg_game_score || 0) / 100) * 25;
@@ -150,7 +133,6 @@ const AdminReports = () => {
     coins: parseInt(v.coins || 0),
   }));
 
-  /* New chart data transforms */
   const voiceAccuracyPie = voiceAccuracyDist.filter(d => d.count > 0);
 
   const readingGrowthChart = voiceReadingGrowth.map(v => ({
@@ -170,12 +152,12 @@ const AdminReports = () => {
     { id: "reading", label: "Reading & Voice", icon: BookOpen },
   ];
 
-  const renderKPI = (icon, label, value, color = "var(--primary)", tooltip) => (
-    <div className="admin-summary-card" key={label} title={tooltip || ""}>
-      <div className="admin-summary-card-icon" style={{ background: `${color}20`, color }}>{icon}</div>
-      <div className="admin-summary-card-content">
-        <div className="admin-summary-card-label">{label}</div>
-        <div className="admin-summary-card-value">{value}</div>
+  const renderKPI = (icon, label, value, color = "var(--ad-primary)", tooltip) => (
+    <div className="ad-summary-card" key={label} title={tooltip || ""}>
+      <div className="ad-summary-card-icon" style={{ background: `${color}20`, color }}>{icon}</div>
+      <div className="ad-summary-card-content">
+        <div className="ad-summary-card-label">{label}</div>
+        <div className="ad-summary-card-value">{value}</div>
       </div>
     </div>
   );
@@ -200,8 +182,8 @@ const AdminReports = () => {
   };
 
   return (
-    <div className="page-section">
-      <div className="page-header">
+    <div className="ad-page-section">
+      <div className="ad-page-header">
         <div>
           <h1>Reports & Analytics</h1>
           <p>Platform insights and performance analysis</p>
@@ -209,9 +191,9 @@ const AdminReports = () => {
       </div>
 
       {/* Tabs */}
-      <div className="filter-group" style={{ marginBottom: 24, flexWrap: "wrap" }}>
+      <div className="ad-filter-group" style={{ marginBottom: 24, flexWrap: "wrap" }}>
         {tabs.map(t => (
-          <button key={t.id} className={`filter-btn ${activeTab === t.id ? "active" : ""}`} onClick={() => setActiveTab(t.id)}>
+          <button key={t.id} className={`ad-filter-btn ${activeTab === t.id ? "ad-active" : ""}`} onClick={() => setActiveTab(t.id)}>
             <t.icon style={{ height: 14, width: 14 }} />
             {t.label}
           </button>
@@ -224,7 +206,7 @@ const AdminReports = () => {
       {activeTab === "engagement" && (
         <>
           {/* KPI Cards with explanations */}
-          <div className="admin-summary-cards responsive-summary">
+          <div className="ad-summary-cards ad-responsive-summary">
             {renderKPI(<Activity style={{ height: 22, width: 22 }} />, "Sessions / Child", avgSessionsPerChild, "#6c5ce7",
               "Completed game sessions ÷ total children")}
             {renderKPI(<Target style={{ height: 22, width: 22 }} />, "Completion Rate", `${completionRate}%`, "#0984e3",
@@ -235,32 +217,32 @@ const AdminReports = () => {
               "Distinct children who played at least 1 game in last 7 days")}
           </div>
 
-          <div className="reports-grid-2">
+          <div className="ad-reports-grid-2">
             {/* Engagement Score Gauge */}
-            <div className="glass-card" style={{ padding: 20 }}>
+            <div className="ad-glass-card" style={{ padding: 20 }}>
               <h3 style={{ fontSize: 15, marginBottom: 4 }}>Engagement Score</h3>
-              <p style={{ fontSize: 11, color: "var(--muted-foreground)", marginBottom: 12 }}>
+              <p style={{ fontSize: 11, color: "var(--ad-muted-foreground)", marginBottom: 12 }}>
                 Composite: sessions/child (30%) + completion rate (20%) + avg score (25%) + active ratio (15%) + voice (10%)
               </p>
               <ResponsiveContainer width="100%" height={260}>
                 <RadialBarChart cx="50%" cy="50%" innerRadius="60%" outerRadius="90%" data={engagementGauge} startAngle={180} endAngle={0}>
                   <RadialBar background clockWise dataKey="value" cornerRadius={10} />
-                  <text x="50%" y="45%" textAnchor="middle" dominantBaseline="middle" style={{ fontSize: 36, fontWeight: 800, fill: "var(--foreground)" }}>{engagementScore}</text>
-                  <text x="50%" y="58%" textAnchor="middle" style={{ fontSize: 12, fill: "var(--muted-foreground)" }}>out of 100</text>
+                  <text x="50%" y="45%" textAnchor="middle" dominantBaseline="middle" style={{ fontSize: 36, fontWeight: 800, fill: "var(--ad-foreground)" }}>{engagementScore}</text>
+                  <text x="50%" y="58%" textAnchor="middle" style={{ fontSize: 12, fill: "var(--ad-muted-foreground)" }}>out of 100</text>
                 </RadialBarChart>
               </ResponsiveContainer>
             </div>
 
-            {/* Weekly Engagement Trend — FIXED: solid bar fills, no transparency */}
-            <div className="glass-card" style={{ padding: 20 }}>
+            {/* Weekly Engagement Trend */}
+            <div className="ad-glass-card" style={{ padding: 20 }}>
               <h3 style={{ fontSize: 15, marginBottom: 4 }}>Weekly Engagement Trend</h3>
-              <p style={{ fontSize: 11, color: "var(--muted-foreground)", marginBottom: 12 }}>
+              <p style={{ fontSize: 11, color: "var(--ad-muted-foreground)", marginBottom: 12 }}>
                 Game sessions + voice attempts per week with active children trend line
               </p>
               {weeklyEngagement.length > 0 ? (
                 <ResponsiveContainer width="100%" height={260}>
                   <ComposedChart data={weeklyEngagement}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+                    <CartesianGrid strokeDasharray="3 3" stroke="var(--ad-border)" />
                     <XAxis dataKey="week" fontSize={11} />
                     <YAxis {...yInt} />
                     <Tooltip content={<CustomTooltip />} />
@@ -270,21 +252,21 @@ const AdminReports = () => {
                     <Line type="monotone" dataKey="active_children" stroke="#e84393" strokeWidth={2.5} name="Active Children" dot={{ r: 3, fill: "#e84393" }} />
                   </ComposedChart>
                 </ResponsiveContainer>
-              ) : <div className="empty-state"><p>No weekly data yet</p></div>}
+              ) : <div className="ad-empty-state"><p>No weekly data yet</p></div>}
             </div>
           </div>
 
-          <div className="reports-grid-2" style={{ marginTop: 20 }}>
-            {/* Performance Trends — Bars for sessions, Lines for scores (appropriate for mixed scales) */}
-            <div className="glass-card" style={{ padding: 20 }}>
+          <div className="ad-reports-grid-2" style={{ marginTop: 20 }}>
+            {/* Performance Trends */}
+            <div className="ad-glass-card" style={{ padding: 20 }}>
               <h3 style={{ fontSize: 15, marginBottom: 4 }}>Performance Trends (Daily)</h3>
-              <p style={{ fontSize: 11, color: "var(--muted-foreground)", marginBottom: 12 }}>
+              <p style={{ fontSize: 11, color: "var(--ad-muted-foreground)", marginBottom: 12 }}>
                 Bars = session count (left axis) · Lines = avg score &amp; voice accuracy % (0-100 scale)
               </p>
               {perfTrends.length > 0 ? (
                 <ResponsiveContainer width="100%" height={260}>
                   <ComposedChart data={perfTrends}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+                    <CartesianGrid strokeDasharray="3 3" stroke="var(--ad-border)" />
                     <XAxis dataKey="date" fontSize={10} />
                     <YAxis yAxisId="left" {...yInt} />
                     <YAxis yAxisId="right" orientation="right" {...yPct} domain={[0, 100]} />
@@ -295,11 +277,11 @@ const AdminReports = () => {
                     <Line yAxisId="right" type="monotone" dataKey="voiceAccuracy" stroke="#0984e3" strokeWidth={2} name="Voice Accuracy %" dot={{ r: 2, fill: "#0984e3" }} />
                   </ComposedChart>
                 </ResponsiveContainer>
-              ) : <div className="empty-state"><p>No performance data yet</p></div>}
+              ) : <div className="ad-empty-state"><p>No performance data yet</p></div>}
             </div>
 
             {/* Role Distribution */}
-            <div className="glass-card" style={{ padding: 20 }}>
+            <div className="ad-glass-card" style={{ padding: 20 }}>
               <h3 style={{ fontSize: 15, marginBottom: 16 }}>User Role Distribution</h3>
               {rolePie.length > 0 && rolePie.some(d => d.value > 0) ? (
                 <ResponsiveContainer width="100%" height={260}>
@@ -310,35 +292,35 @@ const AdminReports = () => {
                     <Tooltip />
                   </PieChart>
                 </ResponsiveContainer>
-              ) : <div className="empty-state" style={{ padding: 60 }}><p>No user data</p></div>}
+              ) : <div className="ad-empty-state" style={{ padding: 60 }}><p>No user data</p></div>}
             </div>
           </div>
 
-          <div className="reports-grid-2" style={{ marginTop: 20 }}>
-            <div className="glass-card" style={{ padding: 20 }}>
+          <div className="ad-reports-grid-2" style={{ marginTop: 20 }}>
+            <div className="ad-glass-card" style={{ padding: 20 }}>
               <h3 style={{ fontSize: 15, marginBottom: 16 }}>User Growth (Daily)</h3>
               {growthChart.length > 0 ? (
                 <ResponsiveContainer width="100%" height={220}>
                   <BarChart data={growthChart}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+                    <CartesianGrid strokeDasharray="3 3" stroke="var(--ad-border)" />
                     <XAxis dataKey="date" fontSize={10} />
                     <YAxis {...yInt} />
                     <Tooltip content={<CustomTooltip />} />
                     <Bar dataKey="users" fill="#6c5ce7" radius={[4,4,0,0]} name="New Users" />
                   </BarChart>
                 </ResponsiveContainer>
-              ) : <div className="empty-state"><p>No growth data</p></div>}
+              ) : <div className="ad-empty-state"><p>No growth data</p></div>}
             </div>
 
-            <div className="glass-card" style={{ padding: 20 }}>
+            <div className="ad-glass-card" style={{ padding: 20 }}>
               <h3 style={{ fontSize: 15, marginBottom: 4 }}>Weekly Reading Volume</h3>
-              <p style={{ fontSize: 11, color: "var(--muted-foreground)", marginBottom: 12 }}>
+              <p style={{ fontSize: 11, color: "var(--ad-muted-foreground)", marginBottom: 12 }}>
                 Total words read per week with unique active readers overlay
               </p>
               {readingGrowthChart.length > 0 ? (
                 <ResponsiveContainer width="100%" height={260}>
                   <ComposedChart data={readingGrowthChart}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+                    <CartesianGrid strokeDasharray="3 3" stroke="var(--ad-border)" />
                     <XAxis dataKey="week" fontSize={11} />
                     <YAxis yAxisId="left" {...yInt} />
                     <YAxis yAxisId="right" orientation="right" {...yInt} />
@@ -349,7 +331,7 @@ const AdminReports = () => {
                     <Line yAxisId="right" type="monotone" dataKey="uniqueReaders" stroke="#e84393" strokeWidth={2.5} name="Unique Readers" dot={{ r: 3, fill: "#e84393" }} />
                   </ComposedChart>
                 </ResponsiveContainer>
-              ) : <div className="empty-state"><p>No reading growth data yet</p></div>}
+              ) : <div className="ad-empty-state"><p>No reading growth data yet</p></div>}
             </div>
           </div>
         </>
@@ -360,7 +342,7 @@ const AdminReports = () => {
           ════════════════════════════════════════════ */}
       {activeTab === "games" && (
         <>
-          <div className="admin-summary-cards responsive-summary">
+          <div className="ad-summary-cards ad-responsive-summary">
             {renderKPI(<Gamepad2 style={{ height: 22, width: 22 }} />, "Total Games", perf.total_games || 0, "#6c5ce7")}
             {renderKPI(<Target style={{ height: 22, width: 22 }} />, "Avg Score", `${Math.round(perf.avg_game_score || 0)}%`, "#00b894")}
             {renderKPI(<Activity style={{ height: 22, width: 22 }} />, "Avg Accuracy", `${Math.round(perf.avg_game_accuracy || 0)}%`, "#0984e3")}
@@ -368,25 +350,25 @@ const AdminReports = () => {
             {renderKPI(<Clock style={{ height: 22, width: 22 }} />, "Avg Duration", `${Math.round(perf.avg_duration || 0)}s`, "#e84393")}
           </div>
 
-          <div className="reports-grid-2" style={{ marginTop: 20 }}>
+          <div className="ad-reports-grid-2" style={{ marginTop: 20 }}>
             {/* Top Games by Play Count */}
-            <div className="glass-card" style={{ padding: 20 }}>
+            <div className="ad-glass-card" style={{ padding: 20 }}>
               <h3 style={{ fontSize: 15, marginBottom: 16 }}>Top Games by Play Count</h3>
               {topGamesChart.length > 0 ? (
                 <ResponsiveContainer width="100%" height={280}>
                   <BarChart data={topGamesChart}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+                    <CartesianGrid strokeDasharray="3 3" stroke="var(--ad-border)" />
                     <XAxis dataKey="name" fontSize={10} angle={-20} textAnchor="end" height={55} />
                     <YAxis {...yInt} />
                     <Tooltip content={<CustomTooltip />} />
                     <Bar dataKey="sessions" fill="#6c5ce7" radius={[4,4,0,0]} name="Sessions" />
                   </BarChart>
                 </ResponsiveContainer>
-              ) : <div className="empty-state" style={{ padding: 60 }}><p>No game data yet</p></div>}
+              ) : <div className="ad-empty-state" style={{ padding: 60 }}><p>No game data yet</p></div>}
             </div>
 
             {/* Score Distribution Pie */}
-            <div className="glass-card" style={{ padding: 20 }}>
+            <div className="ad-glass-card" style={{ padding: 20 }}>
               <h3 style={{ fontSize: 15, marginBottom: 16 }}>Score Distribution</h3>
               {scoreDistChart.length > 0 ? (
                 <ResponsiveContainer width="100%" height={280}>
@@ -398,18 +380,18 @@ const AdminReports = () => {
                     <Tooltip />
                   </PieChart>
                 </ResponsiveContainer>
-              ) : <div className="empty-state" style={{ padding: 60 }}><p>No score data yet</p></div>}
+              ) : <div className="ad-empty-state" style={{ padding: 60 }}><p>No score data yet</p></div>}
             </div>
           </div>
 
-          <div className="reports-grid-2" style={{ marginTop: 20 }}>
+          <div className="ad-reports-grid-2" style={{ marginTop: 20 }}>
             {/* Per-Game Score vs Accuracy Comparison */}
-            <div className="glass-card" style={{ padding: 20 }}>
+            <div className="ad-glass-card" style={{ padding: 20 }}>
               <h3 style={{ fontSize: 15, marginBottom: 16 }}>Per-Game Score vs Accuracy</h3>
               {gameCompare.length > 0 ? (
                 <ResponsiveContainer width="100%" height={280}>
                   <BarChart data={gameCompare}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+                    <CartesianGrid strokeDasharray="3 3" stroke="var(--ad-border)" />
                     <XAxis dataKey="name" fontSize={10} angle={-15} textAnchor="end" height={50} />
                     <YAxis {...yPct} domain={[0, 100]} />
                     <Tooltip content={<CustomTooltip />} />
@@ -418,11 +400,11 @@ const AdminReports = () => {
                     <Bar dataKey="accuracy" fill="#00b894" name="Avg Accuracy %" radius={[4,4,0,0]} />
                   </BarChart>
                 </ResponsiveContainer>
-              ) : <div className="empty-state"><p>No per-game data yet</p></div>}
+              ) : <div className="ad-empty-state"><p>No per-game data yet</p></div>}
             </div>
 
             {/* Session Status Pie */}
-            <div className="glass-card" style={{ padding: 20 }}>
+            <div className="ad-glass-card" style={{ padding: 20 }}>
               <h3 style={{ fontSize: 15, marginBottom: 16 }}>Session Status Breakdown</h3>
               {statusPie.length > 0 ? (
                 <ResponsiveContainer width="100%" height={280}>
@@ -434,13 +416,13 @@ const AdminReports = () => {
                     <Tooltip />
                   </PieChart>
                 </ResponsiveContainer>
-              ) : <div className="empty-state" style={{ padding: 60 }}><p>No session data</p></div>}
+              ) : <div className="ad-empty-state" style={{ padding: 60 }}><p>No session data</p></div>}
             </div>
           </div>
 
-          <div className="reports-grid-2" style={{ marginTop: 20 }}>
+          <div className="ad-reports-grid-2" style={{ marginTop: 20 }}>
             {/* Game Type Distribution */}
-            <div className="glass-card" style={{ padding: 20 }}>
+            <div className="ad-glass-card" style={{ padding: 20 }}>
               <h3 style={{ fontSize: 15, marginBottom: 16 }}>Game Type Distribution</h3>
               {typeData.length > 0 ? (
                 <ResponsiveContainer width="100%" height={260}>
@@ -452,16 +434,16 @@ const AdminReports = () => {
                     <Tooltip />
                   </PieChart>
                 </ResponsiveContainer>
-              ) : <div className="empty-state" style={{ padding: 60 }}><p>No type data</p></div>}
+              ) : <div className="ad-empty-state" style={{ padding: 60 }}><p>No type data</p></div>}
             </div>
 
             {/* Daily Completed vs Abandoned */}
-            <div className="glass-card" style={{ padding: 20 }}>
+            <div className="ad-glass-card" style={{ padding: 20 }}>
               <h3 style={{ fontSize: 15, marginBottom: 16 }}>Daily Completed vs Abandoned</h3>
               {dailyStatusChart.length > 0 ? (
                 <ResponsiveContainer width="100%" height={260}>
                   <BarChart data={dailyStatusChart}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+                    <CartesianGrid strokeDasharray="3 3" stroke="var(--ad-border)" />
                     <XAxis dataKey="date" fontSize={10} />
                     <YAxis {...yInt} />
                     <Tooltip content={<CustomTooltip />} />
@@ -470,16 +452,16 @@ const AdminReports = () => {
                     <Bar dataKey="abandoned" stackId="a" fill="#e17055" name="Abandoned" radius={[4,4,0,0]} />
                   </BarChart>
                 </ResponsiveContainer>
-              ) : <div className="empty-state"><p>No daily data</p></div>}
+              ) : <div className="ad-empty-state"><p>No daily data</p></div>}
             </div>
           </div>
 
           {/* Per-Game Performance Table */}
           {perGamePerf.length > 0 && (
-            <div className="glass-card" style={{ padding: 20, marginTop: 20 }}>
+            <div className="ad-glass-card" style={{ padding: 20, marginTop: 20 }}>
               <h3 style={{ fontSize: 15, marginBottom: 16 }}>Per-Game Performance Breakdown</h3>
-              <div className="data-table-wrapper">
-                <table className="data-table">
+              <div className="ad-data-table-wrapper">
+                <table className="ad-data-table">
                   <thead>
                     <tr>
                       <th>Game</th><th>Type</th><th>Sessions</th><th>Avg Score</th><th>Avg Accuracy</th><th>Avg Duration</th>
@@ -489,10 +471,10 @@ const AdminReports = () => {
                     {perGamePerf.map(pg => (
                       <tr key={pg.game_id}>
                         <td><strong>{pg.game?.name || `Game #${pg.game_id}`}</strong></td>
-                        <td><span className="badge badge-primary">{pg.game?.type || "—"}</span></td>
+                        <td><span className="ad-badge ad-badge-primary">{pg.game?.type || "—"}</span></td>
                         <td>{pg.sessions}</td>
-                        <td><span className="badge badge-success">{Math.round(parseFloat(pg.avg_score || 0))}%</span></td>
-                        <td><span className="badge badge-info">{Math.round(parseFloat(pg.avg_accuracy || 0))}%</span></td>
+                        <td><span className="ad-badge ad-badge-success">{Math.round(parseFloat(pg.avg_score || 0))}%</span></td>
+                        <td><span className="ad-badge ad-badge-info">{Math.round(parseFloat(pg.avg_accuracy || 0))}%</span></td>
                         <td>{Math.round(parseFloat(pg.avg_duration || 0))}s</td>
                       </tr>
                     ))}
@@ -504,11 +486,11 @@ const AdminReports = () => {
 
           {/* Per-Game Avg Duration Bar */}
           {gameCompare.length > 0 && (
-            <div className="glass-card" style={{ padding: 20, marginTop: 20 }}>
+            <div className="ad-glass-card" style={{ padding: 20, marginTop: 20 }}>
               <h3 style={{ fontSize: 15, marginBottom: 16 }}>Avg Duration per Game (seconds)</h3>
               <ResponsiveContainer width="100%" height={250}>
                 <BarChart data={gameCompare}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+                  <CartesianGrid strokeDasharray="3 3" stroke="var(--ad-border)" />
                   <XAxis dataKey="name" fontSize={10} />
                   <YAxis {...yInt} />
                   <Tooltip content={<CustomTooltip />} />
@@ -525,7 +507,7 @@ const AdminReports = () => {
           ════════════════════════════════════════════ */}
       {activeTab === "reading" && (
         <>
-          <div className="admin-summary-cards responsive-summary">
+          <div className="ad-summary-cards ad-responsive-summary">
             {renderKPI(<BookOpen style={{ height: 22, width: 22 }} />, "Instructions", `${voiceStats.active_instructions || 0} active`, "#6c5ce7")}
             {renderKPI(<Mic style={{ height: 22, width: 22 }} />, "Total Attempts", voiceStats.total_attempts || 0, "#00b894")}
             {renderKPI(<Target style={{ height: 22, width: 22 }} />, "Avg Accuracy", `${Math.round(voiceStats.avg_accuracy || 0)}%`, "#0984e3")}
@@ -535,17 +517,17 @@ const AdminReports = () => {
               "Average words per minute across all reading attempts")}
           </div>
 
-          <div className="reports-grid-2" style={{ marginTop: 20 }}>
+          <div className="ad-reports-grid-2" style={{ marginTop: 20 }}>
             {/* Daily Voice Attempts with Accuracy Line */}
-            <div className="glass-card" style={{ padding: 20 }}>
+            <div className="ad-glass-card" style={{ padding: 20 }}>
               <h3 style={{ fontSize: 15, marginBottom: 4 }}>Daily Voice Activity</h3>
-              <p style={{ fontSize: 11, color: "var(--muted-foreground)", marginBottom: 12 }}>
+              <p style={{ fontSize: 11, color: "var(--ad-muted-foreground)", marginBottom: 12 }}>
                 Bars = attempt count · Lines = accuracy &amp; pronunciation %
               </p>
               {voiceDailyChart.length > 0 ? (
                 <ResponsiveContainer width="100%" height={280}>
                   <ComposedChart data={voiceDailyChart}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+                    <CartesianGrid strokeDasharray="3 3" stroke="var(--ad-border)" />
                     <XAxis dataKey="date" fontSize={10} />
                     <YAxis yAxisId="left" {...yInt} />
                     <YAxis yAxisId="right" orientation="right" {...yPct} domain={[0, 100]} />
@@ -556,16 +538,16 @@ const AdminReports = () => {
                     <Line yAxisId="right" type="monotone" dataKey="pronunciation" stroke="#fdcb6e" strokeWidth={2} name="Pronunciation %" dot={{ r: 2, fill: "#fdcb6e" }} />
                   </ComposedChart>
                 </ResponsiveContainer>
-              ) : <div className="empty-state"><p>No voice data yet</p></div>}
+              ) : <div className="ad-empty-state"><p>No voice data yet</p></div>}
             </div>
 
             {/* Weekly Voice Trend */}
-            <div className="glass-card" style={{ padding: 20 }}>
+            <div className="ad-glass-card" style={{ padding: 20 }}>
               <h3 style={{ fontSize: 15, marginBottom: 16 }}>Weekly Reading Trend</h3>
               {weeklyVoice.length > 0 ? (
                 <ResponsiveContainer width="100%" height={280}>
                   <ComposedChart data={weeklyVoice}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+                    <CartesianGrid strokeDasharray="3 3" stroke="var(--ad-border)" />
                     <XAxis dataKey="week" fontSize={11} />
                     <YAxis yAxisId="left" {...yInt} />
                     <YAxis yAxisId="right" orientation="right" {...yPct} domain={[0, 100]} />
@@ -576,16 +558,16 @@ const AdminReports = () => {
                     <Line yAxisId="right" type="monotone" dataKey="avg_pronunciation" stroke="#fdcb6e" strokeWidth={2} name="Pronunciation %" dot={{ r: 3, fill: "#fdcb6e" }} />
                   </ComposedChart>
                 </ResponsiveContainer>
-              ) : <div className="empty-state"><p>No weekly voice data yet</p></div>}
+              ) : <div className="ad-empty-state"><p>No weekly voice data yet</p></div>}
             </div>
           </div>
 
           {/* Per-Instruction Performance Table */}
           {perInstruction.length > 0 && (
-            <div className="glass-card" style={{ padding: 20, marginTop: 20 }}>
+            <div className="ad-glass-card" style={{ padding: 20, marginTop: 20 }}>
               <h3 style={{ fontSize: 15, marginBottom: 16 }}>Per-Instruction Performance</h3>
-              <div className="data-table-wrapper">
-                <table className="data-table">
+              <div className="ad-data-table-wrapper">
+                <table className="ad-data-table">
                   <thead>
                     <tr>
                       <th>Instruction</th><th>Attempts</th><th>Avg Accuracy</th><th>Avg Pronunciation</th><th>Avg Duration</th>
@@ -596,8 +578,8 @@ const AdminReports = () => {
                       <tr key={pi.voice_instruction_id}>
                         <td><strong>{pi.voice_instruction?.title || `#${pi.voice_instruction_id}`}</strong></td>
                         <td>{pi.attempts}</td>
-                        <td><span className="badge badge-success">{Math.round(parseFloat(pi.avg_accuracy || 0))}%</span></td>
-                        <td><span className="badge badge-info">{Math.round(parseFloat(pi.avg_pronunciation || 0))}%</span></td>
+                        <td><span className="ad-badge ad-badge-success">{Math.round(parseFloat(pi.avg_accuracy || 0))}%</span></td>
+                        <td><span className="ad-badge ad-badge-info">{Math.round(parseFloat(pi.avg_pronunciation || 0))}%</span></td>
                         <td>{Math.round(parseFloat(pi.avg_duration || 0))}s</td>
                       </tr>
                     ))}
@@ -609,7 +591,7 @@ const AdminReports = () => {
 
           {/* Per-Instruction Bar Chart Comparison */}
           {perInstruction.length > 0 && (
-            <div className="glass-card" style={{ padding: 20, marginTop: 20 }}>
+            <div className="ad-glass-card" style={{ padding: 20, marginTop: 20 }}>
               <h3 style={{ fontSize: 15, marginBottom: 16 }}>Instruction Accuracy vs Pronunciation</h3>
               <ResponsiveContainer width="100%" height={280}>
                 <BarChart data={perInstruction.map(pi => ({
@@ -617,7 +599,7 @@ const AdminReports = () => {
                   accuracy: Math.round(parseFloat(pi.avg_accuracy || 0)),
                   pronunciation: Math.round(parseFloat(pi.avg_pronunciation || 0)),
                 }))}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+                  <CartesianGrid strokeDasharray="3 3" stroke="var(--ad-border)" />
                   <XAxis dataKey="name" fontSize={10} angle={-15} textAnchor="end" height={50} />
                   <YAxis {...yPct} domain={[0, 100]} />
                   <Tooltip content={<CustomTooltip />} />
@@ -631,7 +613,7 @@ const AdminReports = () => {
 
           {/* Reading Summary — full width */}
           <div style={{ marginTop: 20 }}>
-            <div className="glass-card" style={{ padding: 20 }}>
+            <div className="ad-glass-card" style={{ padding: 20 }}>
               <h3 style={{ fontSize: 15, marginBottom: 16 }}>Reading Summary</h3>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, padding: 10 }}>
                 {[
@@ -648,11 +630,11 @@ const AdminReports = () => {
                   { label: "Active Readers (30d)", value: voiceStats.active_readers_30d || 0, icon: "📅" },
                   { label: "Unique Stories Read", value: voiceStats.unique_stories_read || 0, icon: "📚" },
                 ].map((s, i) => (
-                  <div key={i} style={{ background: "var(--card-hover)", borderRadius: 12, padding: "12px 14px", display: "flex", alignItems: "center", gap: 10 }}>
+                  <div key={i} style={{ background: "var(--ad-card-hover)", borderRadius: 12, padding: "12px 14px", display: "flex", alignItems: "center", gap: 10 }}>
                     <span style={{ fontSize: 22 }}>{s.icon}</span>
                     <div>
-                      <div style={{ fontSize: 11, color: "var(--muted-foreground)", fontWeight: 600 }}>{s.label}</div>
-                      <div style={{ fontSize: 18, fontWeight: 800, color: "var(--foreground)" }}>{s.value}</div>
+                      <div style={{ fontSize: 11, color: "var(--ad-muted-foreground)", fontWeight: 600 }}>{s.label}</div>
+                      <div style={{ fontSize: 18, fontWeight: 800, color: "var(--ad-foreground)" }}>{s.value}</div>
                     </div>
                   </div>
                 ))}

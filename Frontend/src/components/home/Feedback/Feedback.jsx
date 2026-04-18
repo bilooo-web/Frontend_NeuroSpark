@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import './Feedback.css';
-import feedbackService from '../../../services/feedbackService';
 
 import cloud    from '../../../assets/cloud-blue.png';
 import dinoBlue  from '../../../assets/dino-blue.png';
@@ -36,16 +35,32 @@ function Feedback() {
   useEffect(() => {
     const fetchFeatured = async () => {
       try {
-        const featured = await feedbackService.getFeaturedFeedback(6);
+        const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api';
+        const token    = localStorage.getItem('token');
+
+        // Use admin endpoint with token if available, otherwise skip
+        if (!token) { setLoading(false); return; }
+
+        const res = await fetch(
+          `${API_BASE}/admin/feedback/all?limit=20`,
+          { headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' } }
+        );
+
+        if (!res.ok) { setLoading(false); return; }
+
+        const json = await res.json();
+        const featured = (json.data || []).filter(f => f.is_featured);
+
         if (featured.length > 0) {
-          setCards(featured.map(fb => ({
+          setCards(featured.slice(0, 6).map(fb => ({
             name: fb.guardian?.user?.full_name || fb.guardian?.user?.name || 'NeuroSpark User',
-            role: '',
+            role: '',   // not stored — could add later
             text: fb.text || '',
           })));
         }
+        // if none featured → keep FALLBACK
       } catch {
-        // Keep FALLBACK if public featured feedback load fails.
+        // network error → keep FALLBACK silently
       } finally {
         setLoading(false);
       }

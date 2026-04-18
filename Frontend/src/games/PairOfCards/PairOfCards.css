@@ -23,7 +23,6 @@
   --poc-shadow-bubble: 0 6px 0 rgba(0,0,0,0.08), 0 10px 20px rgba(0,0,0,0.10);
 }
 
-
 .poc-game-wrapper {
   font-family: 'Nunito', sans-serif;
   min-height: 100vh;
@@ -36,7 +35,6 @@
   position: relative;
   overflow-x: hidden;
 }
-
 
 .poc-sky-bg {
   position: fixed;
@@ -82,14 +80,12 @@
   50%      { opacity: 1;   transform: scale(1.2); }
 }
 
-
 .poc-mascot-img {
   width: 100px;
   height: 100px;
   object-fit: contain;
   filter: drop-shadow(0 8px 12px rgba(0,0,0,0.15));
 }
-
 
 .poc-game-title-row {
   position: relative;
@@ -399,6 +395,7 @@
   75%      { transform: rotateY(180deg) translateX(8px); }
 }
 
+
 .poc-toast {
   position: fixed;
   top: 14%;
@@ -444,6 +441,7 @@
   100% { opacity: 0; transform: translateX(-50%) translateY(-30px); }
 }
 
+
 .poc-burst {
   position: fixed;
   pointer-events: none;
@@ -469,6 +467,7 @@
   20%  { opacity: 1; transform: translate(-50%, -50%) scale(1.2); }
   100% { opacity: 0; transform: translate(calc(-50% + var(--tx)), calc(-50% + var(--ty))) scale(0.6) rotate(180deg); }
 }
+
 
 .poc-coin-reward-animation {
   position: fixed;
@@ -668,7 +667,6 @@
 
 
 .fn-gameover-screen {
-  margin-top: -30px;
   position: relative;
   z-index: 2;
   min-height: calc(100vh - 80px);
@@ -716,6 +714,32 @@
   font-size: 15px;
   margin-bottom: 16px;
 }
+
+.poc-stars {
+  display: flex;
+  justify-content: center;
+  gap: 14px;
+  margin: 8px 0 24px;
+}
+.poc-star {
+  font-size: 42px;
+  display: inline-block;
+}
+.poc-star-on {
+  color: var(--poc-yellow);
+  animation: poc-starPop 0.6s ease-out;
+  filter: drop-shadow(0 0 12px rgba(255,217,61,0.5));
+}
+.poc-star-on:nth-child(2) { animation-delay: 0.15s; animation-fill-mode: backwards; }
+.poc-star-on:nth-child(3) { animation-delay: 0.3s;  animation-fill-mode: backwards; }
+.poc-star-off { color: #DDDDE8; }
+
+@keyframes poc-starPop {
+  0%   { transform: scale(0) rotate(-180deg); opacity: 0; }
+  60%  { transform: scale(1.3) rotate(20deg);  opacity: 1; }
+  100% { transform: scale(1) rotate(0); }
+}
+
 .fn-stats-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);

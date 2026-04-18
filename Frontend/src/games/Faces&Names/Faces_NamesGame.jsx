@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import "./Faces_NamesGame.css";
 import Header from "../../components/common/Header/Header";
-import breathingexercise from "../../assets/breathing-video.mp4"; // Import the video
+import breathingexercise from "../../assets/breathing-video.mp4"; 
 import relaxGiraffe from "../../assets/relax-giraffe.png";
 
 const MALE_FACES = [
@@ -34,7 +34,6 @@ const MOTIVATION_MSGS = [
   { emoji: '🔥', text: 'Not quite!', sub: 'You will get it next time!' },
 ];
 
-// ADHD-friendly difficulty progression - SLOW and GENTLE
 function getRoundConfig(r) { 
   let facesCount;
   let memorizeTime;
@@ -144,7 +143,6 @@ export default function FacesNamesGame({
   const [headerTotalCoins, setHeaderTotalCoins] = useState(initialTotalCoins);
   const [breathingInstruction, setBreathingInstruction] = useState("Breathe in...");
 
-  // Analytics refs
   const gameStartTime = useRef(Date.now());
   const totalPausedTime = useRef(0);
   const pauseStartTime = useRef(null);
@@ -170,11 +168,6 @@ export default function FacesNamesGame({
   const breathingIntervalRef = useRef(null);
   const breathingAudioCtxRef = useRef(null);
 
-  // NOTE: totalCorrectRef and totalFacesRef are now updated DIRECTLY 
-  // in the assignment-check useEffect (not via state→useEffect→ref) 
-  // to avoid stale ref bugs when endGame fires from timer callback.
-
-  // Listen for coin updates from parent
   useEffect(() => {
     const handleCoinsUpdated = (e) => {
       if (e.detail?.totalCoins != null) {
@@ -215,7 +208,6 @@ export default function FacesNamesGame({
       if (pauseStartTime.current) { 
         const pausedDuration = Date.now()-pauseStartTime.current;
         totalPausedTime.current += pausedDuration; 
-        // Shift lastActionTime forward by paused duration so next RT isn't inflated
         lastActionTime.current += pausedDuration;
         pauseStartTime.current=null; 
       }
@@ -287,31 +279,38 @@ export default function FacesNamesGame({
     } catch(error){void error;}
   };
 
-  const buildRound = useCallback((idx) => {
+  const buildRound = useCallback((idx, showCountdown = false) => {
     const { facesCount, memorizeTime } = getRoundConfig(idx);
     const chosen = createRandomFaces(facesCount);
-    setFaces(chosen); 
-    setNamePool(createNamePool(chosen, facesCount%2===0?1:0));
-    setAssignments({}); 
-    setFeedback({}); 
+    setFaces(chosen);
+    setNamePool(createNamePool(chosen, facesCount % 2 === 0 ? 1 : 0));
+    setAssignments({});
+    setFeedback({});
     setMemTime(Math.ceil(memorizeTime));
-    
-    setScreen("countdown");
-    setCountdown(3);
-    
-    let count = 3;
-    countdownTimerRef.current = setInterval(() => {
-      count -= 1;
-      if (count === 0) {
-        clearInterval(countdownTimerRef.current);
-        setScreen("memorize");
-        setIsTimerPaused(true);
-      } else {
-        setCountdown(count);
-      }
-    }, 1000);
-    
-    roundIndexRef.current = idx; 
+
+    clearInterval(countdownTimerRef.current);
+
+    if (showCountdown) {
+      setScreen("countdown");
+      setCountdown(3);
+
+      let count = 3;
+      countdownTimerRef.current = setInterval(() => {
+        count -= 1;
+        if (count === 0) {
+          clearInterval(countdownTimerRef.current);
+          setScreen("memorize");
+          setIsTimerPaused(true);
+        } else {
+          setCountdown(count);
+        }
+      }, 1000);
+    } else {
+      setScreen("memorize");
+      setIsTimerPaused(true);
+    }
+
+    roundIndexRef.current = idx;
     lastActionTime.current = Date.now();
     lastActivityTime.current = Date.now();
   }, []);
@@ -322,7 +321,7 @@ export default function FacesNamesGame({
 
   
   const startGameFromIntro = () => {
-    buildRound(0);
+    buildRound(0, true);
   };
 
   useEffect(() => {
@@ -354,12 +353,6 @@ export default function FacesNamesGame({
     const tc = totalCorrectRef.current, tf = totalFacesRef.current;
     
     const accuracy = tf>0 ? Math.round((tc/tf)*100) : 0;
-    
-    // Score calculation:
-    // - Accuracy base: accuracy * 0.6 (max 60 pts) — primary skill measure
-    // - Progression bonus: 5 pts per COMPLETED round, capped at 30 (max 30 pts)
-    // - Efficiency bonus: +10 if accuracy >= 80% (max 10 pts)
-    // Total capped at 100
     const completed = completedRoundsRef.current;
     const accuracyBase = Math.round(accuracy * 0.6);
     const progressionBonus = Math.min(completed * 5, 30);
@@ -377,9 +370,6 @@ export default function FacesNamesGame({
     }
 
     const totalAttempts = totalAttemptsRef.current;
-    // Use incorrectAttemptsRef directly — it only counts CONFIRMED wrong answers
-    // from completed rounds. Computing (totalAttempts - tc) would incorrectly 
-    // count unfinished-round drops as "incorrect".
     const incorrectAttempts = incorrectAttemptsRef.current;
 
     if (onGameComplete) {
@@ -447,20 +437,19 @@ export default function FacesNamesGame({
     
     setFeedback(fb); 
     setRoundScore({correct,total:faces.length});
-    // Update refs DIRECTLY for accurate endGame analytics (state may be stale in timer callbacks)
     totalCorrectRef.current += correct;
     totalFacesRef.current += faces.length;
     setTotalCorrect(c=>c+correct); 
     setTotalFaces(t=>t+faces.length);
     
     setTimeout(()=>{
-      completedRoundsRef.current += 1; // Round fully completed
+      completedRoundsRef.current += 1; 
       setScreen("flash");
       setIsTimerPaused(true);
       flashTimeout.current=setTimeout(()=>{
         const ni=roundIndexRef.current+1;
         setRoundIndex(ni);
-        buildRound(ni);
+        buildRound(ni, false);
       },1600);
     },600);
   },[assignments,screen,faces,paused,buildRound]);
@@ -493,7 +482,6 @@ export default function FacesNamesGame({
   };
 
   const goBack = () => {
-    // Use refs for accurate values (state may be stale)
     const tc = totalCorrectRef.current;
     const tf = totalFacesRef.current;
     const accuracy = tf>0 ? Math.round((tc/tf)*100) : 0;
@@ -564,7 +552,6 @@ export default function FacesNamesGame({
     <div className="fn-game-wrapper">
       <Header totalCoins={headerTotalCoins} />
       
-      {/* Session Timer - visible after header, always visible during game */}
       {screen !== "gameover" && screen !== "countdown" && (
         <div className="fn-session-timer-wrap fn-timer-after-header">
           <div className="fn-session-timer-fill" style={{ width:`${sessionPct}%`, background:timerColor, transition:isTimerPaused?'none':'width 0.5s linear' }} />
@@ -572,10 +559,9 @@ export default function FacesNamesGame({
       )}
       
       <div className="fn-game-content" style={{ paddingTop: 0, paddingBottom: 0 }}>
-        <div className="stars-bg"></div>
+        <div className="fn-stars-bg"></div>
         {paused && renderPause()}
         
-        {/* Intro Screen */}
         {screen === "intro" && (
           <div className="fn-intro-screen">
             <video 
@@ -586,15 +572,13 @@ export default function FacesNamesGame({
               className="fn-breathing-video"
               onEnded={startGameFromIntro}
             />
-            {/* Breathing instruction that changes */}
           </div>
         )}
         
-        {/* Countdown Screen (3,2,1) */}
         {screen === "countdown" && (
           <div className="fn-countdown-screen">
             <div className="fn-countdown-number-large">{countdown}</div>
-            <p>Get ready...</p>
+            <p>Get ready astronaut...</p>
           </div>
         )}
         
@@ -635,7 +619,6 @@ export default function FacesNamesGame({
           </button>
         )}
 
-        {/* Timer is now shown after header */}
 
         {(screen === "memorize" || screen === "flash") && (
           <>
@@ -665,7 +648,6 @@ export default function FacesNamesGame({
         {screen === "recall" && (
           <>
             <div className="fn-phase-label">Who is who?</div>
-            {/* FACE CARDS with Enhanced Drop Zones */}
             <div className={`fn-faces-grid${isCompact ? " fn-compact" : ""}`}>
               {faces.map(face => {
                 const assigned = assignments[face.id];
@@ -689,8 +671,8 @@ export default function FacesNamesGame({
                       setDragOver(face.id);
                     }}
                     onDragOver={(e) => {
-                      e.preventDefault(); // 🔥 REQUIRED
-                      e.dataTransfer.dropEffect = "move"; // optional but better UX
+                      e.preventDefault(); 
+                      e.dataTransfer.dropEffect = "move"; 
                       setDragOver(face.id);
                     }}
                     onDragLeave={(e) => {
@@ -698,7 +680,7 @@ export default function FacesNamesGame({
                       setDragOver(null);
                     }}
                     onDrop={(e) => {
-                      e.preventDefault(); // 🔥 REQUIRED
+                      e.preventDefault(); 
                       const draggedName =
                         dragging || e.dataTransfer.getData("text/plain");
 
@@ -741,8 +723,6 @@ export default function FacesNamesGame({
                       setDragOver(null);
                     }}
                     onClick={(e) => {
-                      // Fallback for environments where HTML5 DnD is unreliable:
-                      // click a name chip to "select", then click a face card to assign.
                       if (!dragging || paused) return;
                       if (feedback[face.id] === "correct") return;
                       e.preventDefault();
@@ -784,9 +764,7 @@ export default function FacesNamesGame({
                       setDragging(null);
                       setDragOver(null);
                     }}
-                    // Touch support for mobile
                     onTouchEnd={(e) => {
-                      // This helps with mobile touch drag simulation
                       if (dragging && !feedback[face.id]) {
                         e.preventDefault();
                         const draggedName = dragging;
@@ -837,7 +815,7 @@ export default function FacesNamesGame({
                         {assigned ? (
                           (fb === "correct" ? "✓ " : fb === "wrong" ? "✗ " : "") + assigned
                         ) : (
-                          "⬇️ drop here"
+                          " drop here"
                         )}
                       </div>
                     </div>
@@ -846,7 +824,6 @@ export default function FacesNamesGame({
               })}
             </div>
 
-            {/* NAMES POOL - Enhanced draggable name chips */}
             <div className="fn-names-pool">
               {namePool.map(name => {
                 const isUsed = usedNamesSet.has(name);
@@ -859,9 +836,8 @@ export default function FacesNamesGame({
                     draggable={!isUsed}
                     onPointerDown={(e) => {
                       if (isUsed) return;
-                      // Desktop/pen fallback: click-to-select a name, then click a face.
                       if (e.pointerType === 'mouse' || e.pointerType === 'pen') {
-                        setDragging(name); // no toggle
+                        setDragging(name); 
                         lastActivityTime.current = Date.now();
                       }
                     }}
@@ -869,7 +845,7 @@ export default function FacesNamesGame({
                       if (!isUsed) {
                         e.dataTransfer.setData("text/plain", name);
                         e.dataTransfer.effectAllowed = "move";
-                        document.body.style.cursor = "grabbing"; // 🔥 FORCE cursor
+                        document.body.style.cursor = "grabbing"; 
                         try {
                           e.dataTransfer.setDragImage(e.currentTarget, 20, 20);
                         } catch {}
@@ -881,23 +857,19 @@ export default function FacesNamesGame({
                       }
                     }}
                     onDragEnd={() => {
-                      document.body.style.cursor = "default"; // 🔥 RESET
                       setDragging(null);
                       setDragOver(null);
                     }}
-                    // Make the element visually indicate it's draggable
                     style={{
                       cursor: isUsed ? 'default' : 'grab',
                       opacity: isUsed ? 0.4 : 1,
                       transition: 'all 0.2s ease'
                     }}
-                    // Touch support for mobile devices
                     onTouchStart={(e) => {
                       if (isUsed) return;
                       const element = e.currentTarget;
                       setDragging(name);
                       lastActivityTime.current = Date.now();
-                      // Visual feedback for touch
                       element.style.transform = 'scale(0.98)';
                       setTimeout(() => {
                         element.style.transform = '';
@@ -928,47 +900,42 @@ export default function FacesNamesGame({
           const coinsEarned = earnedCoins || 0;
           
           return (
-            <div className="fn-gameover-screen">
-              <div className="fn-gameover-content">
-                <div className="fn-go-emoji">{goEm}</div>
-                <h1 className="fn-go-title">{goTi}</h1>
-                <p className="fn-go-sub">{goSu}</p>
+            <div className="FN-gameover-screen">
+              <div className="FN-gameover-content">
+                <div className="FN-go-emoji">{goEm}</div>
+                <h1 className="FN-go-title">{goTi}</h1>
+                <p className="FN-go-sub">{goSu}</p>
                 
-                <div className="fn-stats-grid">
-                  <div className="fn-stat-item">
-                    <div className="fn-stat-icon">✔️</div>
-                    <div className="fn-stat-value">{totalCorrect}</div>
-                    <div className="fn-stat-label">Correct</div>
+                <div className="FN-stats-grid">
+                  <div className="FN-stat-item">
+                    <div className="FN-stat-icon">✔️</div>
+                    <div className="FN-stat-value">{totalCorrect}</div>
+                    <div className="FN-stat-label">Correct</div>
                   </div>
                   
-                  <div className="fn-stat-item">
-                    <div className="fn-stat-icon">🔄</div>
-                    <div className="fn-stat-value">{rounds}</div>
-                    <div className="fn-stat-label">Rounds</div>
+                  <div className="FN-stat-item">
+                    <div className="FN-stat-icon">🔄</div>
+                    <div className="FN-stat-value">{rounds}</div>
+                    <div className="FN-stat-label">Rounds</div>
                   </div>
                   
-                  <div className="fn-stat-item">
-                    <div className="fn-stat-icon">🎯</div>
-                    <div className="fn-stat-value">{accuracy}%</div>
-                    <div className="fn-stat-label">Accuracy</div>
+                  <div className="FN-stat-item">
+                    <div className="FN-stat-icon">🎯</div>
+                    <div className="FN-stat-value">{accuracy}%</div>
+                    <div className="FN-stat-label">Accuracy</div>
                   </div>
                   
-                  <div className="fn-stat-item">
-                    <div className="fn-stat-icon">⏱️</div>
-                    <div className="fn-stat-value">
-                      {responseTimes.current.length > 0 
-                        ? Math.round(responseTimes.current.reduce((a,b)=>a+b,0)/responseTimes.current.length) + 'ms'
+                  <div className="FN-stat-item">
+                    <div className="FN-stat-icon">⏱️</div>
+                    <div className="FN-stat-value">
+                        {responseTimes.current.length > 0
+                          ? (responseTimes.current.reduce((a,b)=>a+b,0) / responseTimes.current.length / 1000).toFixed(1) + 's'
                         : '—'}
                     </div>
-                    <div className="fn-stat-label">Avg Time</div>
+                    <div className="FN-stat-label">Avg Time</div>
                   </div>
                 </div>
-                
-                <div className="fn-coin-reward-box">
-                  <span className="fn-coin-icon">🪙</span>
-                  <span className="fn-coin-value">+{coinsEarned}</span>
-                  <span className="fn-coin-label">Coins Earned!</span>
-                </div>
+              
                 
                 <div style={{ display: 'flex', gap: 14, marginTop: 28, justifyContent: 'center' }}>
                   <button onClick={resetGame} style={{
@@ -977,7 +944,7 @@ export default function FacesNamesGame({
                     fontSize: 18, fontWeight: 700, cursor: 'pointer',
                     boxShadow: '0 8px 25px rgba(0,168,150,0.4)',
                     transition: 'transform 0.2s, box-shadow 0.2s',
-                  }}>🔄 Play Again</button>
+                  }}> Play Again</button>
                   <button onClick={goBack} style={{
                     padding: '16px 40px', borderRadius: 50,
                     border: '2px solid rgba(255,255,255,0.25)', background: 'rgba(255,255,255,0.06)',

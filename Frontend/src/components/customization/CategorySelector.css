@@ -1,8 +1,4 @@
-/* ════════════════════════════════════════════
-   CategorySelector.css — Laptop / full-width
-   ════════════════════════════════════════════ */
 
-/* ── Root / tokens ── */
 :root {
   --teal: #EAFBF7;
   --teal-dark: #EAFBF7;
@@ -12,7 +8,6 @@
   --text-dark: #1a1a1a;
 }
 
-/* ── Wrapper — full screen width ── */
 .cs-wrapper {
   width: 100%;
   min-height: 100vh;
@@ -20,9 +15,6 @@
   overflow: hidden;
 }
 
-/* ══════════════════════════════
-   HERO
-══════════════════════════════ */
 .cs-hero {
   position: relative;
   width: 100%;
@@ -44,7 +36,6 @@
   }
 }
 
-/* scattered bricks — top-right corner */
 .cs-hero__pieces {
   position: absolute;
   margin-top: -100px;
@@ -54,7 +45,6 @@
   pointer-events: none;
 }
 
-/* LEGO logo — centred at top */
 .cs-hero__logo {
   position: relative;
   z-index: 2;
@@ -75,7 +65,6 @@
     opacity: 1;
   }
 }
-/* white rounded headline card */
 .cs-hero__card {
   position: relative;
   z-index: 2;
@@ -117,7 +106,6 @@
   margin: 0;
 }
 
-/* "Just Build It" badge — bottom-left of hero */
 .cs-hero__quote {
   position: absolute;
   bottom: -40px;
@@ -140,7 +128,6 @@
   }
 }
 
-/* three minifig characters — bottom-right of hero */
 .cs-hero__characters {
   position: absolute;
   top: 27px;
@@ -206,9 +193,7 @@
 .customization-wave-tertiary path {
   fill: #3AC7C1;
 }
-/* ══════════════════════════════
-   BODY
-══════════════════════════════ */
+
 .cs-body {
   position: relative;
   background: #3AC7C1;
@@ -216,7 +201,6 @@
   min-height: 500px;
 }
 
-/* spider-man decorations hanging on sides */
 .cs-body__spider {
   position: absolute;
   margin-top: -117px;
@@ -280,7 +264,6 @@
   color: white;
 }
 
-/* ── Game grid — 3 columns, generous spacing ── */
 .cs-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -313,7 +296,6 @@
     opacity: 1;
   }
 }
-/* lego head sitting above each card */
 .cs-grid__head {
   width: 72px;
   margin-bottom: -12px;
@@ -331,7 +313,6 @@
     transform: translateY(-8px);
   }
 }
-/* the card itself */
 .cs-grid__card {
   width: 100%;
   overflow: hidden;
@@ -347,17 +328,11 @@
   display: block;
 }
 
-/* ── Hover lift ── */
 .cs-grid__item:hover .cs-grid__card {
   transform: translateY(-6px);
   box-shadow: 0 12px 28px rgba(0, 0, 0, 0.22);
 }
 
-/* ══════════════════════════════
-   LOCK / UNLOCK STYLES
-══════════════════════════════ */
-
-/* Lock overlay container */
 .cs-grid__lock-overlay {
   position: absolute;
   top: 0;
@@ -378,7 +353,6 @@
   backdrop-filter: blur(2px);
 }
 
-/* Lock icon animation */
 .cs-grid__lock-icon {
   font-size: 48px;
   filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
@@ -396,7 +370,6 @@
   }
 }
 
-/* Price tag styling */
 .cs-grid__price-tag {
   background: rgba(0, 0, 0, 0.8);
   padding: 8px 16px;
@@ -422,7 +395,6 @@
   letter-spacing: 0.5px;
 }
 
-/* Hint text for unlocking */
 .cs-grid__unlock-hint {
   font-size: 0.7rem;
   color: white;
@@ -438,7 +410,6 @@
   opacity: 1;
 }
 
-/* FREE badge for unlocked/free games */
 .cs-grid__free-badge {
   position: absolute;
   top: 12px;
@@ -454,17 +425,14 @@
   letter-spacing: 0.5px;
 }
 
-/* Disable pointer events on image inside locked card to allow overlay click */
 .cs-grid__item--locked .cs-grid__img {
   pointer-events: none;
 }
 
-/* Hover effect on locked card overlay */
 .cs-grid__item--locked:hover .cs-grid__lock-overlay {
   transform: scale(1.01);
 }
 
-/* Make locked cards still show hover effect on the card itself */
 .cs-grid__item--locked .cs-grid__card {
   transition: transform 0.22s ease, box-shadow 0.22s ease;
 }
@@ -474,7 +442,6 @@
   box-shadow: 0 12px 28px rgba(0, 0, 0, 0.22);
 }
 
-/* Additional animation for price tag on hover */
 .cs-grid__item--locked:hover .cs-grid__price-tag {
   transform: scale(1.02);
   border-color: rgba(255, 215, 0, 0.9);

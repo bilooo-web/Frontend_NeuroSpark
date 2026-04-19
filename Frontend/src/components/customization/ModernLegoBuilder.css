@@ -1,4 +1,3 @@
-/* ─── Modern Lego Builder ─────────────────────────────────────────────── */
 .modern-lego-builder {
   position: relative;
   height: 100vh;
@@ -16,7 +15,6 @@
   z-index: 0;
 }
 
-/* ─── Main 3-column layout ───────────────────────────────────────────── */
 .builder-main {
   display: flex;
   flex: 1;
@@ -28,7 +26,6 @@
   z-index: 1;
 }
 
-/* ─── Left Panel (Blueprint) ─────────────────────────────────────────── */
 .left-panel {
   flex: 0 0 240px;
   display: flex;
@@ -37,7 +34,6 @@
   animation: slideInLeft 0.3s ease;
 }
 
-/* ─── Center Panel (Canvas + progress bar) ───────────────────────────── */
 .center-panel {
   flex: 1;
   display: flex;
@@ -48,7 +44,6 @@
   max-height: calc(100vh - 100px); 
 }
 
-/* ─── Right Panel (Brick Palette) ────────────────────────────────────── */
 .right-panel {
   flex: 0 0 300px;
   display: flex;
@@ -58,7 +53,6 @@
   max-height: calc(100vh - 100px);
 }
 
-/* ─── Blueprint Card ─────────────────────────────────────────────────── */
 .blueprint-card {
   background: #dbeafe;
   border-radius: 20px;
@@ -141,7 +135,6 @@
   transition: width 0.4s ease;
 }
 
-/* ─── Canvas Area ────────────────────────────────────────────────────── */
 .canvas-area {
   position: relative;
   flex: 1;
@@ -149,7 +142,6 @@
   border-radius: 20px;
   overflow: hidden;
   box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-  /* Drop target highlight */
   transition: box-shadow 0.2s;
 }
 
@@ -157,7 +149,6 @@
   box-shadow: 0 0 0 3px #4299e1, 0 4px 20px rgba(0,0,0,0.08);
 }
 
-/* Canvas right controls */
 .canvas-controls-right {
   position: absolute;
   right: 14px;
@@ -188,7 +179,6 @@
   background: #dbeafe;
 }
 
-/* Canvas bottom pill bar */
 .canvas-controls-bottom {
   position: absolute;
   bottom: 14px;
@@ -218,7 +208,6 @@
 }
 .canvas-pill-btn:hover { background: #dbeafe; color: #2b6cb0; }
 
-/* ─── Drag-over ghost overlay on canvas ──────────────────────────────── */
 .canvas-drop-hint {
   position: absolute;
   inset: 0;
@@ -252,7 +241,6 @@
   50% { transform: scale(1.05); }
 }
 
-/* ─── Bottom Progress Bar ────────────────────────────────────────────── */
 .bottom-progress {
   background: white;
   border-radius: 16px;
@@ -307,7 +295,6 @@
   text-align: right;
 }
 
-/* ─── Brick Palette ──────────────────────────────────────────────────── */
 .brick-palette {
   background: #dbeafe;
   border-radius: 20px;
@@ -345,18 +332,17 @@
   padding: 8px 11px;
   border: none;
   border-radius: 10px;
-  background: rgba(255,255,255,0.8);
+  background: palette-search;
   font-size: 12px;
   outline: none;
   transition: all 0.2s;
   box-sizing: border-box;
 }
 .search-input:focus {
-  background: white;
+  background: palette-search;
   box-shadow: 0 0 0 2px #4299e1;
 }
 
-/* Color filter strip */
 .color-filter-strip {
   display: flex;
   gap: 5px;
@@ -397,7 +383,6 @@
   flex-shrink: 0;
 }
 
-/* ─── Brick grid — 2 columns, scrollable ─────────────────────────────── */
 .brick-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -412,7 +397,6 @@
 .brick-grid::-webkit-scrollbar-track { background: transparent; }
 .brick-grid::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.12); border-radius: 2px; }
 
-/* ─── Brick tile — draggable ─────────────────────────────────────────── */
 .brick-tile {
   background: rgba(255,255,255,0.85);
   border-radius: 12px;
@@ -463,7 +447,6 @@
   cursor: not-allowed;
 }
 
-/* Locked brick tile */
 .brick-tile.locked {
   opacity: 0.55;
   cursor: not-allowed;
@@ -482,7 +465,6 @@
   cursor: not-allowed;
 }
 
-/* Lock overlay on locked pieces */
 .brick-lock-overlay {
   position: absolute;
   top: 0;
@@ -517,7 +499,6 @@
   letter-spacing: 0.5px;
 }
 
-/* Quantity badge */
 .brick-qty-badge {
   position: absolute;
   top: 4px;
@@ -530,7 +511,6 @@
   color: #4a5568;
 }
 
-/* Part image */
 .brick-part-img {
   width: 64px;
   height: 64px;
@@ -560,7 +540,6 @@
   line-height: 1.3;
 }
 
-/* No results */
 .brick-no-results {
   grid-column: 1/-1;
   text-align: center;
@@ -569,7 +548,6 @@
   font-size: 12px;
 }
 
-/* ─── Selected piece info bar ────────────────────────────────────────── */
 .selected-piece-bar {
   display: flex;
   align-items: center;
@@ -602,7 +580,6 @@
   margin-top: 1px;
 }
 
-/* ─── Loading / error states ─────────────────────────────────────────── */
 .palette-loading {
   display: flex;
   flex-direction: column;
@@ -645,7 +622,6 @@
   margin-top: 4px;
 }
 
-/* ─── Floating Action Buttons ────────────────────────────────────────── */
 .floating-actions {
   position: fixed;
   bottom: 24px;
@@ -675,7 +651,6 @@
 }
 .float-btn.next { background: #4299e1; color: white; }
 
-/* ─── Step Complete Toast ────────────────────────────────────────────── */
 .step-complete-toast {
   position: fixed;
   bottom: 88px;
@@ -692,7 +667,6 @@
   white-space: nowrap;
 }
 
-/* ─── Drag ghost ─────────────────────────────────────────────────────── */
 .drag-ghost {
   position: fixed;
   pointer-events: none;
@@ -712,7 +686,6 @@
   display: block;
 }
 
-/* ─── Animations ─────────────────────────────────────────────────────── */
 @keyframes slideInLeft {
   from { opacity: 0; transform: translateX(-16px); }
   to   { opacity: 1; transform: translateX(0); }
@@ -729,13 +702,11 @@
   to { transform: rotate(360deg); }
 }
 
-/* ─── Scrollbars ─────────────────────────────────────────────────────── */
 ::-webkit-scrollbar { width: 5px; height: 5px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.12); border-radius: 3px; }
 ::-webkit-scrollbar-thumb:hover { background: rgba(0,0,0,0.22); }
 
-/* ===== CANVAS AREA STYLES ===== */
 .canvas-area {
   position: relative;
   flex: 1;
@@ -745,7 +716,6 @@
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
 }
 
-/* Floating controls group */
 .canvas-controls-group {
   position: absolute;
   bottom: 20px;
@@ -792,7 +762,6 @@
   color: white;
 }
 
-/* Instruction button */
 .instruction-btn-container {
   position: absolute;
   bottom: 20px;
@@ -828,7 +797,6 @@
   font-size: 14px;
 }
 
-/* Instruction Panel */
 .instruction-panel {
   position: absolute;
   top: 20px;
@@ -1058,7 +1026,6 @@
   margin-top: 6px;
 }
 
-/* Drop zone overlay */
 .drop-zone-overlay {
   position: absolute;
   top: 0;
@@ -1098,7 +1065,6 @@
   font-size: 32px;
 }
 
-/* Build status indicator */
 .build-status {
   position: absolute;
   top: 20px;
@@ -1123,7 +1089,6 @@
   font-size: 18px;
 }
 
-/* Animations */
 @keyframes slideInRight {
   from {
     opacity: 0;
@@ -1150,7 +1115,6 @@
   }
 }
 
-/* ===== GUIDED PLACEMENT STYLES ===== */
 .canvas-area-wrapper {
   position: relative;
   flex: 1;
@@ -1169,7 +1133,6 @@
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
 }
 
-/* Placement guide overlay */
 .placement-guide-overlay {
   position: absolute;
   inset: 0;
@@ -1177,7 +1140,6 @@
   z-index: 15;
 }
 
-/* Step indicator */
 .step-indicator {
   background: white;
   border-radius: 16px;
@@ -1257,7 +1219,6 @@
   transition: width 0.3s ease;
 }
 
-/* Instruction card */
 .instruction-card {
   position: absolute;
   bottom: 80px;
@@ -1352,7 +1313,6 @@
   text-align: center;
 }
 
-/* Highlight cell animation */
 @keyframes pulse {
   0%, 100% {
     opacity: 0.7;
@@ -1362,7 +1322,6 @@
   }
 }
 
-/* Floating controls */
 .canvas-controls-group {
   position: absolute;
   bottom: 20px;

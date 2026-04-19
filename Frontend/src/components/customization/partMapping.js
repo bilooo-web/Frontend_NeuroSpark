@@ -1,6 +1,3 @@
-// Maps Rebrickable part numbers to LDraw part numbers
-// LDraw uses slightly different numbering for some pieces
-
 const PART_NUMBER_MAPPING = {
   // Standard bricks
   '3001': '3001',   // Brick 2x4
@@ -39,23 +36,19 @@ const PART_NUMBER_MAPPING = {
   'default': '3004', // 1x2 brick as default
 };
 
-// Convert Rebrickable part number to LDraw part number
 export function getLDrawPartNumber(rebrickablePartNum) {
   if (!rebrickablePartNum) return PART_NUMBER_MAPPING.default;
 
   const baseNum = rebrickablePartNum.split('-')[0];
   if (!baseNum) return PART_NUMBER_MAPPING.default;
 
-  // Prefer explicit mapping for known parts
   if (PART_NUMBER_MAPPING[baseNum]) return PART_NUMBER_MAPPING[baseNum];
 
-  // If the part exists directly in LDraw naming conventions, use it
   if (/^[0-9]+$/.test(baseNum)) return baseNum;
 
   return PART_NUMBER_MAPPING.default;
 }
 
-// Check if a part is likely to have a good LDraw model
 export function hasGoodLDrawModel(partNumber) {
   const baseNum = partNumber?.split('-')[0];
   if (!baseNum) return false;

@@ -1,4 +1,3 @@
-// Frontend/src/components/customization/ProceduralLegoBrick.jsx
 import React, { useRef, useEffect, useState } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
@@ -18,17 +17,12 @@ const ProceduralLegoBrick = ({
   const groupRef = useRef();
   const [modelLoaded, setModelLoaded] = useState(false);
   const [loadError, setLoadError]     = useState(false);
-
-  // ─── Map Rebrickable color name → your exact folder name ──────────────────
-  // Maps to exact folder names in public/models/mecabricks/stitch/
   const getColorFolder = (color) => {
     if (!color) return 'All';
 
     const colorMap = {
-      // ── blacks ──
       'black': 'Black',
 
-      // ── blues ──
       'blue': 'Blue',
       'dark blue': 'Dark Blue',
       'dark azure': 'Dark Azure',
@@ -39,14 +33,12 @@ const ProceduralLegoBrick = ({
       'turquoise': 'Turquoise',
       'dark turquoise': 'Dark Turquoise',
 
-      // ── greens ──
       'green': 'Green',
       'dark green': 'Green',
       'lime': 'Lime',
       'olive green': 'Green',
       'bright green': 'Bright Green',
 
-      // ── pinks / reds ──
       'pink': 'Magenta',
       'bright pink': 'Deep Pink',
       'medium dark pink': 'Dark Pink',
@@ -55,7 +47,6 @@ const ProceduralLegoBrick = ({
       'red': 'Red',
       'dark red': 'Dark Red',
 
-      // ── yellows / oranges ──
       'yellow': 'Yellow',
       'light yellow': 'Light Yellow',
       'bright light yellow': 'Light Yellow',
@@ -63,7 +54,6 @@ const ProceduralLegoBrick = ({
       'bright light orange': 'Bright Light Orange',
       'dark orange': 'Dark Orange',
 
-      // ── whites / grays ──
       'white': 'White',
       'light gray': 'Light Bluish Gray',
       'light grey': 'Light Bluish Gray',
@@ -72,7 +62,6 @@ const ProceduralLegoBrick = ({
       'dark gray': 'Dark Bluish Gray',
       'dark grey': 'Dark Bluish Gray',
 
-      // ── browns / tans ──
       'brown': 'Brown',
       'reddish brown': 'Brown',
       'dark brown': 'Brown',
@@ -82,18 +71,15 @@ const ProceduralLegoBrick = ({
       'light nougat': 'Nougat',
       'dark tan': 'Tan',
 
-      // ── purples ──
       'magenta': 'Magenta',
       'purple': 'Magenta',
       'dark purple': 'Magenta',
       'lavender': 'Magenta',
 
-      // ── metallics ──
       'gold': 'Pearl Gold',
       'silver': 'Pearl Gold',
       'pearl gold': 'Pearl Gold',
 
-      // ── trans ──
       'trans-clear': 'Trans-Clear',
       'transparent': 'Trans-Clear',
     };
@@ -102,12 +88,10 @@ const ProceduralLegoBrick = ({
     return colorMap[normalized] || 'All';
   };
 
-  // ─── Build ordered list of paths to try ───────────────────────────────────
   const buildPaths = () => {
     if (!partNum) return [];
     const folder = getColorFolder(colorName);
 
-    // Priority: exact color folder first, then "All" fallback, then root
     const bases = [
       `/models/mecabricks/${modelSet}/${folder}`,
       `/models/mecabricks/${modelSet}/All`,
@@ -116,7 +100,6 @@ const ProceduralLegoBrick = ({
 
     const paths = [];
     for (const base of bases) {
-      // prefer .obj (so MTL colours load), then .glb / .gltf
       paths.push({ url: `${base}/${partNum}.obj`,  type: 'obj',  base });
       paths.push({ url: `${base}/${partNum}.glb`,  type: 'glb',  base });
       paths.push({ url: `${base}/${partNum}.gltf`, type: 'gltf', base });
@@ -124,16 +107,11 @@ const ProceduralLegoBrick = ({
     return paths;
   };
 
-  // ─── Helpers ──────────────────────────────────────────────────────────────
   const clearGroup = () => {
     if (!groupRef.current) return;
     while (groupRef.current.children.length > 0)
       groupRef.current.remove(groupRef.current.children[0]);
   };
-
-  // Only override vertex colours if there is NO mtl-based material (i.e. the
-  // model loaded grey). We detect that by checking if any material has a
-  // non-default color already set by the MTL.
   const applyColorIfNeeded = (model) => {
     if (!colorHex || !colorHex.startsWith('#')) return;
     const colorInt = parseInt(colorHex.slice(1), 16);
@@ -142,11 +120,10 @@ const ProceduralLegoBrick = ({
       if (!child.isMesh) return;
       const mats = Array.isArray(child.material) ? child.material : [child.material];
       const allDefault = mats.every((m) => {
-        // MeshPhongMaterial/MeshStandardMaterial default color is 0xffffff
         const hex = m.color?.getHex?.();
         return hex === undefined || hex === 0xffffff || hex === 0x000000;
       });
-      if (!allDefault) return; // MTL already provided real colour — keep it
+      if (!allDefault) return; 
 
       if (Array.isArray(child.material)) {
         child.material = child.material.map((m) => {
@@ -160,65 +137,42 @@ const ProceduralLegoBrick = ({
   };
 
   const centerAndScale = (model) => {
-    // ── Proportional scaling — preserve size relationships between pieces ─────
-    //
-    // The goal: every piece scales by the SAME factor so a 1×2 brick is twice
-    // as wide as a 1×1, a 2×4 is four times as wide, etc.
-    //
-    // Problem: OBJ exporters use different units. Mecabricks can export in:
-    //   • LDU  — 1 stud = 20 units   → scale = 0.55/20  = 0.02750
-    //   • mm   — 1 stud =  8 mm      → scale = 0.55/8   = 0.06875
-    //   • cm   — 1 stud =  0.8 cm    → scale = 0.55/0.8 = 0.68750
-    //
-    // Strategy: measure the raw bounding box, then try each known scale factor.
-    // Pick the one that produces a "sane" LEGO piece size:
-    //   reasonable stud count = largest horizontal dim / 0.55 should be 1–12.
-    // ────────────────────────────────────────────────────────────────────────
+    const STUD = 0.55;
 
-    // Step 1: measure raw bounding box (no changes yet)
-    const rawBox  = new THREE.Box3().setFromObject(model);
-    const rawSize = rawBox.getSize(new THREE.Vector3());
+    model.updateMatrixWorld(true);
+    const rawBox    = new THREE.Box3().setFromObject(model);
+    const rawSize   = rawBox.getSize(new THREE.Vector3());
     const rawCenter = rawBox.getCenter(new THREE.Vector3());
-
-    // Step 2: try candidate scale factors (LDU, mm, cm, and a coarser LDraw variant)
-    const STUD = 0.55; // scene-units per stud (matches cellSize in CanvasArea)
     const candidates = [
-      { name: 'LDU',  factor: STUD / 20   },   // 0.02750
-      { name: 'mm',   factor: STUD / 8    },    // 0.06875
-      { name: 'cm',   factor: STUD / 0.8  },    // 0.68750
-      { name: 'LDU½', factor: STUD / 10   },   // 0.05500 (some exporters halve LDU)
+      { name: 'LDU',  factor: STUD / 20   },
+      { name: 'mm',   factor: STUD / 8    },
+      { name: 'cm',   factor: STUD / 0.8  },
+      { name: 'LDU½', factor: STUD / 10   },
     ];
-
-    // For each candidate, simulate the largest horizontal dimension after scaling
-    // A sane LEGO piece sits between 0.4 studs (smaller than 1×1) and 16 studs wide.
-    const rawMaxH = Math.max(rawSize.x, rawSize.z); // horizontal max (ignore Y)
-
+    const rawMaxH = Math.max(rawSize.x, rawSize.z);
     let bestFactor = candidates[0].factor;
     for (const { name, factor } of candidates) {
-      const scaledMaxH = rawMaxH * factor;
-      const studCount  = scaledMaxH / STUD;
-      console.log(`🔍 Part ${partNum} — ${name}: maxH=${scaledMaxH.toFixed(3)}, studs≈${studCount.toFixed(1)}`);
+      const studCount = (rawMaxH * factor) / STUD;
       if (studCount >= 0.4 && studCount <= 16) {
         bestFactor = factor;
-        console.log(`✅ Using ${name} scale (${factor}) for part ${partNum}`);
+        console.log(`✅ Part ${partNum}: ${name} scale (${factor.toFixed(5)}), studs≈${studCount.toFixed(1)}`);
         break;
       }
     }
 
-    // Step 3: center X/Z, align bottom to Y=0
-    model.position.x -= rawCenter.x;
-    model.position.z -= rawCenter.z;
-    model.position.y -= rawBox.min.y;
+    model.scale.setScalar(bestFactor);
 
-    // Step 4: apply the chosen scale
-    model.scale.multiplyScalar(bestFactor);
+    model.updateMatrixWorld(true);
+    const scaledBox = new THREE.Box3().setFromObject(model);
+    const scaledCenter = scaledBox.getCenter(new THREE.Vector3());
 
-    // Step 5: re-snap bottom to Y=0 after scaling shifts things
-    const boxAfter = new THREE.Box3().setFromObject(model);
-    model.position.y -= boxAfter.min.y;
+    model.position.x -= scaledCenter.x;
+    model.position.z -= scaledCenter.z;
+    model.position.y -= scaledBox.min.y;
 
-    // Debug: final size — a 1×2 plate should be ~1.10 × 0.22 × 0.55
-    const finalSize = boxAfter.getSize(new THREE.Vector3());
+    model.updateMatrixWorld(true);
+    const finalBox  = new THREE.Box3().setFromObject(model);
+    const finalSize = finalBox.getSize(new THREE.Vector3());
     console.log(`📐 Part ${partNum} final: ${finalSize.x.toFixed(3)} × ${finalSize.y.toFixed(3)} × ${finalSize.z.toFixed(3)}`);
 
     model.traverse((child) => {
@@ -226,7 +180,6 @@ const ProceduralLegoBrick = ({
     });
   };
 
-  // ─── Load loop ────────────────────────────────────────────────────────────
   useEffect(() => {
     if (!partNum) { setLoadError(true); return; }
 
@@ -263,10 +216,9 @@ const ProceduralLegoBrick = ({
       };
 
       if (type === 'obj') {
-        // ── Try to load MTL first, then OBJ ──────────────────────────────
         const mtlUrl = `${base}/${partNum}.mtl`;
         const mtlLoader = new MTLLoader();
-        mtlLoader.setPath(`${base}/`); // so textures resolve correctly
+        mtlLoader.setPath(`${base}/`);
 
         mtlLoader.load(
           mtlUrl,
@@ -278,7 +230,6 @@ const ProceduralLegoBrick = ({
           },
           undefined,
           () => {
-            // No MTL found — load OBJ with plain colour
             console.log(`ℹ️  No MTL at ${mtlUrl}, loading OBJ without materials`);
             const objLoader = new OBJLoader();
             objLoader.load(url, (obj) => onSuccess(obj), undefined, onFail);
@@ -298,11 +249,8 @@ const ProceduralLegoBrick = ({
 
     tryLoad();
     return () => { isMounted = false; };
-
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [partNum, colorHex, colorName, modelSet]);
 
-  // ─── Idle animation for unplaced pieces ───────────────────────────────────
   useFrame((state) => {
     if (!groupRef.current || isPlaced || !modelLoaded) return;
     groupRef.current.position.y =
@@ -310,12 +258,8 @@ const ProceduralLegoBrick = ({
     groupRef.current.rotation.y =
       Math.sin(state.clock.elapsedTime * 1.5) * 0.1;
   });
-
-  // ─── Fallback box-brick when no model is found ────────────────────────────
-  // Dimensions in scene units: 1 stud = 0.55, 1 plate = 0.22, 1 brick = 0.44
   const FallbackBrick = () => {
     const fc = colorHex || '#FC97AC';
-    // [width, height, depth] — width/depth in stud units (×0.55), height in plate units (×0.22)
     const dims = {
       // 1×N plates (height = 1 plate = 0.22)
       '3024': [0.55, 0.22, 0.55],   // Plate 1×1
@@ -338,23 +282,30 @@ const ProceduralLegoBrick = ({
       '3002': [1.65, 0.44, 1.10],   // Brick 2×3
       '3001': [2.20, 0.44, 1.10],   // Brick 2×4
     };
-    const [w, h, d] = dims[partNum] || [0.55, 0.22, 0.55]; // default: 1×1 plate
+    const [w, h, d] = dims[partNum] || [0.55, 0.22, 0.55]; 
+
+    const bodyY = h / 2;
+
+    const studsX = Math.max(1, Math.round(w / 0.55));
+    const studsZ = Math.max(1, Math.round(d / 0.55));
+
     return (
       <group>
-        <mesh castShadow receiveShadow>
+        <mesh position={[0, bodyY, 0]} castShadow receiveShadow>
           <boxGeometry args={[w, h, d]} />
           <meshStandardMaterial color={fc} roughness={0.3} metalness={0.08} />
         </mesh>
-        {/* stud(s) on top */}
-        <mesh position={[0, h / 2 + 0.03, 0]} castShadow>
-          <cylinderGeometry args={[0.10, 0.10, 0.06, 16]} />
-          <meshStandardMaterial color={fc} roughness={0.25} />
-        </mesh>
-        {w > 0.7 && (
-          <mesh position={[w * 0.37, h / 2 + 0.03, 0]} castShadow>
-            <cylinderGeometry args={[0.10, 0.10, 0.06, 16]} />
-            <meshStandardMaterial color={fc} roughness={0.25} />
-          </mesh>
+        {Array.from({ length: studsX }, (_, ix) =>
+          Array.from({ length: studsZ }, (_, iz) => {
+            const sx = studsX === 1 ? 0 : (ix / (studsX - 1) - 0.5) * (w - 0.55);
+            const sz = studsZ === 1 ? 0 : (iz / (studsZ - 1) - 0.5) * (d - 0.55);
+            return (
+              <mesh key={`s-${ix}-${iz}`} position={[sx, h + 0.03, sz]} castShadow>
+                <cylinderGeometry args={[0.10, 0.10, 0.06, 16]} />
+                <meshStandardMaterial color={fc} roughness={0.25} />
+              </mesh>
+            );
+          })
         )}
       </group>
     );

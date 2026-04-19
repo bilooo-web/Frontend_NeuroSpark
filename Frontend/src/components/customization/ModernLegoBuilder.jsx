@@ -7,41 +7,60 @@ import './ModernLegoBuilder.css';
 let _pieceIdCounter = 0;
 function nextPieceId() { return ++_pieceIdCounter; }
 
-const ModernLegoBuilder = ({ model, userCoins = 0, onSpendCoins }) => {
-  const [currentStep,         setCurrentStep]         = useState(1);
-  const [placedPieces,        setPlacedPieces]        = useState([]);
-  const [showBlueprint,       setShowBlueprint]       = useState(true);
-  const [showPalette,         setShowPalette]         = useState(true);
-  const [selectedPiece,       setSelectedPiece]       = useState(null);
-  const [usedCounts,          setUsedCounts]          = useState({});
+const STORAGE_PREFIX = 'lego-builder';
+const saveKey  = (modelId, field) => `${STORAGE_PREFIX}:${modelId}:${field}`;
+const loadJSON = (key, fallback) => {
+  try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : fallback; } catch { return fallback; }
+};
+const saveJSON = (key, value) => {
+  try { localStorage.setItem(key, JSON.stringify(value)); } catch {}
+};
 
-  // ── Real total piece count — populated once BrickPalette finishes its fetch ──
-  // This is the SUM of all part quantities (e.g. 730 for Stitch), not the number
-  // of unique part rows, and certainly not model.steps which doesn't exist here.
+const ModernLegoBuilder = ({ model, userCoins = 0, onSpendCoins }) => {
+  const modelId = model?.id || 'stitch';
+
+  const [currentStep,  setCurrentStep]  = useState(() => loadJSON(saveKey(modelId, 'step'), 1));
+  const [placedPieces, setPlacedPieces] = useState(() => {
+    const saved = loadJSON(saveKey(modelId, 'placed'), []);
+    if (saved.length > 0) {
+      const maxId = Math.max(...saved.map(p => p.id || 0));
+      _pieceIdCounter = Math.max(_pieceIdCounter, maxId);
+    }
+    return saved;
+  });
+  const [showBlueprint, setShowBlueprint] = useState(true);
+  const [showPalette,   setShowPalette]   = useState(true);
+  const [selectedPiece, setSelectedPiece] = useState(null);
+  const [usedCounts,    setUsedCounts]    = useState(() => loadJSON(saveKey(modelId, 'used'), {}));
+
+  useEffect(() => { saveJSON(saveKey(modelId, 'placed'), placedPieces); }, [placedPieces, modelId]);
+  useEffect(() => { saveJSON(saveKey(modelId, 'used'),   usedCounts);   }, [usedCounts,   modelId]);
+  useEffect(() => { saveJSON(saveKey(modelId, 'step'),   currentStep);  }, [currentStep,  modelId]);
+
   const [totalPiecesInModel,  setTotalPiecesInModel]  = useState(0);
 
-  // Local coin balance that mirrors the header — decremented when pieces are unlocked
   const [localCoins, setLocalCoins] = useState(userCoins);
   useEffect(() => { setLocalCoins(userCoins); }, [userCoins]);
 
-  // ── Receive the real total from BrickPalette after it fetches from Rebrickable ──
   const handlePartsLoaded = useCallback((total) => {
     setTotalPiecesInModel(total);
   }, []);
 
-  // Progress = pieces the user has placed ÷ total pieces in the model.
-  // Shows "…" in the label until BrickPalette reports back.
   const progress = totalPiecesInModel > 0
     ? Math.min(100, Math.round((placedPieces.length / totalPiecesInModel) * 100))
     : 0;
 
-  // ── Coin deduction when a piece is purchased inside the palette ──────────
   const handlePurchasePiece = useCallback((partNum, price) => {
     setLocalCoins(prev => Math.max(0, prev - price));
+
+    const newTotal = Math.max(0, (parseInt(localStorage.getItem('totalCoins') || '0', 10) || 0) - price);
+    localStorage.setItem('totalCoins', String(newTotal));
+
+    window.dispatchEvent(new CustomEvent('coins-updated', { detail: { totalCoins: newTotal } }));
+
     if (onSpendCoins) onSpendCoins(price);
   }, [onSpendCoins]);
 
-  // ── Update used counts when placing/removing pieces ──────────────────────
   const updateUsedCount = useCallback((partNum, increment = true) => {
     setUsedCounts(prev => ({
       ...prev,
@@ -49,7 +68,6 @@ const ModernLegoBuilder = ({ model, userCoins = 0, onSpendCoins }) => {
     }));
   }, []);
 
-  // ── Place a new piece (from palette drag or click) ──────────────────────
   const handlePlacePiece = (piece, x, z) => {
     const currentUsed = usedCounts[piece.partNum] || 0;
     const maxQuantity = piece.quantity || 1;
@@ -83,14 +101,12 @@ const ModernLegoBuilder = ({ model, userCoins = 0, onSpendCoins }) => {
     handlePlacePiece(piece, x, z);
   };
 
-  // ── Remove a piece by index ──────────────────────────────────────────────
   const handleRemovePiece = (idx) => {
     const piece = placedPieces[idx];
     if (piece) updateUsedCount(piece.partNum, false);
     setPlacedPieces(prev => prev.filter((_, i) => i !== idx));
   };
 
-  // ── Move a placed piece ──────────────────────────────────────────────────
   const handleMovePiece = (idx, updatedPiece) => {
     setPlacedPieces(prev => prev.map((p, i) => i === idx ? { ...p, ...updatedPiece } : p));
     playClick();
@@ -108,7 +124,7 @@ const ModernLegoBuilder = ({ model, userCoins = 0, onSpendCoins }) => {
       osc.start();
       gain.gain.exponentialRampToValueAtTime(0.00001, ctx.currentTime + 0.1);
       osc.stop(ctx.currentTime + 0.1);
-    } catch {} // eslint-disable-line no-empty
+    } catch {} 
   };
 
   const nextStep = () => {
@@ -166,7 +182,6 @@ const ModernLegoBuilder = ({ model, userCoins = 0, onSpendCoins }) => {
     };
   }, [undoLastPiece]);
 
-  // ── Label helpers ────────────────────────────────────────────────────────
   const piecesLabel = totalPiecesInModel > 0
     ? `${placedPieces.length} / ${totalPiecesInModel} pieces`
     : placedPieces.length > 0
@@ -224,6 +239,7 @@ const ModernLegoBuilder = ({ model, userCoins = 0, onSpendCoins }) => {
         {showPalette && (
           <div className="right-panel">
             <BrickPalette
+              key={modelId}
               modelId={model?.id || 'stitch'}
               onSelectPiece={setSelectedPiece}
               onClose={() => setShowPalette(false)}

@@ -1,5 +1,8 @@
 import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
-import UnlockErrorModal from './UnlockErrorModal';
+import UnlockErrorModal   from './UnlockErrorModal';
+import UnlockConfirmModal from './UnlockConfirmModal';
+
+const storageKey = (modelId, suffix) => `lego-builder:${modelId}:${suffix}`;
 
 const MODEL_SETS = {
   stitch:    '43249-1',
@@ -84,6 +87,11 @@ const getPiecePrice = (partNum) => {
 
 const formatPrice = (price) => price.toLocaleString();
 
+const readCoinsFromStorage = () => {
+  const v = parseInt(localStorage.getItem('totalCoins') || '0', 10);
+  return isNaN(v) ? 0 : v;
+};
+
 const BrickPalette = ({
   modelId,
   onSelectPiece,
@@ -102,18 +110,74 @@ const BrickPalette = ({
   const [draggingId,   setDraggingId]   = useState(null);
   const ghostRef = useRef(null);
 
+  const [liveCoins, setLiveCoins] = useState(() => {
+    const stored = readCoinsFromStorage();
+    return stored > 0 ? stored : userCoins;
+  });
+
+  useEffect(() => {
+    const onCoinsUpdated = (e) => {
+      if (e.detail?.totalCoins != null) {
+        setLiveCoins(Number(e.detail.totalCoins));
+      } else {
+        setLiveCoins(readCoinsFromStorage());
+      }
+    };
+    const onCoinsSynced = () => setLiveCoins(readCoinsFromStorage());
+    const onStorage = (e) => {
+      if (e.key === 'totalCoins') setLiveCoins(readCoinsFromStorage());
+    };
+    window.addEventListener('coins-updated', onCoinsUpdated);
+    window.addEventListener('coins-synced',  onCoinsSynced);
+    window.addEventListener('storage',       onStorage);
+    return () => {
+      window.removeEventListener('coins-updated', onCoinsUpdated);
+      window.removeEventListener('coins-synced',  onCoinsSynced);
+      window.removeEventListener('storage',       onStorage);
+    };
+  }, []);
+
+  useEffect(() => {
+    setLiveCoins(prev => {
+      const stored = readCoinsFromStorage();
+      return stored > 0 ? stored : userCoins;
+    });
+  }, [userCoins]);
+
   const setNum = MODEL_SETS[modelId] || MODEL_SETS.stitch;
 
   const [freePieces,     setFreePieces]     = useState(() => new Set());
-  const [unlockedPieces, setUnlockedPieces] = useState(() => new Set());
+  const [unlockedPieces, setUnlockedPieces] = useState(() => {
+    try {
+      const saved = localStorage.getItem(storageKey(modelId, 'unlocked'));
+      return saved ? new Set(JSON.parse(saved)) : new Set();
+    } catch { return new Set(); }
+  });
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(storageKey(modelId, 'unlocked'), JSON.stringify([...unlockedPieces]));
+    } catch {}
+  }, [unlockedPieces, modelId]);
+
+  const [errorModal,   setErrorModal]   = useState({ isOpen: false, pieceName: '', piecePrice: 0 });
+  const [confirmModal, setConfirmModal] = useState({ isOpen: false, pieceName: '', piecePrice: 0, partNum: '' });
+  const closeErrorModal   = () => setErrorModal({ isOpen: false, pieceName: '', piecePrice: 0 });
+  const closeConfirmModal = () => setConfirmModal({ isOpen: false, pieceName: '', piecePrice: 0, partNum: '' });
 
   const isPieceLocked = useCallback((partNum) => {
     const key = String(partNum);
     return !freePieces.has(key) && !unlockedPieces.has(key);
   }, [freePieces, unlockedPieces]);
 
-  const [errorModal, setErrorModal] = useState({ isOpen: false, pieceName: '', piecePrice: 0 });
-  const closeErrorModal = () => setErrorModal({ isOpen: false, pieceName: '', piecePrice: 0 });
+  const handleConfirmPurchase = () => {
+    const { partNum, piecePrice } = confirmModal;
+    closeConfirmModal();
+    if (onPurchasePiece) onPurchasePiece(partNum, piecePrice);
+    setLiveCoins(prev => Math.max(0, prev - piecePrice));
+    setUnlockedPieces(prev => new Set([...prev, partNum]));
+    
+  };
 
   const handleUnlockAttempt = (part) => {
     const partNum = String(part.part.part_num);
@@ -122,16 +186,9 @@ const BrickPalette = ({
     const price = getPiecePrice(partNum);
     const name  = part.part.name;
 
-    if (userCoins >= price) {
-      const ok = window.confirm(
-        `Unlock "${name}" for ${formatPrice(price)} coins?\n\nYour balance: ${formatPrice(userCoins)} coins`
-      );
-      if (ok) {
-        if (onPurchasePiece) onPurchasePiece(partNum, price);
-        setUnlockedPieces(prev => new Set([...prev, partNum]));
-        return true;
-      }
-      return false;
+    if (liveCoins >= price) {
+      setConfirmModal({ isOpen: true, pieceName: name, piecePrice: price, partNum });
+      return false; 
     } else {
       setErrorModal({ isOpen: true, pieceName: name, piecePrice: price });
       return false;
@@ -144,7 +201,6 @@ const BrickPalette = ({
     setParts([]);
     setActiveColor('all');
     setFreePieces(new Set());
-    setUnlockedPieces(new Set());
     try {
       const data = await fetchAllParts(setNum);
       data.sort((a, b) => a.color.name.localeCompare(b.color.name));
@@ -160,7 +216,7 @@ const BrickPalette = ({
     } finally {
       setLoading(false);
     }
-  }, [setNum, onPartsLoaded]);
+  }, [setNum]); 
 
   useEffect(() => { loadParts(); }, [loadParts]);
   useEffect(() => () => {
@@ -318,15 +374,7 @@ const BrickPalette = ({
           <span style={{ fontSize: 10, color: '#4a5568' }}>·</span>
           <span style={{ fontSize: 11 }}>{getSetDisplayName(modelId)}</span>
         </div>
-        <div style={{
-          display: 'flex', alignItems: 'center', gap: 4,
-          background: 'rgba(0,0,0,0.07)', borderRadius: 20, padding: '2px 8px',
-        }}>
-          <span style={{ fontSize: 13 }}>🪙</span>
-          <span style={{ fontSize: 11, fontWeight: 800, color: '#b7791f', letterSpacing: 0.3 }}>
-            {formatPrice(userCoins)}
-          </span>
-        </div>
+        
       </div>
 
       <div className="palette-search">
@@ -371,7 +419,7 @@ const BrickPalette = ({
           const isExhausted = remaining <= 0;
           const locked      = isPieceLocked(part.part.part_num);
           const lockPrice   = getPiecePrice(part.part.part_num);
-          const canAfford   = userCoins >= lockPrice;
+          const canAfford   = liveCoins >= lockPrice;
 
           return (
             <div
@@ -444,7 +492,6 @@ const BrickPalette = ({
                 </div>
               )}
 
-              {/* Image or colour swatch */}
               {part.part.part_img_url ? (
                 <img
                   src={part.part.part_img_url}
@@ -470,7 +517,6 @@ const BrickPalette = ({
         })}
       </div>
 
-      {/* Selected piece bar */}
       {selectedPart && (
         <div className="selected-piece-bar">
           {selectedPart.part.part_img_url && (
@@ -491,13 +537,22 @@ const BrickPalette = ({
         </div>
       )}
 
-      {/* Not-enough-coins modal */}
       <UnlockErrorModal
         isOpen={errorModal.isOpen}
         onClose={closeErrorModal}
         gameName={errorModal.pieceName}
         gamePrice={errorModal.piecePrice}
-        userCoins={userCoins}
+        userCoins={liveCoins}
+        formatPrice={formatPrice}
+      />
+
+      <UnlockConfirmModal
+        isOpen={confirmModal.isOpen}
+        onClose={closeConfirmModal}
+        onConfirm={handleConfirmPurchase}
+        pieceName={confirmModal.pieceName}
+        piecePrice={confirmModal.piecePrice}
+        liveCoins={liveCoins}
         formatPrice={formatPrice}
       />
     </div>

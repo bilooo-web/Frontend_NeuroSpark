@@ -4,7 +4,6 @@ import { OrbitControls } from '@react-three/drei';
 import * as THREE from 'three';
 import ProceduralLegoBrick from './ProceduralLegoBrick';
 
-// ─── Color map ────────────────────────────────────────────────────────────
 const COLOR_MAP = {
   'Black': '#1B2A34', 'Blue': '#0055BF', 'Red': '#C91A09',
   'Yellow': '#F2CD37', 'Green': '#237841', 'White': '#FFFFFF',
@@ -30,14 +29,12 @@ function resolveColor(c) {
   return COLOR_MAP[c] || COLOR_MAP[c.toLowerCase()] || '#C41E3A';
 }
 
-// ─── Instruction page config ──────────────────────────────────────────────
 const INSTR_BASE  = 'https://lego.brickinstructions.com/instructions/43000/43249/';
 const THUMB_BASE  = 'https://lego.brickinstructions.com/thumbnails/43000/43249/';
 const TOTAL_PAGES = 152;
 const pageUrl  = (n) => INSTR_BASE + String(n).padStart(3, '0') + '.jpg';
 const thumbUrl = (n) => THUMB_BASE  + String(n).padStart(3, '0') + '.jpg';
 
-// ─── LEGO Stud-Snap System ───────────────────────────────────────────────
 const STUD  = 0.55;
 const PLATE = 0.22;
 
@@ -85,9 +82,11 @@ function getSnapHeight(heightMap, x, z, partNum) {
 }
 
 const BASEPLATE_TOP = 0.035;
-function platesToY(plates) { return BASEPLATE_TOP + plates * PLATE; }
+const STUD_H = 0.04;
+function platesToY(plates) {
+  return BASEPLATE_TOP + STUD_H + plates * PLATE;
+}
 
-// ─── Audio ────────────────────────────────────────────────────────────────
 function makeCtx() {
   try { return new (window.AudioContext || window.webkitAudioContext)(); } catch { return null; }
 }
@@ -130,7 +129,6 @@ function playHoverTick() {
   osc.start(); osc.stop(ctx.currentTime+0.03);
 }
 
-// ─── Ghost preview ────────────────────────────────────────────────────────
 const GhostPiece = ({ piece, x, z, heightMap, gridWidth, gridHeight, cellSize }) => {
   const [sw, sd] = getPartDims(piece?.partNum);
   const snapPlates = getSnapHeight(heightMap, x, z, piece?.partNum);
@@ -151,7 +149,6 @@ const GhostPiece = ({ piece, x, z, heightMap, gridWidth, gridHeight, cellSize })
         <boxGeometry args={[sw*cellSize-0.06, PLATE*0.55, sd*cellSize-0.06]} />
         <meshStandardMaterial color={color} transparent opacity={0.32} depthWrite={false} />
       </mesh>
-      {/* stud rings */}
       {Array.from({length:sw},(_,dx)=>Array.from({length:sd},(_,dz)=>(
         <mesh key={`gs-${dx}-${dz}`}
           position={[(dx-(sw-1)/2)*cellSize, PLATE*0.28, (dz-(sd-1)/2)*cellSize]}>
@@ -163,7 +160,6 @@ const GhostPiece = ({ piece, x, z, heightMap, gridWidth, gridHeight, cellSize })
   );
 };
 
-// ─── Stud footprint highlights on baseplate ───────────────────────────────
 const StudHighlights = ({ cells, gridWidth, gridHeight, cellSize, valid }) => (
   <>
     {cells.map(({ x, z }, i) => {
@@ -181,7 +177,6 @@ const StudHighlights = ({ cells, gridWidth, gridHeight, cellSize, valid }) => (
   </>
 );
 
-// ─── Single interactive placed piece ─────────────────────────────────────
 const PlacedPiece = ({ piece, idx, isHeld, isHovered, onPickUp, onRightClick, gridWidth, gridHeight, cellSize }) => {
   const groupRef = useRef();
   const yBase = platesToY(piece.stackPlates || 0);
@@ -192,11 +187,9 @@ const PlacedPiece = ({ piece, idx, isHeld, isHovered, onPickUp, onRightClick, gr
 
   useFrame((_, delta) => {
     if (!groupRef.current) return;
-    // Smooth lift when picked up
     targetY.current = isHeld ? yBase + 0.6 : yBase;
     currentY.current += (targetY.current - currentY.current) * Math.min(1, delta*20);
     groupRef.current.position.y = currentY.current;
-    // Gentle hover wobble
     if (isHovered && !isHeld) {
       groupRef.current.rotation.y = Math.sin(Date.now()*0.003)*0.06;
     } else {
@@ -219,7 +212,6 @@ const PlacedPiece = ({ piece, idx, isHeld, isHovered, onPickUp, onRightClick, gr
         position={[0, 0, 0]}
         isPlaced
       />
-      {/* Gold glow ring on hover */}
       {isHovered && !isHeld && (
         <mesh position={[0, -0.01, 0]} rotation={[-Math.PI/2, 0, 0]}>
           <ringGeometry args={[0.22, 0.32, 28]} />
@@ -231,7 +223,6 @@ const PlacedPiece = ({ piece, idx, isHeld, isHovered, onPickUp, onRightClick, gr
   );
 };
 
-// ─── Building Grid ────────────────────────────────────────────────────────
 const BuildingGrid = ({ width, height, cellSize, onCellClick, onCellHover,
   hoveredCell, dropTargetCell, highlightCells }) => {
   const cells = [];
@@ -274,9 +265,8 @@ const BuildingGrid = ({ width, height, cellSize, onCellClick, onCellHover,
   );
 };
 
-// ─── Instruction Panel ────────────────────────────────────────────────────
 const InstructionPanel = ({ onClose, onPageChange }) => {
-  const [page,setPage]=[useState(1)[0],useState(1)[1]]; // hoisted below
+  const [page,setPage]=[useState(1)[0],useState(1)[1]]; 
   const [pg, setPg]           = useState(1);
   const [imgLoaded,setImgLoaded] = useState(false);
   const [expanded,setExpanded]   = useState(false);
@@ -329,7 +319,6 @@ const InstructionPanel = ({ onClose, onPageChange }) => {
   );
 };
 
-// ─── Main CanvasArea ──────────────────────────────────────────────────────
 const CanvasArea = ({
   model, placedPieces, currentStep, onPlacePiece,
   selectedPiece, onDropPiece, onRemovePiece, onMovePiece,
@@ -347,29 +336,32 @@ const CanvasArea = ({
   const [isDragOver,       setIsDragOver]       = useState(false);
   const [dropTargetCell,   setDropTargetCell]   = useState(null);
   const [showInstructions, setShowInstructions] = useState(false);
+  const [isDraggingFromPalette, setIsDraggingFromPalette] = useState(false);
+  const dragCancelledRef = useRef(false);
   const orbitRef   = useRef(null);
   const canvasRef  = useRef(null);
   const lastGhostKey = useRef('');
 
-  // Disable orbit controls while holding a piece (so camera doesn't rotate on drag)
   useEffect(() => {
     if (orbitRef.current) orbitRef.current.enabled = !heldPiece && !selectedPiece;
   }, [heldPiece, selectedPiece]);
 
-  // Height map — exclude currently held piece so it doesn't block its own landing spot
+  useEffect(() => {
+    const onDragStart = () => { dragCancelledRef.current = false; };
+    window.addEventListener('dragstart', onDragStart);
+    return () => window.removeEventListener('dragstart', onDragStart);
+  }, []);
+
   const heightMap = buildHeightMap(placedPieces, heldPiece?.piece?.id);
 
-  // Active piece (held or selected from palette)
   const activePiece = heldPiece?.piece || selectedPiece;
   const activeCell  = ghostCell;
   const [sw, sd]    = getPartDims(activePiece?.partNum);
 
-  // Stud highlight cells under ghost
   const highlightCells = activeCell && activePiece
     ? Array.from({length:sw},(_,dx)=>Array.from({length:sd},(_,dz)=>({x:activeCell.x+dx,z:activeCell.z+dz}))).flat()
     : [];
 
-  // Pick up a placed piece
   const handlePickUp = useCallback((piece, idx) => {
     playPickupSound();
     setHeldPiece({ piece, originalIdx: idx });
@@ -377,14 +369,12 @@ const CanvasArea = ({
     setHoveredPieceIdx(null);
   }, []);
 
-  // Right-click remove
   const handleRightClick = useCallback((piece, idx) => {
     playRemoveSound();
     onRemovePiece?.(idx);
     if (heldPiece?.originalIdx === idx) { setHeldPiece(null); setGhostCell(null); }
   }, [onRemovePiece, heldPiece]);
 
-  // Grid cell click
   const handleCellClick = (x, z) => {
     if (heldPiece) {
       const snapPlates = getSnapHeight(heightMap, x, z, heldPiece.piece.partNum);
@@ -404,7 +394,6 @@ const CanvasArea = ({
     }
   };
 
-  // Grid cell hover — update ghost and play tick
   const handleCellHover = (x, z) => {
     if (x === null) { setHoveredCell(null); return; }
     setHoveredCell({ x, z });
@@ -418,25 +407,32 @@ const CanvasArea = ({
     }
   };
 
-  // Escape cancels held piece
   useEffect(() => {
     const onKey = (e) => {
-      if (e.key === 'Escape' && heldPiece) {
-        // Return piece to original position
+      if (e.key !== 'Escape') return;
+      if (heldPiece) {
         onMovePiece?.(heldPiece.originalIdx, heldPiece.piece);
         setHeldPiece(null);
+        setGhostCell(null);
+      }
+      if (isDraggingFromPalette) {
+        dragCancelledRef.current = true;
+        setIsDraggingFromPalette(false);
+        setIsDragOver(false);
+        setDropTargetCell(null);
         setGhostCell(null);
       }
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [heldPiece, onMovePiece]);
+  }, [heldPiece, onMovePiece, isDraggingFromPalette]);
 
-  // HTML drag from palette
   const handleDragOver = (e) => {
     e.preventDefault();
-    e.dataTransfer.dropEffect = 'copy';
+    e.dataTransfer.dropEffect = dragCancelledRef.current ? 'none' : 'copy';
+    if (dragCancelledRef.current) return;
     setIsDragOver(true);
+    setIsDraggingFromPalette(true);
     if (canvasRef.current) {
       const rect = canvasRef.current.getBoundingClientRect();
       const gx = Math.max(0,Math.min(gridWidth-1,  Math.floor(((e.clientX-rect.left)/rect.width)*gridWidth)));
@@ -445,10 +441,21 @@ const CanvasArea = ({
       setGhostCell({ x:gx, z:gz });
     }
   };
-  const handleDragLeave = () => { setIsDragOver(false); setDropTargetCell(null); setGhostCell(null); };
+  const handleDragLeave = () => {
+    setIsDragOver(false);
+    setDropTargetCell(null);
+    setGhostCell(null);
+  };
   const handleDrop = (e) => {
     e.preventDefault();
     setIsDragOver(false);
+    setIsDraggingFromPalette(false);
+    if (dragCancelledRef.current) {
+      dragCancelledRef.current = false;
+      setDropTargetCell(null);
+      setGhostCell(null);
+      return;
+    }
     const raw = e.dataTransfer.getData('application/lego-piece');
     if (!raw) { setDropTargetCell(null); setGhostCell(null); return; }
     let piece; try { piece=JSON.parse(raw); } catch { setDropTargetCell(null); setGhostCell(null); return; }
@@ -472,8 +479,7 @@ const CanvasArea = ({
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
     >
-      {/* ── Held piece banner ── */}
-      {heldPiece && (
+      {(heldPiece || isDraggingFromPalette) && (
         <div style={{
           position:'absolute', top:12, left:'50%', transform:'translateX(-50%)',
           background:'rgba(0,0,0,0.78)', color:'white',
@@ -482,8 +488,12 @@ const CanvasArea = ({
           border:'1px solid rgba(255,255,255,0.18)',
           display:'flex', alignItems:'center', gap:10, boxShadow:'0 4px 20px rgba(0,0,0,0.3)',
         }}>
-          <span style={{fontSize:18}}>🖐️</span>
-          <span>Click a cell to place · <kbd style={{background:'rgba(255,255,255,0.18)',padding:'1px 7px',borderRadius:4,fontFamily:'monospace'}}>Esc</kbd> to cancel</span>
+          <span style={{fontSize:18}}>{heldPiece ? '🖐️' : '🧱'}</span>
+          <span>
+            {heldPiece ? 'Click a cell to place · ' : 'Drop on a cell to place · '}
+            <kbd style={{background:'rgba(255,255,255,0.18)',padding:'1px 7px',borderRadius:4,fontFamily:'monospace'}}>Esc</kbd>
+            {' to cancel'}
+          </span>
         </div>
       )}
 
@@ -521,8 +531,7 @@ const CanvasArea = ({
           highlightCells={highlightCells}
         />
 
-        {/* Stud highlights under ghost */}
-        {highlightCells.length > 0 && (
+        {highlightCells.length > 0 && (heldPiece || isDraggingFromPalette) && (
           <StudHighlights
             cells={highlightCells}
             gridWidth={gridWidth} gridHeight={gridHeight} cellSize={cellSize}
@@ -530,8 +539,7 @@ const CanvasArea = ({
           />
         )}
 
-        {/* Ghost snap preview */}
-        {ghostCell && activePiece && (
+        {ghostCell && activePiece && (heldPiece || isDraggingFromPalette) && (
           <GhostPiece
             piece={activePiece}
             x={ghostCell.x} z={ghostCell.z}
@@ -540,12 +548,11 @@ const CanvasArea = ({
           />
         )}
 
-        {/* Placed pieces */}
         {placedPieces.map((piece, idx) => {
           const isBeingHeld = heldPiece?.piece?.id != null
             ? heldPiece.piece.id === piece.id
             : heldPiece?.originalIdx === idx;
-          if (isBeingHeld) return null; // ghost shows instead
+          if (isBeingHeld) return null; 
           return (
             <PlacedPiece
               key={piece.id || `p-${idx}`}
@@ -560,7 +567,6 @@ const CanvasArea = ({
           );
         })}
 
-        {/* Step guide ghost pieces */}
         {currentStepData?.pieces.map((piece, idx) => {
           if (placedPieces.some(p => p.x===piece.x && p.z===piece.z)) return null;
           const xPos = (piece.x - gridWidth/2 + 0.5)*cellSize;
@@ -587,7 +593,6 @@ const CanvasArea = ({
         />
       </Canvas>
 
-      {/* Controls */}
       <div className="canvas-controls-right">
         <button className="canvas-control-btn" title="Blueprint"
           onClick={()=>window.dispatchEvent(new CustomEvent('toggleBlueprint'))}>📋</button>

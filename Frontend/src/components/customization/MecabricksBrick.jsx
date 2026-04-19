@@ -1,4 +1,3 @@
-// Frontend/src/components/customization/MecabricksBrick.jsx
 import React, { useEffect, useRef, useState } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
@@ -24,7 +23,6 @@ const MecabricksBrick = ({
     let isMounted = true;
     const loader = new GLTFLoader();
     
-    // Use LOCAL model from public folder
     const localModelUrl = `/models/mecabricks/${partNum}.glb`;
     
     console.log(`Loading local model for part ${partNum} from: ${localModelUrl}`);
@@ -33,15 +31,11 @@ const MecabricksBrick = ({
       localModelUrl,
       (gltf) => {
         if (!isMounted) return;
-        
-        // Clear previous model
         while (groupRef.current?.children.length > 0) {
           groupRef.current.remove(groupRef.current.children[0]);
         }
         
         const model = gltf.scene;
-        
-        // Apply color if provided (for models that support color changes)
         if (colorHex && colorHex.startsWith('#')) {
           const colorInt = parseInt(colorHex.slice(1), 16);
           model.traverse((child) => {
@@ -61,12 +55,10 @@ const MecabricksBrick = ({
           });
         }
         
-        // Center the model
         const box = new THREE.Box3().setFromObject(model);
         const center = box.getCenter(new THREE.Vector3());
         model.position.sub(center);
         
-        // Scale appropriately for grid
         const size = box.getSize(new THREE.Vector3());
         const maxDim = Math.max(size.x, size.y, size.z);
         if (maxDim > 0) {
@@ -105,14 +97,11 @@ const MecabricksBrick = ({
     }
   });
   
-  // Smart fallback brick that shows correct size based on part number
   const FallbackBrick = () => {
     const fallbackColor = colorHex || '#FC97AC';
     
-    // Get dimensions based on part number
     const getDimensions = () => {
       const dimensions = {
-        // Plates (1x1, 1x2, 1x3, 1x4, 1x6)
         '3024': { w: 0.45, d: 0.45, h: 0.22 }, // Plate 1x1
         '3023': { w: 0.9, d: 0.45, h: 0.22 },  // Plate 1x2
         '3623': { w: 1.35, d: 0.45, h: 0.22 }, // Plate 1x3
@@ -145,7 +134,6 @@ const MecabricksBrick = ({
     
     return (
       <group>
-        {/* Main brick body */}
         <mesh castShadow receiveShadow>
           <boxGeometry args={[w, h, d]} />
           <meshStandardMaterial 
@@ -155,7 +143,6 @@ const MecabricksBrick = ({
           />
         </mesh>
         
-        {/* Add stud(s) for bricks and plates */}
         {w >= 0.45 && (
           <>
             <mesh position={[0, h/2 + 0.03, 0]} castShadow>

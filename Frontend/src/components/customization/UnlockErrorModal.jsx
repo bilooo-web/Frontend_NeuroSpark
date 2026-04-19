@@ -6,23 +6,17 @@ import floatingLegos from '../../assets/floating_legos.png';
 import legoLogoPieces from '../../assets/lego_logo_pieces.png';
 import closeX from '../../assets/close_x.png';
 
-/** Read the same localStorage key the Header writes to */
 const readCoins = () => {
   const v = parseInt(localStorage.getItem('totalCoins') || '0', 10);
   return isNaN(v) ? 0 : v;
 };
 
 const UnlockErrorModal = ({ isOpen, onClose, gameName, gamePrice, formatPrice }) => {
-  // Live coins — always in sync with the Header
   const [liveCoins, setLiveCoins] = useState(readCoins);
 
   useEffect(() => {
     if (!isOpen) return;
-
-    // Refresh immediately when modal opens
     setLiveCoins(readCoins());
-
-    // Stay in sync with coins-updated (e.g. after earning/spending coins)
     const onCoinsUpdated = (e) => {
       if (e.detail?.totalCoins != null) {
         setLiveCoins(Number(e.detail.totalCoins));
@@ -30,11 +24,7 @@ const UnlockErrorModal = ({ isOpen, onClose, gameName, gamePrice, formatPrice })
         setLiveCoins(readCoins());
       }
     };
-
-    // Stay in sync with coins-synced (periodic server sync)
     const onCoinsSynced = () => setLiveCoins(readCoins());
-
-    // Stay in sync with storage changes from other tabs
     const onStorage = (e) => {
       if (e.key === 'totalCoins') setLiveCoins(readCoins());
     };
@@ -56,24 +46,15 @@ const UnlockErrorModal = ({ isOpen, onClose, gameName, gamePrice, formatPrice })
     <div className="uem-overlay" onClick={onClose}>
       <div className="uem-modal" onClick={(e) => e.stopPropagation()}>
         <div className="stars-bg" />
-
-        {/* Close Button */}
         <img
           src={closeX}
           alt="close"
           className="uem-close-btn"
           onClick={onClose}
         />
-
-        {/* Floating Legos - top decoration */}
         <img src={floatingLegos} alt="" className="uem-floating-legos" />
-
-        {/* LEGO Logo with pieces - bottom right */}
         <img src={legoLogoPieces} alt="lego" className="uem-lego-logo" />
-
-        {/* Main Content */}
         <div className="uem-content">
-          {/* Sad LEGO Character */}
           <img
             src={sadLegoCharacter}
             alt="sad lego character"
@@ -88,7 +69,6 @@ const UnlockErrorModal = ({ isOpen, onClose, gameName, gamePrice, formatPrice })
               <strong> "{gameName}"</strong>
             </p>
 
-            {/* Live balance — always matches the Header coin display */}
             <p className="uem-balance">
               Current balance: {formatPrice(liveCoins)} coins
             </p>

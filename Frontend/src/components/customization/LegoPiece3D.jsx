@@ -4,7 +4,6 @@ import { useFrame } from '@react-three/fiber';
 const LegoPiece3D = ({ type, color, position, isPlaced, onPlace }) => {
   const meshRef = useRef();
   
-  // Realistic LEGO colors
   const colors = {
     red: '#C41E3A',
     blue: '#0055A4',
@@ -19,7 +18,6 @@ const LegoPiece3D = ({ type, color, position, isPlaced, onPlace }) => {
   
   const pieceColor = colors[color] || colors.red;
   
-  // Floating animation for pieces not yet placed
   useFrame((state) => {
     if (meshRef.current && !isPlaced) {
       meshRef.current.position.y = position[1] + Math.sin(state.clock.elapsedTime * 3) * 0.03;
@@ -27,7 +25,6 @@ const LegoPiece3D = ({ type, color, position, isPlaced, onPlace }) => {
     }
   });
   
-  // Different geometries based on piece type
   const renderPiece = () => {
     if (type === 'wheel') {
       return (
@@ -85,15 +82,12 @@ const LegoPiece3D = ({ type, color, position, isPlaced, onPlace }) => {
       );
     }
     
-    // Default brick with stud
     return (
       <group>
-        {/* Main brick body */}
         <mesh castShadow receiveShadow>
           <boxGeometry args={[0.45, 0.2, 0.45]} />
           <meshStandardMaterial color={pieceColor} roughness={0.3} metalness={0.1} />
         </mesh>
-        {/* LEGO stud on top */}
         <mesh position={[0, 0.12, 0]} castShadow>
           <cylinderGeometry args={[0.12, 0.12, 0.06, 16]} />
           <meshStandardMaterial color={pieceColor} roughness={0.2} />

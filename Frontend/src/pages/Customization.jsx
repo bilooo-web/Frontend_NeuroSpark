@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import ModernLegoBuilder from '../components/customization/ModernLegoBuilder';
 import CategorySelector from '../components/customization/CategorySelector';
 import Header from "../components/common/Header/Header";
@@ -141,6 +141,13 @@ const Customization = () => {
   const [selectedCategory, setSelectedCategory] = useState(null);
   const showBuilder = !!selectedCategory;
 
+  // ✅ FIXED: Scroll to top on component mount
+  useEffect(() => {
+    window.scrollTo(0, 0);
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
+  }, []);
+
   // ⭐ Handle game selection from CategorySelector
   const handleSelectCategory = (game) => {
     const selectedModel = modelMap[game.id];
@@ -149,11 +156,15 @@ const Customization = () => {
         ...game,
         model: selectedModel
       });
+      // Scroll to top when opening a builder
+      window.scrollTo(0, 0);
     }
   };
 
   const handleBack = () => {
     setSelectedCategory(null);
+    // Scroll to top when going back to category selector
+    window.scrollTo(0, 0);
   };
 
   return (

@@ -8,30 +8,11 @@
   overflow: hidden;
 }
 
-/* ================================================
-   STORY HEADER  — Header component fills it fully
-   ================================================ */
-.sb-header {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 60px;
-  background: rgba(255, 255, 255, 0.92);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 10000;
-}
 
 /* ── Back button: fixed, below the header, left-aligned ── */
 .sb-back-btn {
   position: fixed;
-  top: 72px;           /* 60px header + 12px gap */
+  top: 100px;           /* overlaps scene for floating overlay */
   left: 20px;
   padding: 8px 18px;
   border: 2px solid #e2e8f0;
@@ -67,7 +48,7 @@
    ================================================ */
 .global-mic-control {
   position: fixed;
-  bottom: 13px;
+  bottom: 4px;
   margin-left: 950px;
   transform: translateX(-50%);
   z-index: 9999;

@@ -91,7 +91,10 @@ const StoryIntro = () => {
           }
         })
         .catch(() => { setPrev(null); })
-        .finally(() => { setLoadingProgress(false); });
+        .finally(() => {
+          setLoadingProgress(false);
+          window.scrollTo({ top: 0, behavior: 'instant' });
+        });
     } else {
       setPrev(null);
       setLoadingProgress(false);

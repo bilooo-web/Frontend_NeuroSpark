@@ -323,14 +323,13 @@ const TherapistDashboard = () => {
     try {
       setLoadError(null);
 
-      // ONE request — replaces 24 individual requests
+
       const res = await api.get('/guardian/dashboard/full');
       if (!mounted.current) return;
 
       const childrenData = res.children || res.data?.children || [];
       childrenDataRef.current = childrenData;
 
-      // Format children for ChildCard (expects user.full_name or name)
       const formattedChildren = childrenData.map(c => ({
         ...c,
         user:              { full_name: c.name },
@@ -397,13 +396,11 @@ const TherapistDashboard = () => {
     if (!feedback.trim()) { setFeedbackError('Please enter your feedback'); return; }
 
     setFeedbackError(''); setFeedbackSuccess(null);
-
-    // Clear form instantly — don't make the user wait for Python sentiment analysis
     const savedText   = feedback;
     const savedRating = rating;
     setRating(0);
     setFeedback('');
-    setFeedbackSuccess('sending'); // show a subtle "sending" state
+    setFeedbackSuccess('sending'); 
 
     try {
       const r = await guardianService.submitFeedback({ text: savedText, rating: savedRating });
@@ -414,7 +411,6 @@ const TherapistDashboard = () => {
       } else {
         setFeedbackError('Submission failed.');
         setFeedbackSuccess(null);
-        // Restore form on failure
         setFeedback(savedText);
         setRating(savedRating);
       }

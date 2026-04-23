@@ -4,11 +4,12 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard, Users, Brain, AlertTriangle,
   Mail, X, Menu, Home, MessageSquare, Settings, LogOut,
+  Stethoscope,
 } from 'lucide-react';
 import api from '../../services/api';
 
 const Sidebar = () => {
-  const { user, setUser, isTherapist } = useApp();
+  const { user, setUser, isTherapist, isParent } = useApp();
   const location = useLocation();
   const navigate = useNavigate();
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -24,12 +25,6 @@ const Sidebar = () => {
     const interval = setInterval(syncPhoto, 1000);
     return () => { window.removeEventListener('storage', syncPhoto); clearInterval(interval); };
   }, []);
-
-  // ── REMOVED: getAllAnomalies() call here was hitting a 500 endpoint on
-  //    every single page load and causing duplicate errors in the console.
-  //    The anomaly badge count is now driven from the TherapistDashboard's
-  //    single /dashboard/full response if needed, or simply omitted here.
-  //    The Anomalies page itself loads its own data when visited.
 
   const fullName   = user?.full_name || user?.name || 'User';
   const initials   = fullName.split(' ').map(n => n[0]).join('').slice(0,2).toUpperCase();
@@ -50,19 +45,29 @@ const Sidebar = () => {
     }
   };
 
+  // Build nav based on role
   const mainNav = [
-    { label:'Overview',  icon:<LayoutDashboard size={20}/>, path:'/guardian/dashboard' },
-    { label:'Patients',  icon:<Users size={20}/>,           path:'/guardian/children' },
+    { label: 'Overview', icon: <LayoutDashboard size={20} />, path: '/guardian/dashboard' },
   ];
+
   if (isTherapist) {
     mainNav.push(
-      { label:'Anomalies',     icon:<AlertTriangle size={20}/>, path:'/guardian/anomalies' },
-      { label:'Pending Invites', icon:<Mail size={20}/>,       path:'/guardian/invites' },
+      { label: 'Patients',         icon: <Users size={20} />,         path: '/guardian/children' },
+      { label: 'Anomalies',        icon: <AlertTriangle size={20} />, path: '/guardian/anomalies' },
+      { label: 'Pending Invites',  icon: <Mail size={20} />,          path: '/guardian/invites' },
     );
   }
+
+  if (isParent) {
+    mainNav.push(
+      { label: 'My Children',      icon: <Users size={20} />,         path: '/guardian/children' },
+      { label: 'Find Therapist',   icon: <Stethoscope size={20} />,   path: '/guardian/therapists' },
+    );
+  }
+
   mainNav.push(
-    { label:'Feedbacks', icon:<MessageSquare size={20}/>, path:'/guardian/feedbacks' },
-    { label:'Settings',  icon:<Settings size={20}/>,      path:'/guardian/settings' },
+    { label: 'Feedbacks', icon: <MessageSquare size={20} />, path: '/guardian/feedbacks' },
+    { label: 'Settings',  icon: <Settings size={20} />,      path: '/guardian/settings' },
   );
 
   const handleNav = path => { navigate(path); setMobileOpen(false); };
@@ -70,7 +75,7 @@ const Sidebar = () => {
   const sidebarContent = (
     <div className="ptd-sidebar">
       <div className="ptd-sidebar-logo">
-        <img src="/src/assets/logo_s.png" alt="logo" style={{ height:'50px', width:'auto', objectFit:'contain' }} />
+        <img src="/src/assets/logo_s.png" alt="logo" style={{ height: '50px', width: 'auto', objectFit: 'contain' }} />
       </div>
       <div className="ptd-sidebar-nav">
         <span className="ptd-sidebar-section-label">Menu</span>
@@ -82,16 +87,16 @@ const Sidebar = () => {
         ))}
       </div>
       <div className="ptd-sidebar-footer">
-        <button className="ptd-sidebar-home" onClick={handleLogout} disabled={loggingOut} style={{ color:'#ef4444', marginBottom:4 }}>
-          <LogOut size={18}/> {loggingOut ? 'Logging out…' : 'Log Out'}
+        <button className="ptd-sidebar-home" onClick={handleLogout} disabled={loggingOut} style={{ color: '#ef4444', marginBottom: 4 }}>
+          <LogOut size={18} /> {loggingOut ? 'Logging out…' : 'Log Out'}
         </button>
         <button className="ptd-sidebar-home" onClick={() => handleNav('/')}>
-          <Home size={18}/> Go Back Home
+          <Home size={18} /> Go Back Home
         </button>
         <div className="ptd-sidebar-user">
-          <div className="ptd-sidebar-user-avatar" style={{ overflow:'hidden', background: profilePhoto ? 'transparent' : undefined }}>
+          <div className="ptd-sidebar-user-avatar" style={{ overflow: 'hidden', background: profilePhoto ? 'transparent' : undefined }}>
             {profilePhoto
-              ? <img src={profilePhoto} alt="Profile" style={{ width:'100%', height:'100%', objectFit:'cover', borderRadius:'50%' }}/>
+              ? <img src={profilePhoto} alt="Profile" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }} />
               : initials}
           </div>
           <div className="ptd-sidebar-user-info">
@@ -105,13 +110,13 @@ const Sidebar = () => {
 
   return (
     <>
-      <button className="ptd-mobile-menu-btn" onClick={() => setMobileOpen(true)}><Menu size={22}/></button>
+      <button className="ptd-mobile-menu-btn" onClick={() => setMobileOpen(true)}><Menu size={22} /></button>
       {mobileOpen && (
         <>
-          <div className="ptd-mobile-overlay" onClick={() => setMobileOpen(false)}/>
+          <div className="ptd-mobile-overlay" onClick={() => setMobileOpen(false)} />
           <div className="ptd-mobile-sidebar">
             {sidebarContent}
-            <button className="ptd-mobile-close" onClick={() => setMobileOpen(false)}><X size={18}/></button>
+            <button className="ptd-mobile-close" onClick={() => setMobileOpen(false)}><X size={18} /></button>
           </div>
         </>
       )}

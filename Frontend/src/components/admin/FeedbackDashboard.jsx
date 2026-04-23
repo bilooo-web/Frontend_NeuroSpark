@@ -1,5 +1,5 @@
 // FeedbackDashboard.jsx - Updated with inline approve/reject buttons
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import {
   MessageSquare,
   ThumbsUp,
@@ -55,37 +55,69 @@ const FeedbackDashboard = () => {
   const [exportLoading, setExportLoading] = useState(false);
   const [actionLoading, setActionLoading] = useState({});
 
-  useEffect(() => {
-    fetchData();
-  }, [currentPage, filterSentiment, filterApproval, period]);
+  const isFirstLoad = useRef(true);
 
-  const fetchData = async () => {
+  // ── Fetch only the feedback list (called on filter/page changes) ──────────
+  const fetchFeedbackList = useCallback(async (
+    page, sentiment, approval
+  ) => {
     try {
       setLoading(true);
-      setError(null);
-      
       const filters = {
-        sentiment: filterSentiment !== 'all' ? filterSentiment : '',
-        approvalStatus: filterApproval !== 'all' ? filterApproval : ''
+        sentiment:      sentiment !== 'all' ? sentiment : '',
+        approvalStatus: approval  !== 'all' ? approval  : '',
       };
-      
-      const [feedbackRes, statsRes, trendsRes] = await Promise.all([
-        feedbackService.getAllFeedback(currentPage, 20, filters),
-        feedbackService.getFeedbackStats(),
-        feedbackService.getFeedbackTrends(period)
-      ]);
-      
-      setFeedback(feedbackRes.feedback || []);
-      setTotalPages(feedbackRes.totalPages || 1);
-      setStats(statsRes);
-      setTrends(trendsRes);
+      const res = await feedbackService.getAllFeedback(page, 20, filters);
+      setFeedback(res.feedback || []);
+      setTotalPages(res.totalPages || 1);
     } catch (err) {
-      console.error("Feedback fetch error:", err);
+      console.error('Feedback list fetch error:', err);
       setError('Failed to load feedback data. Please try again.');
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  // ── Fetch stats + trends (only on mount and after approve/reject) ─────────
+  const fetchStatsAndTrends = useCallback(async (activePeriod) => {
+    try {
+      const [statsRes, trendsRes] = await Promise.all([
+        feedbackService.getFeedbackStats(),
+        feedbackService.getFeedbackTrends(activePeriod),
+      ]);
+      setStats(statsRes);
+      setTrends(trendsRes);
+    } catch (err) {
+      console.error('Stats/trends fetch error:', err);
+    }
+  }, []);
+
+  // ── Full refresh (used by approve/reject) ─────────────────────────────────
+  const fetchData = useCallback(async () => {
+    await Promise.all([
+      fetchFeedbackList(currentPage, filterSentiment, filterApproval),
+      fetchStatsAndTrends(period),
+    ]);
+  }, [currentPage, filterSentiment, filterApproval, period, fetchFeedbackList, fetchStatsAndTrends]);
+
+  // ── On mount: load everything ─────────────────────────────────────────────
+  useEffect(() => {
+    fetchFeedbackList(currentPage, filterSentiment, filterApproval);
+    fetchStatsAndTrends(period);
+    isFirstLoad.current = false;
+  }, []); // eslint-disable-line
+
+  // ── Filter/page change: only re-fetch the list, no stats flash ───────────
+  useEffect(() => {
+    if (isFirstLoad.current) return;
+    fetchFeedbackList(currentPage, filterSentiment, filterApproval);
+  }, [currentPage, filterSentiment, filterApproval, fetchFeedbackList]);
+
+  // ── Period change: only re-fetch trends ──────────────────────────────────
+  useEffect(() => {
+    if (isFirstLoad.current) return;
+    fetchStatsAndTrends(period);
+  }, [period, fetchStatsAndTrends]);
 
   const handleViewFeedback = (item) => {
     setSelectedFeedback(item);
@@ -262,9 +294,7 @@ const FeedbackDashboard = () => {
           </div>
           <div className="admin-summary-card-content">
             <div className="admin-summary-card-label">Approved</div>
-            <div className="admin-summary-card-value">
-              {stats?.breakdown ? Object.values(stats.breakdown).reduce((a, b) => a + b, 0) : 0}
-            </div>
+            <div className="admin-summary-card-value">{stats?.approved ?? 0}</div>
           </div>
         </div>
 
@@ -274,7 +304,7 @@ const FeedbackDashboard = () => {
           </div>
           <div className="admin-summary-card-content">
             <div className="admin-summary-card-label">Pending Review</div>
-            <div className="admin-summary-card-value">0</div>
+            <div className="admin-summary-card-value">{stats?.pending ?? 0}</div>
           </div>
         </div>
 
@@ -496,11 +526,15 @@ const FeedbackDashboard = () => {
                 filteredFeedback.map((item) => (
                   <tr key={item.id}>
                     <td>
-                      <div style={{ 
-                        maxWidth: 300, 
-                        overflow: 'hidden', 
-                        textOverflow: 'ellipsis',
-                        whiteSpace: 'nowrap'
+                      <div style={{
+                        maxWidth: 300,
+                        display: '-webkit-box',
+                        WebkitLineClamp: 2,
+                        WebkitBoxOrient: 'vertical',
+                        overflow: 'hidden',
+                        lineHeight: '1.4',
+                        minHeight: '2.8em',
+                        fontSize: 13,
                       }}>
                         {item.text}
                       </div>

@@ -37,6 +37,7 @@ import Settings from "./pages/Settings";
 import ChildDashboard from "./pages/ChildDashboard";
 import './styles/dashboard.css'; 
 import './components/common/Loader.css';
+import ParentChildren from './pages/ParentChildren';
 
 const AdminRoute = ({ children }) => {
       const navigate = useNavigate();

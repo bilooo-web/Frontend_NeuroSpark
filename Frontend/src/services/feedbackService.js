@@ -43,17 +43,52 @@ const feedbackService = {
    * Filters: { sentiment, search, min_rating, max_rating, page, limit }
    */
   getAllFeedback: async (page = 1, limit = 20, filters = {}) => {
-    const res = await api.get('/admin/feedback/all', {
-      page,
-      limit,
-      ...filters,
+    // Only send params the backend understands — sentiment and search
+    const params = { page, limit };
+    if (filters.sentiment && filters.sentiment !== 'all' && filters.sentiment !== '') {
+      params.sentiment = filters.sentiment;
+    }
+    if (filters.search) params.search = filters.search;
+
+    const res = await api.get('/admin/feedback/all', params);
+
+    // Backend returns raw Feedback model rows under res.data
+    // Normalize to what FeedbackDashboard expects
+    const raw = Array.isArray(res.data) ? res.data : [];
+
+    const normalize = (item) => ({
+      id:          item.id,
+      text:        item.text        || '',
+      sentiment:   item.type        || 'neutral',   // DB column is 'type'
+      isApproved:  item.is_approved ?? false,        // DB column is 'is_approved'
+      rating:      item.rate        || 0,            // DB column is 'rate'
+      userName:    item.guardian?.user?.full_name || item.guardian?.user?.name || 'Anonymous',
+      userType:    item.guardian?.guardian_type   || 'user',
+      childName:   null,
+      timestamp:   item.created_at  || new Date().toISOString(),
+      confidence:  item.confidence  || 0.75,
+      scores: {
+        positive: item.type === 'positive' ? 0.9  : 0.1,
+        neutral:  item.type === 'neutral'  ? 0.8  : 0.15,
+        negative: item.type === 'negative' ? 0.85 : 0.05,
+      },
     });
+
+    let normalized = raw.map(normalize);
+
+    // Approval filter — backend doesn't support this, do it client-side
+    if (filters.approvalStatus && filters.approvalStatus !== 'all') {
+      normalized = normalized.filter(f =>
+        filters.approvalStatus === 'approved' ? f.isApproved : !f.isApproved
+      );
+    }
+
     return {
-      feedback: res.data || [],
-      total: res.pagination?.total || 0,
-      page: res.pagination?.current_page || page,
-      limit: res.pagination?.per_page || limit,
-      totalPages: res.pagination?.last_page || 1,
+      feedback:   normalized,
+      total:      res.pagination?.total        || normalized.length,
+      page:       res.pagination?.current_page || page,
+      limit:      res.pagination?.per_page     || limit,
+      totalPages: res.pagination?.last_page    || 1,
     };
   },
 
@@ -62,7 +97,25 @@ const feedbackService = {
    */
   getFeedbackStats: async () => {
     const res = await api.get('/admin/feedback/stats');
-    return res.stats || res;
+    const s = res.stats || res.data || res;
+
+    // Normalize to what FeedbackDashboard stat cards expect
+    return {
+      total:    s.total    || 0,
+      approved: s.approved || 0,
+      pending:  s.pending  || (s.total - (s.approved || 0)) || 0,
+      breakdown: {
+        positive: s.positive || 0,
+        neutral:  s.neutral  || 0,
+        negative: s.negative || 0,
+      },
+      percentages: {
+        positive: s.positive_percentage || 0,
+        neutral:  s.neutral_percentage  || 0,
+        negative: s.negative_percentage || 0,
+      },
+      averageRating: s.average_rating || 0,
+    };
   },
 
   /**
@@ -70,7 +123,10 @@ const feedbackService = {
    */
   getFeedbackTrends: async (period = 'week') => {
     const res = await api.get('/admin/feedback/trends', { period });
-    return res.trends || res.data || res;
+    const trends = res.trends || res.data || [];
+    // Backend returns: { date, total, positive, neutral, negative, avg_rating }
+    // Component expects same keys — pass through directly
+    return Array.isArray(trends) ? trends : [];
   },
 
   /**

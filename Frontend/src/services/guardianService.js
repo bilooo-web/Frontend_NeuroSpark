@@ -26,13 +26,7 @@ const guardianService = {
   inviteTherapist: (childId, therapistId) =>
     api.post('/guardian/invite-therapist', { child_id: childId, therapist_id: therapistId }),
 
-  /**
-   * Get all therapists for the directory page.
-   * Returns a normalised array regardless of API shape.
-   * Backend should return therapist profiles with:
-   *   id, user { full_name }, bio, specialties[], years_experience,
-   *   rating, rating_count, patients_count, sessions_count
-   */
+
   getTherapists: async () => {
     const res = await api.get('/guardian/therapists');
     // Normalise: API may return { therapists: [] }, { data: [] }, or []

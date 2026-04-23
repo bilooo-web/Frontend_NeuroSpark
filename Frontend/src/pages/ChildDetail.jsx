@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import DashboardLayout from '../components/layout/DashboardLayout';
+import { useApp } from '../context/AppContext';
 import { ArrowLeft, Gamepad2, Mic, Brain, AlertTriangle, FileText, Download, CheckCircle, Clock, Target, Activity, TrendingUp, TrendingDown, Save, ChevronDown, ChevronUp } from 'lucide-react';
 import { ResponsiveContainer, AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, RadarChart, Radar, PolarGrid, PolarAngleAxis } from 'recharts';
 import api from '../services/api';
@@ -42,8 +43,8 @@ const Gauge = ({ value = 0, label, color = '#137a76', size = 130 }) => {
   );
 };
 
-// ─── Note row (expandable inline per session) ─────────────────────────────────
-const NoteCell = ({ sessionId, type, existingNote, onSave }) => {
+// ─── Note cell — editable for therapist, read-only for parent ────────────────
+const NoteCell = ({ sessionId, type, existingNote, onSave, readOnly = false }) => {
   const [open, setOpen]     = useState(false);
   const [text, setText]     = useState(existingNote || '');
   const [saving, setSaving] = useState(false);
@@ -59,6 +60,26 @@ const NoteCell = ({ sessionId, type, existingNote, onSave }) => {
     setSaving(false);
   };
 
+  // Parent view: just show the note text if it exists, nothing if not
+  if (readOnly) {
+    if (!existingNote) return <span style={{ color:'#9CA3AF', fontSize:12, fontStyle:'italic' }}>—</span>;
+    return (
+      <div>
+        <button onClick={() => setOpen(o => !o)}
+          style={{ background:'none', border:'none', cursor:'pointer', color:'#137a76', fontSize:12, fontWeight:600, display:'flex', alignItems:'center', gap:4, padding:0 }}>
+          {open ? <ChevronUp size={13} /> : <ChevronDown size={13} />}
+          View Note
+        </button>
+        {open && (
+          <div style={{ marginTop:8, padding:'8px 10px', background:'#F0FDF4', borderRadius:8, border:'1px solid #BBF7D0', fontSize:12, color:'#374151', lineHeight:1.5 }}>
+            {existingNote}
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // Therapist view: full editable note
   return (
     <div>
       <button onClick={() => setOpen(o => !o)}
@@ -112,6 +133,7 @@ const RecCard = ({ text }) => (
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 const ChildDetail = () => {
+  const { isTherapist, isParent } = useApp();
   const { id }             = useParams();
   const navigate           = useNavigate();
   const [searchParams]     = useSearchParams();
@@ -568,11 +590,13 @@ td{padding:6px 9px;border-bottom:1px solid #F3F4F6;vertical-align:top;}
   const completedSessions = sessions.filter(s => s.session_status === 'completed' && (s.total_attempts || 0) > 0);
 
   const TABS = [
-    { key:'games',    label:'Game Sessions',      icon:<Gamepad2   size={15}/> },
-    { key:'voice',    label:'Voice Sessions',      icon:<Mic        size={15}/> },
-    { key:'insights', label:'Behavioral Insights', icon:<Brain      size={15}/> },
-    { key:'anomalies',label:'Anomalies',            icon:<AlertTriangle size={15}/> },
-    { key:'export',   label:'Export & Report',      icon:<FileText   size={15}/> },
+    { key:'games',    label:'Game Sessions',      icon:<Gamepad2      size={15}/> },
+    { key:'voice',    label:'Voice Sessions',      icon:<Mic           size={15}/> },
+    { key:'insights', label:'Behavioral Insights', icon:<Brain         size={15}/> },
+    // Anomalies tab: therapist only
+    ...(isTherapist ? [{ key:'anomalies', label:'Anomalies', icon:<AlertTriangle size={15}/> }] : []),
+    // Export tab: therapist only — parents just view, no export/notes
+    ...(isTherapist ? [{ key:'export', label:'Export & Report', icon:<FileText size={15}/> }] : []),
   ];
 
   // ── Loading ────────────────────────────────────────────────────────────────
@@ -623,7 +647,8 @@ td{padding:6px 9px;border-bottom:1px solid #F3F4F6;vertical-align:top;}
           {[
             { label:'Sessions', val:completedSessions.length, color:'#22C55E' },
             { label:'Voice',    val:voice.length,    color:'#3B82F6' },
-            { label:'Anomalies',val:anomalies.length, color:'#EF4444' },
+            // Anomalies count: therapist only
+            ...(isTherapist ? [{ label:'Anomalies', val:anomalies.length, color:'#EF4444' }] : []),
           ].map(s => (
             <div key={s.label} style={{ textAlign:'center' }}>
               <div style={{ fontSize:22, fontWeight:800, color:s.color }}>{s.val}</div>
@@ -682,7 +707,7 @@ td{padding:6px 9px;border-bottom:1px solid #F3F4F6;vertical-align:top;}
                       <TH>Response Variability</TH>
                       <TH>Inactivity Events</TH>
                       <TH>Status</TH>
-                      <TH>Therapist Note</TH>
+                      <TH>{isTherapist ? 'Therapist Note' : 'Note'}</TH>
                     </tr>
                   </thead>
                   <tbody>
@@ -723,7 +748,7 @@ td{padding:6px 9px;border-bottom:1px solid #F3F4F6;vertical-align:top;}
                           </span>
                         </TD>
                         <TD style={{ minWidth:180 }}>
-                          <NoteCell sessionId={s.id} type="game" existingNote={s.guardian_note} onSave={saveGameNote} />
+                          <NoteCell sessionId={s.id} type="game" existingNote={s.guardian_note} onSave={saveGameNote} readOnly={isParent} />
                         </TD>
                       </tr>
                     ))}
@@ -779,7 +804,7 @@ td{padding:6px 9px;border-bottom:1px solid #F3F4F6;vertical-align:top;}
                       <TH>Pause (ms)</TH>
                       <TH>Speaker Clicks</TH>
                       <TH>Word Clicks</TH>
-                      <TH>Therapist Note</TH>
+                      <TH>{isTherapist ? 'Therapist Note' : 'Note'}</TH>
                     </tr>
                   </thead>
                   <tbody>
@@ -828,7 +853,7 @@ td{padding:6px 9px;border-bottom:1px solid #F3F4F6;vertical-align:top;}
                         <TD style={{ fontSize:12 }}>{v.speaker_clicks ?? '—'}</TD>
                         <TD style={{ fontSize:12 }}>{v.word_clicks ?? '—'}</TD>
                         <TD style={{ minWidth:180 }}>
-                          <NoteCell sessionId={v.id} type="voice" existingNote={v.guardian_note} onSave={saveVoiceNote} />
+                          <NoteCell sessionId={v.id} type="voice" existingNote={v.guardian_note} onSave={saveVoiceNote} readOnly={isParent} />
                         </TD>
                       </tr>
                     ))}

@@ -33,32 +33,31 @@ function Feedback() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchFeatured = async () => {
+    const fetchApproved = async () => {
       try {
         const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api';
-        const token    = localStorage.getItem('token');
 
-        // Use admin endpoint with token if available, otherwise skip
-        if (!token) { setLoading(false); return; }
-
+        // Public endpoint — no token required, returns only is_approved = true feedback
         const res = await fetch(
-          `${API_BASE}/admin/feedback/all?limit=20`,
-          { headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' } }
+          `${API_BASE}/feedback/approved?limit=6`,
+          { headers: { Accept: 'application/json' } }
         );
 
         if (!res.ok) { setLoading(false); return; }
 
         const json = await res.json();
-        const featured = (json.data || []).filter(f => f.is_featured);
+        const approved = json.feedback || json.data || [];
 
-        if (featured.length > 0) {
-          setCards(featured.slice(0, 6).map(fb => ({
+        if (approved.length > 0) {
+          setCards(approved.slice(0, 6).map(fb => ({
             name: fb.guardian?.user?.full_name || fb.guardian?.user?.name || 'NeuroSpark User',
-            role: '',   // not stored — could add later
+            role: fb.guardian?.guardian_type
+              ? fb.guardian.guardian_type.charAt(0).toUpperCase() + fb.guardian.guardian_type.slice(1)
+              : '',
             text: fb.text || '',
           })));
         }
-        // if none featured → keep FALLBACK
+        // if none approved yet → keep FALLBACK so homepage is never empty
       } catch {
         // network error → keep FALLBACK silently
       } finally {
@@ -66,7 +65,7 @@ function Feedback() {
       }
     };
 
-    fetchFeatured();
+    fetchApproved();
   }, []);
 
   return (

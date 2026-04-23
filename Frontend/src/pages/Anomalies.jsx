@@ -28,7 +28,7 @@ const Anomalies = () => {
   const load = async () => {
     setError('');
     try {
-      // Try fast full-dashboard endpoint first (has anomalies + children with scores)
+
       try {
         const res = await api.get('/guardian/dashboard/full');
         if (!mounted.current) return;
@@ -38,7 +38,6 @@ const Anomalies = () => {
         return;
       } catch { /* fall through */ }
 
-      // Fallback: separate calls
       const [anomRes] = await Promise.all([
         guardianService.getAllAnomalies(),
       ]);

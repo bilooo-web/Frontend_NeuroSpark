@@ -14,6 +14,7 @@ import {
   BarChart3,
   Star,
   Link2,
+  CheckCircle,
 } from "lucide-react";
 import Modal from "../components/admin/Modal";
 import adminService from "../services/adminService";
@@ -42,6 +43,13 @@ const AdminGames = () => {
   const [formData, setFormData] = useState({});
   const [formErrors, setFormErrors] = useState({});
   const [formLoading, setFormLoading] = useState(false);
+  const [deleteError, setDeleteError] = useState("");
+  const [successToast, setSuccessToast] = useState({ show: false, message: "", detail: "" });
+
+  const showSuccess = (message, detail = "") => {
+    setSuccessToast({ show: true, message, detail });
+    setTimeout(() => setSuccessToast({ show: false, message: "", detail: "" }), 2500);
+  };
 
   const [gameStats, setGameStats] = useState({ total: 0, active: 0, totalSessions: 0, avgScore: 0, overallAvgDuration: 0 });
 
@@ -134,6 +142,7 @@ const AdminGames = () => {
       };
       await adminService.createGame(payload);
       setAddModal(false);
+      showSuccess("Game Created Successfully", `${formData.name} has been added to the platform.`);
       fetchGames(pagination.current_page);
     } catch (err) {
       if (err.data?.errors) setFormErrors(err.data.errors);
@@ -177,6 +186,7 @@ const AdminGames = () => {
       };
       await adminService.updateGame(editModal.game.id, payload);
       setEditModal({ open: false, game: null });
+      showSuccess("Game Updated Successfully", `${formData.name} has been updated.`);
       fetchGames(pagination.current_page);
     } catch (err) {
       if (err.data?.errors) setFormErrors(err.data.errors);
@@ -188,12 +198,15 @@ const AdminGames = () => {
 
   const handleDeleteGame = async () => {
     setFormLoading(true);
+    setDeleteError("");
     try {
+      const deletedName = deleteModal.game?.name;
       await adminService.deleteGame(deleteModal.game.id);
       setDeleteModal({ open: false, game: null });
+      showSuccess("Game Deleted Successfully", `${deletedName} has been removed from the platform.`);
       fetchGames(pagination.current_page);
     } catch (err) {
-      alert(err.data?.message || err.message || "Failed to delete game");
+      setDeleteError(err.data?.message || err.message || "Failed to delete game");
     } finally {
       setFormLoading(false);
     }
@@ -416,51 +429,108 @@ const AdminGames = () => {
       <Modal open={editModal.open} onClose={() => setEditModal({ open: false, game: null })} title={`Edit Game — ${editModal.game?.name || ""}`} footer={<><button className="ad-btn-cancel" onClick={() => setEditModal({ open: false, game: null })}>Cancel</button><button className="ad-btn ad-btn-primary" onClick={handleEditGame} disabled={formLoading}>{formLoading ? "Saving..." : "Save Changes"}</button></>}>{gameFormFields()}</Modal>
 
       <Modal open={viewModal.open} onClose={() => setViewModal({ open: false, game: null })} title="Game Details">
-        {viewModal.game && (
-          <div>
-            <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 20, padding: "16px", background: "var(--ad-muted)", borderRadius: 12 }}>
-              <div style={{ width: 52, height: 52, borderRadius: 12, background: "linear-gradient(135deg, #6c5ce7, #00b894)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                <Gamepad2 style={{ height: 26, width: 26, color: "#fff" }} />
+        {viewModal.game && (() => {
+          const g = viewModal.game;
+          return (
+            <div>
+              {/* Hero Header */}
+              <div style={{
+                background: "linear-gradient(135deg, #6c5ce7 0%, #00b894 100%)",
+                borderRadius: 16, padding: "20px 24px", marginBottom: 20, position: "relative", overflow: "hidden",
+              }}>
+                <div style={{ position: "absolute", top: -20, right: -20, width: 120, height: 120, borderRadius: "50%", background: "rgba(255,255,255,0.08)" }} />
+                <div style={{ display: "flex", alignItems: "center", gap: 16, position: "relative", zIndex: 1 }}>
+                  <div style={{ width: 56, height: 56, borderRadius: 14, background: "rgba(255,255,255,0.2)", backdropFilter: "blur(10px)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                    <Gamepad2 style={{ height: 28, width: 28, color: "#fff" }} />
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontSize: 18, fontWeight: 800, color: "#fff" }}>{g.name}</div>
+                    <div style={{ display: "flex", gap: 6, marginTop: 8, flexWrap: "wrap" }}>
+                      <span style={{ background: "rgba(255,255,255,0.2)", color: "#fff", fontSize: 11, fontWeight: 700, padding: "3px 10px", borderRadius: 20, border: "1px solid rgba(255,255,255,0.25)" }}>{g.type}</span>
+                      {g.game_slug && (
+                        <span style={{ background: "rgba(255,255,255,0.15)", color: "#fff", fontSize: 11, fontWeight: 600, padding: "3px 10px", borderRadius: 20, border: "1px solid rgba(255,255,255,0.2)", fontFamily: "monospace", display: "inline-flex", alignItems: "center", gap: 3 }}>
+                          <Link2 style={{ height: 10, width: 10 }} />{g.game_slug}
+                        </span>
+                      )}
+                      <span style={{ background: g.is_active ? "rgba(0,184,148,0.3)" : "rgba(255,255,255,0.15)", color: "#fff", fontSize: 11, fontWeight: 700, padding: "3px 10px", borderRadius: 20, border: "1px solid rgba(255,255,255,0.25)" }}>{g.is_active ? "✓ Active" : "Inactive"}</span>
+                    </div>
+                  </div>
+                </div>
               </div>
-              <div style={{ flex: 1 }}>
-                <div style={{ fontSize: 17, fontWeight: 700, color: "var(--ad-foreground)" }}>{viewModal.game.name}</div>
-                <div style={{ display: "flex", gap: 6, marginTop: 6, flexWrap: "wrap" }}>
-                  <span className={`ad-badge ${typeBadge[viewModal.game.type]}`}>{viewModal.game.type}</span>
-                  <span className="ad-badge ad-badge-info" style={{ display: "inline-flex", alignItems: "center", gap: 3, fontSize: 10 }}>
-                    <Link2 style={{ height: 10, width: 10 }} />
-                    {viewModal.game.game_slug || "Not linked"}
-                  </span>
-                  <span className={`ad-badge ${viewModal.game.is_active ? "ad-badge-success" : "ad-badge-muted"}`}>{viewModal.game.is_active ? "Active" : "Inactive"}</span>
+
+              {/* Performance Metrics */}
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10, marginBottom: 20 }}>
+                {[
+                  { label: "Avg Duration", value: g.avg_duration > 0 ? `${g.avg_duration}s` : "—", color: "#6c5ce7", icon: "⏱" },
+                  { label: "Avg Score", value: g.computed_avg_score > 0 ? `${g.computed_avg_score}%` : "—", color: "#00b894", icon: "📊" },
+                  { label: "Sessions", value: g.total_sessions || 0, color: "#e84393", icon: "🎮" },
+                ].map((m, i) => (
+                  <div key={i} style={{ textAlign: "center", padding: "14px 8px", background: "var(--ad-muted)", borderRadius: 12, border: "1px solid var(--ad-border)" }}>
+                    <span style={{ fontSize: 20 }}>{m.icon}</span>
+                    <div style={{ fontSize: 22, fontWeight: 800, color: m.color, marginTop: 2 }}>{typeof m.value === "number" ? m.value.toLocaleString() : m.value}</div>
+                    <div style={{ fontSize: 10, color: "var(--ad-muted-foreground)", fontWeight: 600, textTransform: "uppercase", letterSpacing: 0.5, marginTop: 2 }}>{m.label}</div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Details */}
+              <div style={{ fontSize: 11, fontWeight: 700, color: "var(--ad-muted-foreground)", textTransform: "uppercase", letterSpacing: 1, marginBottom: 8 }}>Details</div>
+              <div className="ad-modal-field"><div className="ad-modal-field-label">Description</div><div className="ad-modal-field-value" style={{ lineHeight: 1.6 }}>{g.description || "—"}</div></div>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginTop: 4 }}>
+                <div className="ad-modal-field">
+                  <div className="ad-modal-field-label">Reward Coins</div>
+                  <div className="ad-modal-field-value" style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                    <Coins style={{ height: 14, width: 14, color: "#e6a014" }} />
+                    <span style={{ fontWeight: 700, color: "#e6a014" }}>{g.reward_coins}</span> per game
+                  </div>
+                </div>
+                <div className="ad-modal-field">
+                  <div className="ad-modal-field-label">Created</div>
+                  <div className="ad-modal-field-value">{g.created_at ? new Date(g.created_at).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" }) : "—"}</div>
                 </div>
               </div>
             </div>
+          );
+        })()}
+      </Modal>
 
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12, marginBottom: 20 }}>
-              <div style={{ textAlign: "center", padding: "14px 8px", background: "var(--ad-muted)", borderRadius: 10 }}>
-                <div style={{ fontSize: 20, fontWeight: 800, color: "var(--ad-primary)" }}>{viewModal.game.avg_duration > 0 ? `${viewModal.game.avg_duration}s` : "—"}</div>
-                <div style={{ fontSize: 11, color: "var(--ad-muted-foreground)", marginTop: 2 }}>Avg Duration</div>
-              </div>
-              <div style={{ textAlign: "center", padding: "14px 8px", background: "var(--ad-muted)", borderRadius: 10 }}>
-                <div style={{ fontSize: 20, fontWeight: 800, color: "#00b894" }}>{viewModal.game.computed_avg_score > 0 ? `${viewModal.game.computed_avg_score}%` : "—"}</div>
-                <div style={{ fontSize: 11, color: "var(--ad-muted-foreground)", marginTop: 2 }}>Avg Score</div>
-              </div>
-              <div style={{ textAlign: "center", padding: "14px 8px", background: "var(--ad-muted)", borderRadius: 10 }}>
-                <div style={{ fontSize: 20, fontWeight: 800, color: "#6c5ce7" }}>{viewModal.game.total_sessions || 0}</div>
-                <div style={{ fontSize: 11, color: "var(--ad-muted-foreground)", marginTop: 2 }}>Sessions</div>
-              </div>
-            </div>
-
-            <div style={{ fontSize: 12, fontWeight: 600, color: "var(--ad-muted-foreground)", textTransform: "uppercase", letterSpacing: 1, marginBottom: 8 }}>Details</div>
-            <div className="ad-modal-field"><div className="ad-modal-field-label">Description</div><div className="ad-modal-field-value" style={{ lineHeight: 1.6 }}>{viewModal.game.description || "—"}</div></div>
-            <div className="ad-modal-field"><div className="ad-modal-field-label">Reward Coins</div><div className="ad-modal-field-value" style={{ display: "flex", alignItems: "center", gap: 4 }}><Coins style={{ height: 14, width: 14, color: "#e6a014" }} /> <span style={{ fontWeight: 700, color: "#e6a014" }}>{viewModal.game.reward_coins}</span> per game</div></div>
-            <div className="ad-modal-field"><div className="ad-modal-field-label">Created</div><div className="ad-modal-field-value">{viewModal.game.created_at ? new Date(viewModal.game.created_at).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" }) : "—"}</div></div>
+      <Modal open={deleteModal.open} onClose={() => { setDeleteModal({ open: false, game: null }); setDeleteError(""); }} title="Delete Game" footer={<><button className="ad-btn-cancel" onClick={() => { setDeleteModal({ open: false, game: null }); setDeleteError(""); }}>Cancel</button><button className="ad-btn-confirm-delete" onClick={handleDeleteGame} disabled={formLoading}>{formLoading ? "Deleting..." : "Delete Game"}</button></>}>
+        <div style={{ textAlign: "center", padding: "8px 0" }}>
+          <div style={{ width: 64, height: 64, borderRadius: "50%", background: "rgba(239,68,68,0.1)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 16px" }}>
+            <Trash2 style={{ height: 28, width: 28, color: "#ef4444" }} />
           </div>
-        )}
+          <p style={{ fontSize: 16, fontWeight: 600, color: "var(--ad-foreground)", marginBottom: 8 }}>Delete {deleteModal.game?.name}?</p>
+          <p style={{ fontSize: 13, color: "var(--ad-muted-foreground)", lineHeight: 1.6 }}>
+            This will permanently remove this game and all its configuration. Games with existing sessions cannot be deleted.
+          </p>
+          {deleteError && (
+            <div style={{ marginTop: 16, padding: "10px 16px", background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.2)", borderRadius: 8 }}>
+              <p style={{ color: "#ef4444", fontSize: 13, margin: 0 }}>{deleteError}</p>
+            </div>
+          )}
+        </div>
       </Modal>
 
-      <Modal open={deleteModal.open} onClose={() => setDeleteModal({ open: false, game: null })} title="Delete Game" footer={<><button className="ad-btn-cancel" onClick={() => setDeleteModal({ open: false, game: null })}>Cancel</button><button className="ad-btn-confirm-delete" onClick={handleDeleteGame} disabled={formLoading}>{formLoading ? "Deleting..." : "Delete Game"}</button></>}>
-        <p style={{ fontSize: 14, color: "var(--ad-foreground)" }}>Are you sure you want to delete <strong>{deleteModal.game?.name}</strong>? This action cannot be undone.</p>
-      </Modal>
+      {/* Success Toast */}
+      {successToast.show && (
+        <div style={{
+          position: "fixed", top: 24, right: 24, zIndex: 10000,
+          background: "var(--ad-card)", border: "1px solid var(--ad-border)",
+          borderLeft: "4px solid #10b981", borderRadius: 12,
+          padding: "16px 20px", minWidth: 320, maxWidth: 420,
+          boxShadow: "0 20px 60px rgba(0,0,0,0.15)", display: "flex", alignItems: "flex-start", gap: 12,
+          animation: "slideInRight 0.3s ease-out",
+        }}>
+          <div style={{ width: 40, height: 40, borderRadius: "50%", background: "rgba(16,185,129,0.1)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+            <CheckCircle style={{ height: 20, width: 20, color: "#10b981" }} />
+          </div>
+          <div style={{ flex: 1 }}>
+            <p style={{ fontSize: 14, fontWeight: 600, color: "var(--ad-foreground)", margin: 0 }}>{successToast.message}</p>
+            {successToast.detail && <p style={{ fontSize: 12, color: "var(--ad-muted-foreground)", margin: "4px 0 0" }}>{successToast.detail}</p>}
+          </div>
+        </div>
+      )}
+      <style>{`@keyframes slideInRight { from { opacity: 0; transform: translateX(40px); } to { opacity: 1; transform: translateX(0); } }`}</style>
     </div>
   );
 };

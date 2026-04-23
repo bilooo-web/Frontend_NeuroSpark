@@ -55,10 +55,18 @@ const AdminUsers = () => {
   const [formErrors, setFormErrors] = useState({});
   const [formLoading, setFormLoading] = useState(false);
 
+  // Success toast state
+  const [successToast, setSuccessToast] = useState({ show: false, message: "", detail: "" });
+
   // Notification form
   const [notifyData, setNotifyData] = useState({ title: "", message: "", type: "info" });
   const [notifyLoading, setNotifyLoading] = useState(false);
   const [notifySuccess, setNotifySuccess] = useState(false);
+
+  const showSuccess = (message, detail = "") => {
+    setSuccessToast({ show: true, message, detail });
+    setTimeout(() => setSuccessToast({ show: false, message: "", detail: "" }), 2500);
+  };
 
   useEffect(() => {
     fetchUsers(1, "all", "");
@@ -142,6 +150,7 @@ const AdminUsers = () => {
       }
       await adminService.createUser(payload);
       setAddModal(false);
+      showSuccess("User Created Successfully", `${formData.full_name} has been added to the platform.`);
       refreshCurrentPage();
     } catch (err) {
       if (err.data?.errors) {
@@ -209,6 +218,7 @@ const AdminUsers = () => {
 
       await adminService.updateUser(user.id, payload);
       setEditModal({ open: false, user: null });
+      showSuccess("User Updated Successfully", `${formData.full_name}'s profile has been updated.`);
       refreshCurrentPage();
     } catch (err) {
       if (err.data?.errors) {
@@ -239,14 +249,18 @@ const AdminUsers = () => {
   };
 
   // DELETE USER
+  const [deleteError, setDeleteError] = useState("");
   const handleDeleteUser = async () => {
     setFormLoading(true);
+    setDeleteError("");
     try {
+      const deletedName = deleteModal.user?.full_name;
       await adminService.deleteUser(deleteModal.user.id);
       setDeleteModal({ open: false, user: null });
+      showSuccess("User Deleted Successfully", `${deletedName} has been removed from the platform.`);
       refreshCurrentPage();
     } catch (err) {
-      alert(err.message || "Failed to delete user");
+      setDeleteError(err.data?.message || err.message || "Failed to delete user");
     } finally {
       setFormLoading(false);
     }
@@ -256,18 +270,20 @@ const AdminUsers = () => {
   const handleActivate = async (user) => {
     try {
       await adminService.activateUser(user.id);
+      showSuccess("User Activated", `${user.full_name} is now active.`);
       refreshCurrentPage();
     } catch (err) {
-      alert(err.message || "Failed to activate user");
+      showSuccess("Action Failed", err.message || "Failed to activate user");
     }
   };
 
   const handleSuspend = async (user) => {
     try {
       await adminService.suspendUser(user.id);
+      showSuccess("User Suspended", `${user.full_name} has been suspended.`);
       refreshCurrentPage();
     } catch (err) {
-      alert(err.message || "Failed to suspend user");
+      showSuccess("Action Failed", err.message || "Failed to suspend user");
     }
   };
 
@@ -701,18 +717,50 @@ const AdminUsers = () => {
       </Modal>
 
       {/* ===== DELETE CONFIRMATION MODAL ===== */}
-      <Modal open={deleteModal.open} onClose={() => setDeleteModal({ open: false, user: null })} title="Delete User"
+      <Modal open={deleteModal.open} onClose={() => { setDeleteModal({ open: false, user: null }); setDeleteError(""); }} title="Delete User"
         footer={(
           <>
-            <button className="ad-btn-cancel" onClick={() => setDeleteModal({ open: false, user: null })}>Cancel</button>
+            <button className="ad-btn-cancel" onClick={() => { setDeleteModal({ open: false, user: null }); setDeleteError(""); }}>Cancel</button>
             <button className="ad-btn-confirm-delete" onClick={handleDeleteUser} disabled={formLoading}>{formLoading ? "Deleting..." : "Delete User"}</button>
           </>
         )}
       >
-        <p style={{ fontSize: 14, color: "var(--ad-foreground)" }}>
-          Are you sure you want to delete <strong>{deleteModal.user?.full_name}</strong>? This action cannot be undone.
-        </p>
+        <div style={{ textAlign: "center", padding: "8px 0" }}>
+          <div style={{ width: 64, height: 64, borderRadius: "50%", background: "rgba(239,68,68,0.1)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 16px" }}>
+            <Trash2 style={{ height: 28, width: 28, color: "#ef4444" }} />
+          </div>
+          <p style={{ fontSize: 16, fontWeight: 600, color: "var(--ad-foreground)", marginBottom: 8 }}>Delete {deleteModal.user?.full_name}?</p>
+          <p style={{ fontSize: 13, color: "var(--ad-muted-foreground)", lineHeight: 1.6 }}>
+            This will permanently remove this {deleteModal.user?.role} account and all associated data. This action cannot be undone.
+          </p>
+          {deleteError && (
+            <div style={{ marginTop: 16, padding: "10px 16px", background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.2)", borderRadius: 8 }}>
+              <p style={{ color: "#ef4444", fontSize: 13, margin: 0 }}>{deleteError}</p>
+            </div>
+          )}
+        </div>
       </Modal>
+
+      {/* ===== SUCCESS TOAST ===== */}
+      {successToast.show && (
+        <div style={{
+          position: "fixed", top: 24, right: 24, zIndex: 10000,
+          background: "var(--ad-card)", border: "1px solid var(--ad-border)",
+          borderLeft: "4px solid #10b981", borderRadius: 12,
+          padding: "16px 20px", minWidth: 320, maxWidth: 420,
+          boxShadow: "0 20px 60px rgba(0,0,0,0.15)", display: "flex", alignItems: "flex-start", gap: 12,
+          animation: "slideInRight 0.3s ease-out",
+        }}>
+          <div style={{ width: 40, height: 40, borderRadius: "50%", background: "rgba(16,185,129,0.1)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+            <CheckCircle style={{ height: 20, width: 20, color: "#10b981" }} />
+          </div>
+          <div style={{ flex: 1 }}>
+            <p style={{ fontSize: 14, fontWeight: 600, color: "var(--ad-foreground)", margin: 0 }}>{successToast.message}</p>
+            {successToast.detail && <p style={{ fontSize: 12, color: "var(--ad-muted-foreground)", margin: "4px 0 0" }}>{successToast.detail}</p>}
+          </div>
+        </div>
+      )}
+      <style>{`@keyframes slideInRight { from { opacity: 0; transform: translateX(40px); } to { opacity: 1; transform: translateX(0); } }`}</style>
 
       {/* ===== SEND NOTIFICATION MODAL ===== */}
       <Modal

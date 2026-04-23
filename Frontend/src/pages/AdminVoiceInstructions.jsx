@@ -13,6 +13,7 @@ import {
   Power,
   Mic,
   Target,
+  CheckCircle,
 } from "lucide-react";
 import Modal from "../components/admin/Modal";
 import adminService from "../services/adminService";
@@ -33,6 +34,13 @@ const AdminVoiceInstructions = () => {
   const [formData, setFormData] = useState({});
   const [formErrors, setFormErrors] = useState({});
   const [formLoading, setFormLoading] = useState(false);
+  const [deleteError, setDeleteError] = useState("");
+  const [successToast, setSuccessToast] = useState({ show: false, message: "", detail: "" });
+
+  const showSuccess = (message, detail = "") => {
+    setSuccessToast({ show: true, message, detail });
+    setTimeout(() => setSuccessToast({ show: false, message: "", detail: "" }), 2500);
+  };
 
   // Extra metrics
   const [voiceStats, setVoiceStats] = useState({ totalAttempts: 0, avgAccuracy: 0, avgDuration: 0, avgSpeechRate: 0 });
@@ -137,6 +145,7 @@ const AdminVoiceInstructions = () => {
 
       await adminService.createVoiceInstruction(payload);
       setAddModal(false);
+      showSuccess("Voice Instruction Created", `${formData.title} has been added.`);
       fetchInstructions(pagination.current_page);
     } catch (err) {
       if (err.data?.errors) setFormErrors(err.data.errors);
@@ -211,6 +220,7 @@ const AdminVoiceInstructions = () => {
 
       await adminService.updateVoiceInstruction(editModal.item.id, payload);
       setEditModal({ open: false, item: null });
+      showSuccess("Voice Instruction Updated", `${formData.title} has been updated.`);
       fetchInstructions(pagination.current_page);
     } catch (err) {
       if (err.data?.errors) setFormErrors(err.data.errors);
@@ -222,12 +232,15 @@ const AdminVoiceInstructions = () => {
 
   const handleDelete = async () => {
     setFormLoading(true);
+    setDeleteError("");
     try {
+      const deletedTitle = deleteModal.item?.title;
       await adminService.deleteVoiceInstruction(deleteModal.item.id);
       setDeleteModal({ open: false, item: null });
+      showSuccess("Voice Instruction Deleted", `${deletedTitle} has been removed.`);
       fetchInstructions(pagination.current_page);
     } catch (err) {
-      alert(err.data?.message || err.message || "Failed to delete");
+      setDeleteError(err.data?.message || err.message || "Failed to delete");
     } finally {
       setFormLoading(false);
     }
@@ -533,9 +546,43 @@ const AdminVoiceInstructions = () => {
           );
         })()}
       </Modal>
-      <Modal open={deleteModal.open} onClose={() => setDeleteModal({ open: false, item: null })} title="Delete Voice Instruction" footer={<><button className="ad-btn-cancel" onClick={() => setDeleteModal({ open: false, item: null })}>Cancel</button><button className="ad-btn-confirm-delete" onClick={handleDelete} disabled={formLoading}>{formLoading ? "Deleting..." : "Delete"}</button></>}>
-        <p style={{ fontSize: 14, color: "var(--ad-foreground)" }}>Are you sure you want to delete <strong>{deleteModal.item?.title}</strong>? Instructions with existing voice attempts cannot be deleted.</p>
+      <Modal open={deleteModal.open} onClose={() => { setDeleteModal({ open: false, item: null }); setDeleteError(""); }} title="Delete Voice Instruction" footer={<><button className="ad-btn-cancel" onClick={() => { setDeleteModal({ open: false, item: null }); setDeleteError(""); }}>Cancel</button><button className="ad-btn-confirm-delete" onClick={handleDelete} disabled={formLoading}>{formLoading ? "Deleting..." : "Delete"}</button></>}>
+        <div style={{ textAlign: "center", padding: "8px 0" }}>
+          <div style={{ width: 64, height: 64, borderRadius: "50%", background: "rgba(239,68,68,0.1)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 16px" }}>
+            <Trash2 style={{ height: 28, width: 28, color: "#ef4444" }} />
+          </div>
+          <p style={{ fontSize: 16, fontWeight: 600, color: "var(--ad-foreground)", marginBottom: 8 }}>Delete {deleteModal.item?.title}?</p>
+          <p style={{ fontSize: 13, color: "var(--ad-muted-foreground)", lineHeight: 1.6 }}>
+            This will permanently remove this voice instruction. Instructions with existing voice attempts cannot be deleted.
+          </p>
+          {deleteError && (
+            <div style={{ marginTop: 16, padding: "10px 16px", background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.2)", borderRadius: 8 }}>
+              <p style={{ color: "#ef4444", fontSize: 13, margin: 0 }}>{deleteError}</p>
+            </div>
+          )}
+        </div>
       </Modal>
+
+      {/* Success Toast */}
+      {successToast.show && (
+        <div style={{
+          position: "fixed", top: 24, right: 24, zIndex: 10000,
+          background: "var(--ad-card)", border: "1px solid var(--ad-border)",
+          borderLeft: "4px solid #10b981", borderRadius: 12,
+          padding: "16px 20px", minWidth: 320, maxWidth: 420,
+          boxShadow: "0 20px 60px rgba(0,0,0,0.15)", display: "flex", alignItems: "flex-start", gap: 12,
+          animation: "slideInRight 0.3s ease-out",
+        }}>
+          <div style={{ width: 40, height: 40, borderRadius: "50%", background: "rgba(16,185,129,0.1)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+            <CheckCircle style={{ height: 20, width: 20, color: "#10b981" }} />
+          </div>
+          <div style={{ flex: 1 }}>
+            <p style={{ fontSize: 14, fontWeight: 600, color: "var(--ad-foreground)", margin: 0 }}>{successToast.message}</p>
+            {successToast.detail && <p style={{ fontSize: 12, color: "var(--ad-muted-foreground)", margin: "4px 0 0" }}>{successToast.detail}</p>}
+          </div>
+        </div>
+      )}
+      <style>{`@keyframes slideInRight { from { opacity: 0; transform: translateX(40px); } to { opacity: 1; transform: translateX(0); } }`}</style>
     </div>
   );
 };

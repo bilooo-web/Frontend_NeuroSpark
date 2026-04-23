@@ -1,0 +1,152 @@
+.ucm-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.75);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+  animation: ucmFadeIn 0.3s ease;
+}
+
+@keyframes ucmFadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.ucm-modal {
+  position: relative;
+  width: 720px;
+  height: 350px;
+  max-width: 90%;
+  background: #3AC7C1;
+  border-radius: 30px;
+  padding: 40px 30px 30px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+  overflow: hidden;
+  animation: ucmSlideUp 0.3s ease;
+}
+
+@keyframes ucmSlideUp {
+  from { transform: translateY(50px); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+
+.ucm-close-btn {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  width: 24px;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+  z-index: 10;
+}
+.ucm-close-btn:hover { transform: scale(1.1); }
+
+.ucm-floating-legos {
+  position: absolute;
+  margin-left: 500px;
+  margin-top: 15px;
+  transform: translateX(-50%);
+  width: 220px;
+  pointer-events: none;
+  z-index: 999;
+}
+
+.ucm-lego-logo {
+  position: absolute;
+  bottom: 15px;
+  right: 70px;
+  top: 280px;
+  width: 100px;
+  pointer-events: none;
+  z-index: 999;
+}
+
+.ucm-content {
+  display: flex;
+  align-items: center;
+  gap: 30px;
+  position: relative;
+  z-index: 1;
+  margin-top: 50px;
+}
+
+.ucm-character {
+  width: 250px;
+  margin-top: -10px;
+  animation: ucmBounce 1.6s ease-in-out infinite;
+  filter: hue-rotate(30deg) saturate(1.2); 
+}
+@keyframes ucmBounce {
+  0%, 100% { transform: translateY(0px);  }
+  50%       { transform: translateY(-8px); }
+}
+
+.ucm-text {
+  background-color: white;
+  border-radius: 30px;
+  padding: 20px 30px;
+  padding-left: 150px;
+  margin-left: -170px;
+  width: 370px;
+}
+
+.ucm-text h2 {
+  color: #2ca6a4;
+  font-size: 26px;
+  margin-top: -5px;
+  font-weight: 800;
+  margin-left: 50px;
+}
+
+.ucm-text p {
+  font-size: 15px;
+  color: #2ca6a4;
+  margin-left: -10px;
+  text-align: center;
+  margin-bottom: 6px;
+}
+
+.ucm-price {
+  font-weight: 800;
+  font-size: 17px;
+  color: #b7791f;
+}
+
+.ucm-balance {
+  font-size: 13px !important;
+  color: #5c8c8a !important;
+  line-height: 1.6;
+}
+
+.ucm-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  margin-top: 14px;
+  margin-left: -10px;
+}
+
+.ucm-btn {
+  padding: 9px 22px;
+  border-radius: 50px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  border: none;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.ucm-btn:hover { transform: translateY(-2px); box-shadow: 0 4px 14px rgba(0,0,0,0.18); }
+.ucm-btn:active { transform: translateY(0); }
+
+.ucm-btn--cancel {
+  background: #e8f7f4;
+  color: #2ca6a4;
+  border: 2px solid #2ca6a4;
+}
+.ucm-btn--confirm {
+  background: linear-gradient(135deg, #2ca6a4, #1a8a88);
+  color: white;
+  box-shadow: 0 4px 14px rgba(44,166,164,0.35);
+}

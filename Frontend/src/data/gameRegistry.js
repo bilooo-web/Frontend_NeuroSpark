@@ -10,7 +10,7 @@
  */
 
 const gameRegistry = [
-  { slug: "path-change",              label: "Path Change" },
+  // { slug: "path-change",              label: "Path Change" },
   { slug: "padlocks",                 label: "Memory Padlocks" },
   { slug: "faces-and-names",          label: "Faces & Names" },
   { slug: "pair-of-cards",            label: "Pair of Cards" },

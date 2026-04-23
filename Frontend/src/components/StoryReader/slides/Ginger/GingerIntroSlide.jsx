@@ -44,6 +44,10 @@ const GingerIntroSlide = ({
   }, [text]);
 
   useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
+  useEffect(() => {
     const noop = () => {};
     window.speechSynthesis.addEventListener('voiceschanged', noop);
     return () => window.speechSynthesis.removeEventListener('voiceschanged', noop);

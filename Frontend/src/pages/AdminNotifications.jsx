@@ -9,25 +9,23 @@ import {
   Clock,
   CheckCircle,
   AlertCircle,
-  Plus,
-  Users,
   Megaphone,
 } from "lucide-react";
 import Modal from "../components/admin/Modal";
 import adminService from "../services/adminService";
 
 const statusBadge = {
-  pending: "badge-accent",
-  accepted: "badge-success",
-  expired: "badge-destructive",
-  rejected: "badge-muted",
+  pending: "ad-badge-accent",
+  accepted: "ad-badge-success",
+  expired: "ad-badge-destructive",
+  rejected: "ad-badge-muted",
 };
 
 const typeBadge = {
-  info: "badge-info",
-  warning: "badge-accent",
-  success: "badge-success",
-  alert: "badge-destructive",
+  info: "ad-badge-info",
+  warning: "ad-badge-accent",
+  success: "ad-badge-success",
+  alert: "ad-badge-destructive",
 };
 
 const AdminNotifications = () => {
@@ -120,7 +118,6 @@ const AdminNotifications = () => {
     try {
       await adminService.broadcastNotification(composeData);
       setComposeSuccess(true);
-      // Wait a moment then refresh and close
       setTimeout(async () => {
         await fetchNotifications("all");
         setNotifFilter("all");
@@ -141,18 +138,18 @@ const AdminNotifications = () => {
   ];
 
   return (
-    <div className="page-section">
-      <div className="page-header">
+    <div className="ad-page-section">
+      <div className="ad-page-header">
         <div>
           <h1>Notifications & Invitations</h1>
           <p>Send notifications and manage therapist invitations</p>
         </div>
         <div style={{ display: "flex", gap: 8 }}>
-          <button className="btn btn-primary" onClick={() => { setComposeSuccess(false); setComposeModal(true); }}>
+          <button className="ad-btn ad-btn-primary" onClick={() => { setComposeSuccess(false); setComposeModal(true); }}>
             <Megaphone style={{ height: 16, width: 16 }} />
             Broadcast Notification
           </button>
-          <button className="btn btn-outline" onClick={() => { fetchInvitations(); fetchNotifications(); }}>
+          <button className="ad-btn ad-btn-outline" onClick={() => { fetchInvitations(); fetchNotifications(); }}>
             <RefreshCw style={{ height: 16, width: 16 }} />
             Refresh
           </button>
@@ -160,85 +157,85 @@ const AdminNotifications = () => {
       </div>
 
       {/* Stats */}
-      <div className="grid-3">
-        <div className="glass-card">
-          <div className="mini-stat">
-            <div className="mini-stat-icon primary">
+      <div className="ad-grid-3">
+        <div className="ad-glass-card">
+          <div className="ad-mini-stat">
+            <div className="ad-mini-stat-icon ad-primary">
               <Bell style={{ height: 20, width: 20 }} />
             </div>
             <div>
-              <div className="mini-stat-label">Total Sent</div>
-              <div className="mini-stat-value">{notifStats.total_sent}</div>
+              <div className="ad-mini-stat-label">Total Sent</div>
+              <div className="ad-mini-stat-value">{notifStats.total_sent}</div>
             </div>
           </div>
         </div>
-        <div className="glass-card">
-          <div className="mini-stat">
-            <div className="mini-stat-icon accent">
+        <div className="ad-glass-card">
+          <div className="ad-mini-stat">
+            <div className="ad-mini-stat-icon ad-accent">
               <Megaphone style={{ height: 20, width: 20 }} />
             </div>
             <div>
-              <div className="mini-stat-label">Broadcast</div>
-              <div className="mini-stat-value">{notifStats.total_broadcast}</div>
+              <div className="ad-mini-stat-label">Broadcast</div>
+              <div className="ad-mini-stat-value">{notifStats.total_broadcast}</div>
             </div>
           </div>
         </div>
-        <div className="glass-card">
-          <div className="mini-stat">
-            <div className="mini-stat-icon success">
+        <div className="ad-glass-card">
+          <div className="ad-mini-stat">
+            <div className="ad-mini-stat-icon ad-success">
               <Send style={{ height: 20, width: 20 }} />
             </div>
             <div>
-              <div className="mini-stat-label">Direct</div>
-              <div className="mini-stat-value">{notifStats.total_direct}</div>
+              <div className="ad-mini-stat-label">Direct</div>
+              <div className="ad-mini-stat-value">{notifStats.total_direct}</div>
             </div>
           </div>
         </div>
       </div>
 
       {/* Invitation Stats */}
-      <div className="grid-3">
-        <div className="glass-card">
-          <div className="mini-stat">
-            <div className="mini-stat-icon accent">
+      <div className="ad-grid-3">
+        <div className="ad-glass-card">
+          <div className="ad-mini-stat">
+            <div className="ad-mini-stat-icon ad-accent">
               <Clock style={{ height: 20, width: 20 }} />
             </div>
             <div>
-              <div className="mini-stat-label">Pending Invitations</div>
-              <div className="mini-stat-value">{invStats.pending}</div>
+              <div className="ad-mini-stat-label">Pending Invitations</div>
+              <div className="ad-mini-stat-value">{invStats.pending}</div>
             </div>
           </div>
         </div>
-        <div className="glass-card">
-          <div className="mini-stat">
-            <div className="mini-stat-icon success">
+        <div className="ad-glass-card">
+          <div className="ad-mini-stat">
+            <div className="ad-mini-stat-icon ad-success">
               <CheckCircle style={{ height: 20, width: 20 }} />
             </div>
             <div>
-              <div className="mini-stat-label">Accepted Invitations</div>
-              <div className="mini-stat-value">{invStats.accepted}</div>
+              <div className="ad-mini-stat-label">Accepted Invitations</div>
+              <div className="ad-mini-stat-value">{invStats.accepted}</div>
             </div>
           </div>
         </div>
-        <div className="glass-card">
-          <div className="mini-stat">
-            <div className="mini-stat-icon primary">
+        <div className="ad-glass-card">
+          <div className="ad-mini-stat">
+            <div className="ad-mini-stat-icon ad-primary">
               <AlertCircle style={{ height: 20, width: 20 }} />
             </div>
             <div>
-              <div className="mini-stat-label">Expired Invitations</div>
-              <div className="mini-stat-value">{invStats.expired}</div>
+              <div className="ad-mini-stat-label">Expired Invitations</div>
+              <div className="ad-mini-stat-value">{invStats.expired}</div>
             </div>
           </div>
         </div>
       </div>
 
       {/* Tab Navigation */}
-      <div className="filter-group">
+      <div className="ad-filter-group">
         {tabs.map((tab) => (
           <button
             key={tab.id}
-            className={`filter-btn ${activeTab === tab.id ? "active" : ""}`}
+            className={`ad-filter-btn ${activeTab === tab.id ? "ad-active" : ""}`}
             onClick={() => setActiveTab(tab.id)}
           >
             <tab.icon style={{ height: 14, width: 14 }} />
@@ -251,7 +248,7 @@ const AdminNotifications = () => {
       {activeTab === "notifications" && (
         <>
           {/* Filter buttons */}
-          <div className="filter-group" style={{ marginBottom: 16, gap: 8 }}>
+          <div className="ad-filter-group" style={{ marginBottom: 16, gap: 8 }}>
             {[
               { id: "all", label: `All (${notifStats.total_sent || 0})`, icon: Bell },
               { id: "broadcast", label: `Broadcast (${notifStats.total_broadcast || 0})`, icon: Megaphone },
@@ -259,7 +256,7 @@ const AdminNotifications = () => {
             ].map((f) => (
               <button
                 key={f.id}
-                className={`filter-btn ${notifFilter === f.id ? "active" : ""}`}
+                className={`ad-filter-btn ${notifFilter === f.id ? "ad-active" : ""}`}
                 onClick={() => { setNotifFilter(f.id); fetchNotifications(f.id); }}
                 style={{ display: "inline-flex", alignItems: "center", gap: 6 }}
               >
@@ -269,27 +266,27 @@ const AdminNotifications = () => {
             ))}
           </div>
 
-          <div className="glass-card" style={{ padding: 0 }}>
+          <div className="ad-glass-card" style={{ padding: 0 }}>
             {notifLoading ? (
               <div style={{ textAlign: "center", padding: 48 }}>
-                <div className="admin-spinner" />
+                <div className="ad-spinner" />
               </div>
             ) : notifications.length === 0 ? (
-              <div className="empty-state" style={{ padding: 48 }}>
+              <div className="ad-empty-state" style={{ padding: 48 }}>
                 <Bell style={{ height: 40, width: 40 }} />
                 <p>No notifications sent yet</p>
-                <p className="text-xs text-muted" style={{ marginTop: 4 }}>Use the "Broadcast Notification" button or send from User Management</p>
+                <p className="ad-text-xs ad-text-muted" style={{ marginTop: 4 }}>Use the "Broadcast Notification" button or send from User Management</p>
               </div>
             ) : (
-              <div className="data-table-wrapper">
-                <table className="data-table">
+              <div className="ad-data-table-wrapper">
+                <table className="ad-data-table">
                   <thead>
                     <tr>
                       <th>Title</th>
-                      <th className="th-hide-md">Type</th>
+                      <th className="ad-th-hide-md">Type</th>
                       <th>Delivery</th>
-                      <th className="th-hide-md">Sent By</th>
-                      <th className="th-hide-lg">Sent At</th>
+                      <th className="ad-th-hide-md">Sent By</th>
+                      <th className="ad-th-hide-lg">Sent At</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -297,21 +294,21 @@ const AdminNotifications = () => {
                       <tr key={n.id || i}>
                         <td>
                           <div>
-                            <p className="font-medium" style={{ color: "var(--foreground)" }}>{n.title}</p>
-                            <p className="text-xs text-muted" style={{ marginTop: 2 }}>
+                            <p className="ad-font-medium" style={{ color: "var(--ad-foreground)" }}>{n.title}</p>
+                            <p className="ad-text-xs ad-text-muted" style={{ marginTop: 2 }}>
                               {n.message?.slice(0, 80)}{n.message?.length > 80 ? "..." : ""}
                             </p>
                           </div>
                         </td>
-                        <td className="td-hide-md">
-                          <span className={`badge ${typeBadge[n.type] || "badge-muted"}`}>{n.type}</span>
+                        <td className="ad-td-hide-md">
+                          <span className={`ad-badge ${typeBadge[n.type] || "ad-badge-muted"}`}>{n.type}</span>
                         </td>
                         <td>
                           <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                            <span className={`badge ${n.is_broadcast ? "badge-accent" : "badge-primary"}`} style={{ fontSize: 10 }}>
+                            <span className={`ad-badge ${n.is_broadcast ? "ad-badge-accent" : "ad-badge-primary"}`} style={{ fontSize: 10 }}>
                               {n.is_broadcast ? "Broadcast" : "Direct"}
                             </span>
-                            <span className="text-muted text-xs">
+                            <span className="ad-text-muted ad-text-xs">
                               {n.is_broadcast
                                 ? (n.target_role === "all" ? "All Users" : (n.target_role ? n.target_role.charAt(0).toUpperCase() + n.target_role.slice(1) + "s" : "All Users"))
                                 : (n.target_user?.full_name || "Unknown")
@@ -319,10 +316,10 @@ const AdminNotifications = () => {
                             </span>
                           </div>
                         </td>
-                        <td className="td-hide-md text-muted text-sm">
+                        <td className="ad-td-hide-md ad-text-muted ad-text-sm">
                           {n.sender_name || n.sender?.full_name || "System"}
                         </td>
-                        <td className="td-hide-lg text-muted text-sm">
+                        <td className="ad-td-hide-lg ad-text-muted ad-text-sm">
                           {n.created_at ? new Date(n.created_at).toLocaleString() : "—"}
                         </td>
                       </tr>
@@ -337,27 +334,27 @@ const AdminNotifications = () => {
 
       {/* ===== INVITATIONS TAB ===== */}
       {activeTab === "invitations" && (
-        <div className="glass-card" style={{ padding: 0 }}>
+        <div className="ad-glass-card" style={{ padding: 0 }}>
           {loading ? (
             <div style={{ textAlign: "center", padding: 48 }}>
-              <div className="admin-spinner" />
+              <div className="ad-spinner" />
             </div>
           ) : invitations.length === 0 ? (
-            <div className="empty-state" style={{ padding: 48 }}>
+            <div className="ad-empty-state" style={{ padding: 48 }}>
               <Mail style={{ height: 40, width: 40 }} />
               <p>No invitations found</p>
             </div>
           ) : (
             <>
-              <div className="data-table-wrapper">
-                <table className="data-table">
+              <div className="ad-data-table-wrapper">
+                <table className="ad-data-table">
                   <thead>
                     <tr>
                       <th>Therapist Email</th>
-                      <th className="th-hide-md">Guardian</th>
-                      <th className="th-hide-md">Child</th>
+                      <th className="ad-th-hide-md">Guardian</th>
+                      <th className="ad-th-hide-md">Child</th>
                       <th>Status</th>
-                      <th className="th-hide-lg">Created</th>
+                      <th className="ad-th-hide-lg">Created</th>
                       <th style={{ textAlign: "right" }}>Actions</th>
                     </tr>
                   </thead>
@@ -366,23 +363,23 @@ const AdminNotifications = () => {
                       <tr key={inv.id}>
                         <td>
                           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                            <Mail style={{ height: 14, width: 14, color: "var(--muted-foreground)" }} />
-                            <span className="font-medium">{inv.therapist_email || "—"}</span>
+                            <Mail style={{ height: 14, width: 14, color: "var(--ad-muted-foreground)" }} />
+                            <span className="ad-font-medium">{inv.therapist_email || "—"}</span>
                           </div>
                         </td>
-                        <td className="td-hide-md text-muted">{inv.guardian?.user?.full_name || "—"}</td>
-                        <td className="td-hide-md text-muted">{inv.child?.user?.full_name || "—"}</td>
+                        <td className="ad-td-hide-md ad-text-muted">{inv.guardian?.user?.full_name || "—"}</td>
+                        <td className="ad-td-hide-md ad-text-muted">{inv.child?.user?.full_name || "—"}</td>
                         <td>
-                          <span className={`badge ${statusBadge[inv.status] || "badge-muted"}`}>{inv.status}</span>
+                          <span className={`ad-badge ${statusBadge[inv.status] || "ad-badge-muted"}`}>{inv.status}</span>
                         </td>
-                        <td className="td-hide-lg text-muted text-sm">
+                        <td className="ad-td-hide-lg ad-text-muted ad-text-sm">
                           {inv.created_at ? new Date(inv.created_at).toLocaleDateString() : "—"}
                         </td>
                         <td>
-                          <div className="table-actions">
+                          <div className="ad-table-actions">
                             {inv.status === "pending" && (
                               <button
-                                className="btn btn-outline"
+                                className="ad-btn ad-btn-outline"
                                 style={{ padding: "6px 12px", fontSize: 13 }}
                                 onClick={() => handleResend(inv.id)}
                                 disabled={resending === inv.id}
@@ -399,9 +396,9 @@ const AdminNotifications = () => {
                 </table>
               </div>
               {pagination.last_page > 1 && (
-                <div className="table-pagination">
+                <div className="ad-table-pagination">
                   <span>Showing {pagination.from}–{pagination.to} of {pagination.total}</span>
-                  <div className="table-pagination-btns">
+                  <div className="ad-table-pagination-btns">
                     <button disabled={pagination.current_page === 1} onClick={() => fetchInvitations(pagination.current_page - 1)}>
                       <ChevronLeft style={{ height: 16, width: 16 }} />
                     </button>
@@ -424,9 +421,9 @@ const AdminNotifications = () => {
         footer={
           !composeSuccess ? (
             <>
-              <button className="btn-cancel" onClick={() => setComposeModal(false)}>Cancel</button>
+              <button className="ad-btn-cancel" onClick={() => setComposeModal(false)}>Cancel</button>
               <button
-                className="btn btn-primary"
+                className="ad-btn ad-btn-primary"
                 onClick={handleComposeSend}
                 disabled={composeLoading || !composeData.title.trim() || !composeData.message.trim()}
               >
@@ -439,16 +436,16 @@ const AdminNotifications = () => {
       >
         {composeSuccess ? (
           <div style={{ textAlign: "center", padding: "20px 0" }}>
-            <CheckCircle style={{ height: 48, width: 48, color: "var(--success)", margin: "0 auto 12px" }} />
-            <p className="font-semibold" style={{ fontSize: 16, color: "var(--foreground)" }}>Notification Broadcast!</p>
-            <p className="text-muted text-sm" style={{ marginTop: 4 }}>Sent to {composeData.target_role === "all" ? "all users" : composeData.target_role + "s"}</p>
+            <CheckCircle style={{ height: 48, width: 48, color: "var(--ad-success)", margin: "0 auto 12px" }} />
+            <p className="ad-font-semibold" style={{ fontSize: 16, color: "var(--ad-foreground)" }}>Notification Broadcast!</p>
+            <p className="ad-text-muted ad-text-sm" style={{ marginTop: 4 }}>Sent to {composeData.target_role === "all" ? "all users" : composeData.target_role + "s"}</p>
           </div>
         ) : (
-          <div className="compose-form">
-            <div className="form-group">
+          <div className="ad-compose-form">
+            <div className="ad-form-group">
               <label>Send To</label>
               <select
-                className="form-select"
+                className="ad-form-select"
                 value={composeData.target_role}
                 onChange={(e) => setComposeData({ ...composeData, target_role: e.target.value })}
               >
@@ -460,10 +457,10 @@ const AdminNotifications = () => {
                 <option value="admin">Admins Only</option>
               </select>
             </div>
-            <div className="form-group">
+            <div className="ad-form-group">
               <label>Type</label>
               <select
-                className="form-select"
+                className="ad-form-select"
                 value={composeData.type}
                 onChange={(e) => setComposeData({ ...composeData, type: e.target.value })}
               >
@@ -473,20 +470,20 @@ const AdminNotifications = () => {
                 <option value="alert">Alert</option>
               </select>
             </div>
-            <div className="form-group">
+            <div className="ad-form-group">
               <label>Title</label>
               <input
-                className="form-input"
+                className="ad-form-input"
                 type="text"
                 placeholder="Notification title"
                 value={composeData.title}
                 onChange={(e) => setComposeData({ ...composeData, title: e.target.value })}
               />
             </div>
-            <div className="form-group">
+            <div className="ad-form-group">
               <label>Message</label>
               <textarea
-                className="form-input"
+                className="ad-form-input"
                 placeholder="Write your broadcast message..."
                 value={composeData.message}
                 onChange={(e) => setComposeData({ ...composeData, message: e.target.value })}

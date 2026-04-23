@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import "./Faces_NamesGame.css";
 import Header from "../../components/common/Header/Header";
-import breathingexercise from "../../assets/breathing-video.mp4"; // Import the video
+import breathingexercise from "../../assets/breathing-video.mp4"; 
 import relaxGiraffe from "../../assets/relax-giraffe.png";
 
 const MALE_FACES = [
@@ -34,7 +34,6 @@ const MOTIVATION_MSGS = [
   { emoji: '🔥', text: 'Not quite!', sub: 'You will get it next time!' },
 ];
 
-// ADHD-friendly difficulty progression - SLOW and GENTLE
 function getRoundConfig(r) { 
   let facesCount;
   let memorizeTime;
@@ -144,7 +143,6 @@ export default function FacesNamesGame({
   const [headerTotalCoins, setHeaderTotalCoins] = useState(initialTotalCoins);
   const [breathingInstruction, setBreathingInstruction] = useState("Breathe in...");
 
-  // Analytics refs
   const gameStartTime = useRef(Date.now());
   const totalPausedTime = useRef(0);
   const pauseStartTime = useRef(null);
@@ -170,11 +168,6 @@ export default function FacesNamesGame({
   const breathingIntervalRef = useRef(null);
   const breathingAudioCtxRef = useRef(null);
 
-  // NOTE: totalCorrectRef and totalFacesRef are now updated DIRECTLY 
-  // in the assignment-check useEffect (not via state→useEffect→ref) 
-  // to avoid stale ref bugs when endGame fires from timer callback.
-
-  // Listen for coin updates from parent
   useEffect(() => {
     const handleCoinsUpdated = (e) => {
       if (e.detail?.totalCoins != null) {
@@ -215,7 +208,6 @@ export default function FacesNamesGame({
       if (pauseStartTime.current) { 
         const pausedDuration = Date.now()-pauseStartTime.current;
         totalPausedTime.current += pausedDuration; 
-        // Shift lastActionTime forward by paused duration so next RT isn't inflated
         lastActionTime.current += pausedDuration;
         pauseStartTime.current=null; 
       }
@@ -284,34 +276,41 @@ export default function FacesNamesGame({
       g.connect(ctx.destination); 
       o.start(now); 
       o.stop(now+0.5);
-    } catch(e){}
+    } catch(error){void error;}
   };
 
-  const buildRound = useCallback((idx) => {
+  const buildRound = useCallback((idx, showCountdown = false) => {
     const { facesCount, memorizeTime } = getRoundConfig(idx);
     const chosen = createRandomFaces(facesCount);
-    setFaces(chosen); 
-    setNamePool(createNamePool(chosen, facesCount%2===0?1:0));
-    setAssignments({}); 
-    setFeedback({}); 
+    setFaces(chosen);
+    setNamePool(createNamePool(chosen, facesCount % 2 === 0 ? 1 : 0));
+    setAssignments({});
+    setFeedback({});
     setMemTime(Math.ceil(memorizeTime));
-    
-    setScreen("countdown");
-    setCountdown(3);
-    
-    let count = 3;
-    countdownTimerRef.current = setInterval(() => {
-      count -= 1;
-      if (count === 0) {
-        clearInterval(countdownTimerRef.current);
-        setScreen("memorize");
-        setIsTimerPaused(true);
-      } else {
-        setCountdown(count);
-      }
-    }, 1000);
-    
-    roundIndexRef.current = idx; 
+
+    clearInterval(countdownTimerRef.current);
+
+    if (showCountdown) {
+      setScreen("countdown");
+      setCountdown(3);
+
+      let count = 3;
+      countdownTimerRef.current = setInterval(() => {
+        count -= 1;
+        if (count === 0) {
+          clearInterval(countdownTimerRef.current);
+          setScreen("memorize");
+          setIsTimerPaused(true);
+        } else {
+          setCountdown(count);
+        }
+      }, 1000);
+    } else {
+      setScreen("memorize");
+      setIsTimerPaused(true);
+    }
+
+    roundIndexRef.current = idx;
     lastActionTime.current = Date.now();
     lastActivityTime.current = Date.now();
   }, []);
@@ -320,173 +319,9 @@ export default function FacesNamesGame({
     setScreen("intro");
   }, []);
 
-  // Breathing instruction cycle on intro screen
-  useEffect(() => {
-    if (screen === "intro") {
-      
-      let index = 0;
-      
-      const speakInstruction = (text) => {
-        setBreathingInstruction(text);
-        const utterance = new SpeechSynthesisUtterance(text);
-        utterance.rate = 0.9;
-        utterance.pitch = 1;
-        utterance.volume = 1;
-        window.speechSynthesis.speak(utterance);
-      };
-
-      const runBreathingCycle = () => {
-        if (index < instructions.length) {
-          speakInstruction(instructions[index].text);
-          breathingIntervalRef.current = setTimeout(() => {
-            index++;
-            runBreathingCycle();
-          }, instructions[index].duration);
-        }
-      };
-
-      setTimeout(runBreathingCycle, 1000);
-
-      return () => {
-        if (breathingIntervalRef.current) {
-          clearTimeout(breathingIntervalRef.current);
-        }
-        window.speechSynthesis.cancel();
-      };
-    }
-  }, [screen]);
-
-  // Breathing sounds using Web Audio API with brown noise
-  useEffect(() => {
-    if (screen === "intro") {
-      
-      const playBreathingSounds = async () => {
-        const Ctx = window.AudioContext || window.webkitAudioContext;
-        if (!Ctx) return;
-        
-        const audioCtx = new Ctx();
-        breathingAudioCtxRef.current = audioCtx;
-        
-        // Function to create breathing sound (inhale)
-        const createInhaleSound = (startTime) => {
-          const now = audioCtx.currentTime;
-          
-          // Brown noise for realistic breath
-          const bufferSize = 2 * audioCtx.sampleRate;
-          const noiseBuffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
-          const output = noiseBuffer.getChannelData(0);
-          
-          // Brown noise (more realistic for breathing)
-          let lastOut = 0;
-          for (let i = 0; i < bufferSize; i++) {
-            const white = Math.random() * 2 - 1;
-            output[i] = (lastOut + (0.02 * white)) / 1.02;
-            lastOut = output[i];
-          }
-          
-          const noise = audioCtx.createBufferSource();
-          noise.buffer = noiseBuffer;
-          
-          const gainNode = audioCtx.createGain();
-          const filter = audioCtx.createBiquadFilter();
-          filter.type = 'lowpass';
-          filter.frequency.value = 800; // Lower frequency for deeper breath
-          
-          noise.connect(filter);
-          filter.connect(gainNode);
-          gainNode.connect(audioCtx.destination);
-          
-          // Inhale: volume rises then falls slightly
-          gainNode.gain.setValueAtTime(0, now + startTime);
-          gainNode.gain.linearRampToValueAtTime(0.15, now + startTime + 1.5);
-          gainNode.gain.linearRampToValueAtTime(0.08, now + startTime + 2.5);
-          gainNode.gain.linearRampToValueAtTime(0, now + startTime + 3.5);
-          
-          noise.start(now + startTime);
-          noise.stop(now + startTime + 3.5);
-        };
-        
-        // Function to create breathing sound (exhale)
-        const createExhaleSound = (startTime) => {
-          const now = audioCtx.currentTime;
-          
-          // Slightly different noise for exhale
-          const bufferSize = 2 * audioCtx.sampleRate;
-          const noiseBuffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
-          const output = noiseBuffer.getChannelData(0);
-          
-          let lastOut = 0;
-          for (let i = 0; i < bufferSize; i++) {
-            const white = Math.random() * 2 - 1;
-            output[i] = (lastOut + (0.03 * white)) / 1.03;
-            lastOut = output[i];
-          }
-          
-          const noise = audioCtx.createBufferSource();
-          noise.buffer = noiseBuffer;
-          
-          const gainNode = audioCtx.createGain();
-          const filter = audioCtx.createBiquadFilter();
-          filter.type = 'lowpass';
-          filter.frequency.value = 600; // Lower for exhale
-          
-          noise.connect(filter);
-          filter.connect(gainNode);
-          gainNode.connect(audioCtx.destination);
-          
-          // Exhale: starts softer, peaks, then fades
-          gainNode.gain.setValueAtTime(0, now + startTime);
-          gainNode.gain.linearRampToValueAtTime(0.12, now + startTime + 1.8);
-          gainNode.gain.linearRampToValueAtTime(0.05, now + startTime + 2.8);
-          gainNode.gain.linearRampToValueAtTime(0, now + startTime + 4);
-          
-          noise.start(now + startTime);
-          noise.stop(now + startTime + 4);
-        };
-        
-        // Schedule a full breathing cycle (4 seconds inhale, 4 seconds exhale)
-        // Repeat 4 times (about 32 seconds)
-        for (let cycle = 0; cycle < 4; cycle++) {
-          const cycleStart = cycle * 8; // 8 seconds per cycle
-          
-          // Inhale (first 4 seconds of cycle)
-          createInhaleSound(cycleStart + 1); // Start after 1 sec
-          
-          // Exhale (next 4 seconds of cycle)
-          createExhaleSound(cycleStart + 5); // Start at 5 sec
-        }
-      };
-      
-      playBreathingSounds();
-      
-      return () => {
-        // Clean up audio when leaving intro screen
-        if (breathingAudioCtxRef.current) {
-          breathingAudioCtxRef.current.close();
-          breathingAudioCtxRef.current = null;
-        }
-      };
-    }
-  }, [screen]);
-
+  
   const startGameFromIntro = () => {
-    // Stop breathing audio and instructions
-    if (breathingIntervalRef.current) {
-      clearTimeout(breathingIntervalRef.current);
-    }
-    window.speechSynthesis.cancel();
-    
-    // Close breathing audio context
-    if (breathingAudioCtxRef.current) {
-      breathingAudioCtxRef.current.close();
-      breathingAudioCtxRef.current = null;
-    }
-    
-    // Pause video
-    if (videoRef.current) {
-      videoRef.current.pause();
-    }
-    buildRound(0);
+    buildRound(0, true);
   };
 
   useEffect(() => {
@@ -518,12 +353,6 @@ export default function FacesNamesGame({
     const tc = totalCorrectRef.current, tf = totalFacesRef.current;
     
     const accuracy = tf>0 ? Math.round((tc/tf)*100) : 0;
-    
-    // Score calculation:
-    // - Accuracy base: accuracy * 0.6 (max 60 pts) — primary skill measure
-    // - Progression bonus: 5 pts per COMPLETED round, capped at 30 (max 30 pts)
-    // - Efficiency bonus: +10 if accuracy >= 80% (max 10 pts)
-    // Total capped at 100
     const completed = completedRoundsRef.current;
     const accuracyBase = Math.round(accuracy * 0.6);
     const progressionBonus = Math.min(completed * 5, 30);
@@ -541,9 +370,6 @@ export default function FacesNamesGame({
     }
 
     const totalAttempts = totalAttemptsRef.current;
-    // Use incorrectAttemptsRef directly — it only counts CONFIRMED wrong answers
-    // from completed rounds. Computing (totalAttempts - tc) would incorrectly 
-    // count unfinished-round drops as "incorrect".
     const incorrectAttempts = incorrectAttemptsRef.current;
 
     if (onGameComplete) {
@@ -588,52 +414,6 @@ export default function FacesNamesGame({
     return () => clearInterval(memTimerRef.current);
   }, [screen, paused]);
 
-  const onDragStart=(n)=>{
-    ensureAudio();
-    setDragging(n);
-    lastActivityTime.current = Date.now();
-  };
-  
-  const onDragEnd=()=>{
-    setDragging(null);
-    setDragOver(null);
-  };
-  
-  const onDragOverFn=(e,fid)=>{
-    e.preventDefault();
-    setDragOver(fid);
-  };
-  
-  const onDragLeave=()=>setDragOver(null);
-  
-  const onDrop=(e,fid)=>{
-    e.preventDefault(); 
-    ensureAudio();
-    if(!dragging||paused) return; 
-    if(feedback[fid]==="correct") return;
-    
-    lastActivityTime.current=Date.now();
-    
-    const now = Date.now();
-    const rt = now - lastActionTime.current;
-    if (rt >= 500 && rt <= 60000) {
-      responseTimes.current.push(rt);
-    }
-    lastActionTime.current = now;
-    
-    totalAttemptsRef.current++;
-    
-    const prev=Object.keys(assignments).find(k=>assignments[k]===dragging);
-    if(prev){
-      setAssignments(p=>{const n={...p};delete n[prev];return n;});
-      setFeedback(p=>{const n={...p};delete n[prev];return n;});
-    }
-    setAssignments(p=>({...p,[fid]:dragging}));
-    setFeedback(p=>{const n={...p};delete n[fid];return n;});
-    setDragging(null);
-    setDragOver(null);
-  };
-
   useEffect(() => {
     if (screen!=="recall"||faces.length===0||paused) return;
     if (!faces.every(f=>assignments[f.id])) return;
@@ -657,20 +437,19 @@ export default function FacesNamesGame({
     
     setFeedback(fb); 
     setRoundScore({correct,total:faces.length});
-    // Update refs DIRECTLY for accurate endGame analytics (state may be stale in timer callbacks)
     totalCorrectRef.current += correct;
     totalFacesRef.current += faces.length;
     setTotalCorrect(c=>c+correct); 
     setTotalFaces(t=>t+faces.length);
     
     setTimeout(()=>{
-      completedRoundsRef.current += 1; // Round fully completed
+      completedRoundsRef.current += 1; 
       setScreen("flash");
       setIsTimerPaused(true);
       flashTimeout.current=setTimeout(()=>{
         const ni=roundIndexRef.current+1;
         setRoundIndex(ni);
-        buildRound(ni);
+        buildRound(ni, false);
       },1600);
     },600);
   },[assignments,screen,faces,paused,buildRound]);
@@ -703,7 +482,6 @@ export default function FacesNamesGame({
   };
 
   const goBack = () => {
-    // Use refs for accurate values (state may be stale)
     const tc = totalCorrectRef.current;
     const tf = totalFacesRef.current;
     const accuracy = tf>0 ? Math.round((tc/tf)*100) : 0;
@@ -774,7 +552,6 @@ export default function FacesNamesGame({
     <div className="fn-game-wrapper">
       <Header totalCoins={headerTotalCoins} />
       
-      {/* Session Timer - visible after header, always visible during game */}
       {screen !== "gameover" && screen !== "countdown" && (
         <div className="fn-session-timer-wrap fn-timer-after-header">
           <div className="fn-session-timer-fill" style={{ width:`${sessionPct}%`, background:timerColor, transition:isTimerPaused?'none':'width 0.5s linear' }} />
@@ -782,10 +559,9 @@ export default function FacesNamesGame({
       )}
       
       <div className="fn-game-content" style={{ paddingTop: 0, paddingBottom: 0 }}>
-        <div className="stars-bg"></div>
+        <div className="fn-stars-bg"></div>
         {paused && renderPause()}
         
-        {/* Intro Breathing Video Screen with imported video */}
         {screen === "intro" && (
           <div className="fn-intro-screen">
             <video 
@@ -796,16 +572,13 @@ export default function FacesNamesGame({
               className="fn-breathing-video"
               onEnded={startGameFromIntro}
             />
-            {/* Breathing instruction that changes */}
-            
           </div>
         )}
         
-        {/* Countdown Screen (3,2,1) */}
         {screen === "countdown" && (
           <div className="fn-countdown-screen">
             <div className="fn-countdown-number-large">{countdown}</div>
-            <p>Get ready...</p>
+            <p>Get ready astronaut...</p>
           </div>
         )}
         
@@ -846,7 +619,6 @@ export default function FacesNamesGame({
           </button>
         )}
 
-        {/* Timer is now shown after header */}
 
         {(screen === "memorize" || screen === "flash") && (
           <>
@@ -876,40 +648,238 @@ export default function FacesNamesGame({
         {screen === "recall" && (
           <>
             <div className="fn-phase-label">Who is who?</div>
-            <div className={`fn-faces-grid${isCompact?" fn-compact":""}`}>
+            <div className={`fn-faces-grid${isCompact ? " fn-compact" : ""}`}>
               {faces.map(face => {
-                const assigned=assignments[face.id]; 
-                const fb=feedback[face.id];
-                let dropClass="fn-drop-zone";
-                if(dragOver===face.id) dropClass+=" fn-drag-over";
-                if(assigned&&!fb) dropClass+=" fn-filled";
-                if(fb==="correct") dropClass+=" fn-filled fn-filled-correct";
-                if(fb==="wrong") dropClass+=" fn-filled fn-filled-wrong";
-                let cardClass="fn-face-card";
-                if(fb==="correct") cardClass+=" fn-correct";
-                if(fb==="wrong") cardClass+=" fn-wrong";
+                const assigned = assignments[face.id];
+                const fb = feedback[face.id];
+                let dropClass = "fn-drop-zone";
+                if (dragOver === face.id) dropClass += " fn-drag-over";
+                if (dragging && !assigned && feedback[face.id] !== "correct") dropClass += " fn-awaiting-drop";
+                if (assigned && !fb) dropClass += " fn-filled";
+                if (fb === "correct") dropClass += " fn-filled fn-filled-correct";
+                if (fb === "wrong") dropClass += " fn-filled fn-filled-wrong";
+                let cardClass = "fn-face-card";
+                if (fb === "correct") cardClass += " fn-correct";
+                if (fb === "wrong") cardClass += " fn-wrong";
+
                 return (
-                  <div key={face.id} className={cardClass} onDragOver={e=>onDragOverFn(e,face.id)} onDragLeave={onDragLeave} onDrop={e=>onDrop(e,face.id)}>
+                  <div
+                    key={face.id}
+                    className={cardClass}
+                    onDragEnter={(e) => {
+                      e.preventDefault();
+                      setDragOver(face.id);
+                    }}
+                    onDragOver={(e) => {
+                      e.preventDefault(); 
+                      e.dataTransfer.dropEffect = "move"; 
+                      setDragOver(face.id);
+                    }}
+                    onDragLeave={(e) => {
+                      if (e.currentTarget.contains(e.relatedTarget)) return;
+                      setDragOver(null);
+                    }}
+                    onDrop={(e) => {
+                      e.preventDefault(); 
+                      const draggedName =
+                        dragging || e.dataTransfer.getData("text/plain");
+
+                      if (!draggedName || paused) return;
+                      if (feedback[face.id] === "correct") return;
+
+                      ensureAudio();
+                      lastActivityTime.current = Date.now();
+
+                      const now = Date.now();
+                      const rt = now - lastActionTime.current;
+                      if (rt >= 500 && rt <= 60000) {
+                        responseTimes.current.push(rt);
+                      }
+                      lastActionTime.current = now;
+
+                      totalAttemptsRef.current++;
+
+                      const prev = Object.keys(assignments).find(k => assignments[k] === draggedName);
+                      if (prev) {
+                        setAssignments(p => {
+                          const n = { ...p };
+                          delete n[prev];
+                          return n;
+                        });
+                        setFeedback(p => {
+                          const n = { ...p };
+                          delete n[prev];
+                          return n;
+                        });
+                      }
+
+                      setAssignments(p => ({ ...p, [face.id]: draggedName }));
+                      setFeedback(p => {
+                        const n = { ...p };
+                        delete n[face.id];
+                        return n;
+                      });
+                      setDragging(null);
+                      setDragOver(null);
+                    }}
+                    onClick={(e) => {
+                      if (!dragging || paused) return;
+                      if (feedback[face.id] === "correct") return;
+                      e.preventDefault();
+
+                      const draggedName = dragging;
+
+                      ensureAudio();
+                      lastActivityTime.current = Date.now();
+
+                      const now = Date.now();
+                      const rt = now - lastActionTime.current;
+                      if (rt >= 500 && rt <= 60000) {
+                        responseTimes.current.push(rt);
+                      }
+                      lastActionTime.current = now;
+
+                      totalAttemptsRef.current++;
+
+                      const prev = Object.keys(assignments).find(k => assignments[k] === draggedName);
+                      if (prev) {
+                        setAssignments(p => {
+                          const n = { ...p };
+                          delete n[prev];
+                          return n;
+                        });
+                        setFeedback(p => {
+                          const n = { ...p };
+                          delete n[prev];
+                          return n;
+                        });
+                      }
+
+                      setAssignments(p => ({ ...p, [face.id]: draggedName }));
+                      setFeedback(p => {
+                        const n = { ...p };
+                        delete n[face.id];
+                        return n;
+                      });
+                      setDragging(null);
+                      setDragOver(null);
+                    }}
+                    onTouchEnd={(e) => {
+                      if (dragging && !feedback[face.id]) {
+                        e.preventDefault();
+                        const draggedName = dragging;
+
+                        if (!draggedName || paused) return;
+                        if (feedback[face.id] === "correct") return;
+
+                        ensureAudio();
+                        lastActivityTime.current = Date.now();
+
+                        const now = Date.now();
+                        const rt = now - lastActionTime.current;
+                        if (rt >= 500 && rt <= 60000) {
+                          responseTimes.current.push(rt);
+                        }
+                        lastActionTime.current = now;
+
+                        totalAttemptsRef.current++;
+
+                        const prev = Object.keys(assignments).find(k => assignments[k] === draggedName);
+                        if (prev) {
+                          setAssignments(p => {
+                            const n = { ...p };
+                            delete n[prev];
+                            return n;
+                          });
+                          setFeedback(p => {
+                            const n = { ...p };
+                            delete n[prev];
+                            return n;
+                          });
+                        }
+
+                        setAssignments(p => ({ ...p, [face.id]: draggedName }));
+                        setFeedback(p => {
+                          const n = { ...p };
+                          delete n[face.id];
+                          return n;
+                        });
+                        setDragging(null);
+                        setDragOver(null);
+                      }
+                    }}
+                  >
                     <div className="fn-face-img-wrap">{face.emoji}</div>
                     <div className="fn-name-badge">
                       <div className={dropClass}>
                         {assigned ? (
-                          (fb==="correct" ? "✓ " : fb==="wrong" ? "✗ " : "") + assigned
-                        ) :
-                          "drop here"
-                        }
+                          (fb === "correct" ? "✓ " : fb === "wrong" ? "✗ " : "") + assigned
+                        ) : (
+                          " drop here"
+                        )}
                       </div>
                     </div>
                   </div>
                 );
               })}
             </div>
+
             <div className="fn-names-pool">
-              {namePool.map(name => (
-                <div key={name} className={`fn-name-chip${usedNamesSet.has(name)?" fn-used":""}${dragging===name?" fn-dragging":""}`}
-                  draggable={!usedNamesSet.has(name)} onDragStart={()=>onDragStart(name)} onDragEnd={onDragEnd}
-                >{name}</div>
-              ))}
+              {namePool.map(name => {
+                const isUsed = usedNamesSet.has(name);
+                const isDragging = dragging === name;
+
+                return (
+                  <div
+                    key={name}
+                    className={`fn-name-chip${isUsed ? " fn-used" : ""}${isDragging ? " fn-dragging fn-selected" : ""}`}
+                    draggable={!isUsed}
+                    onPointerDown={(e) => {
+                      if (isUsed) return;
+                      if (e.pointerType === 'mouse' || e.pointerType === 'pen') {
+                        setDragging(name); 
+                        lastActivityTime.current = Date.now();
+                      }
+                    }}
+                    onDragStart={(e) => {
+                      if (!isUsed) {
+                        e.dataTransfer.setData("text/plain", name);
+                        e.dataTransfer.effectAllowed = "move";
+                        document.body.style.cursor = "grabbing"; 
+                        try {
+                          e.dataTransfer.setDragImage(e.currentTarget, 20, 20);
+                        } catch {}
+                        setDragging(name);
+                        lastActivityTime.current = Date.now();
+                      } else {
+                        e.preventDefault();
+                        return false;
+                      }
+                    }}
+                    onDragEnd={() => {
+                      setDragging(null);
+                      setDragOver(null);
+                    }}
+                    style={{
+                      cursor: isUsed ? 'default' : 'grab',
+                      opacity: isUsed ? 0.4 : 1,
+                      transition: 'all 0.2s ease'
+                    }}
+                    onTouchStart={(e) => {
+                      if (isUsed) return;
+                      const element = e.currentTarget;
+                      setDragging(name);
+                      lastActivityTime.current = Date.now();
+                      element.style.transform = 'scale(0.98)';
+                      setTimeout(() => {
+                        element.style.transform = '';
+                      }, 150);
+                    }}
+                  >
+                    {name}
+                  </div>
+                );
+              })}
             </div>
           </>
         )}
@@ -927,52 +897,45 @@ export default function FacesNamesGame({
           const goEm = accuracy>=80?"🧠":accuracy>=60?"🏆":accuracy>=40?"⭐":"💪";
           const goTi = accuracy>=80?"Brilliant Memory!":accuracy>=60?"Great Job!":accuracy>=40?"Good Try!":"Great Effort!";
           const goSu = accuracy>=80?"You are a memory superstar!":accuracy>=60?"Your brain is getting stronger!":accuracy>=40?"Every round makes you better!":"You showed up and tried — that's what matters!";
-          const bgGrad = 'linear-gradient(135deg, #8BE3D8, #6BC5B8)';
-          
           const coinsEarned = earnedCoins || 0;
           
           return (
-            <div className="fn-gameover-screen">
-              <div className="fn-gameover-content">
-                <div className="fn-go-emoji">{goEm}</div>
-                <h1 className="fn-go-title">{goTi}</h1>
-                <p className="fn-go-sub">{goSu}</p>
+            <div className="FN-gameover-screen">
+              <div className="FN-gameover-content">
+                <div className="FN-go-emoji">{goEm}</div>
+                <h1 className="FN-go-title">{goTi}</h1>
+                <p className="FN-go-sub">{goSu}</p>
                 
-                <div className="fn-stats-grid">
-                  <div className="fn-stat-item">
-                    <div className="fn-stat-icon">✔️</div>
-                    <div className="fn-stat-value">{totalCorrect}</div>
-                    <div className="fn-stat-label">Correct</div>
+                <div className="FN-stats-grid">
+                  <div className="FN-stat-item">
+                    <div className="FN-stat-icon">✔️</div>
+                    <div className="FN-stat-value">{totalCorrect}</div>
+                    <div className="FN-stat-label">Correct</div>
                   </div>
                   
-                  <div className="fn-stat-item">
-                    <div className="fn-stat-icon">🔄</div>
-                    <div className="fn-stat-value">{rounds}</div>
-                    <div className="fn-stat-label">Rounds</div>
+                  <div className="FN-stat-item">
+                    <div className="FN-stat-icon">🔄</div>
+                    <div className="FN-stat-value">{rounds}</div>
+                    <div className="FN-stat-label">Rounds</div>
                   </div>
                   
-                  <div className="fn-stat-item">
-                    <div className="fn-stat-icon">🎯</div>
-                    <div className="fn-stat-value">{accuracy}%</div>
-                    <div className="fn-stat-label">Accuracy</div>
+                  <div className="FN-stat-item">
+                    <div className="FN-stat-icon">🎯</div>
+                    <div className="FN-stat-value">{accuracy}%</div>
+                    <div className="FN-stat-label">Accuracy</div>
                   </div>
                   
-                  <div className="fn-stat-item">
-                    <div className="fn-stat-icon">⏱️</div>
-                    <div className="fn-stat-value">
-                      {responseTimes.current.length > 0 
-                        ? Math.round(responseTimes.current.reduce((a,b)=>a+b,0)/responseTimes.current.length) + 'ms'
+                  <div className="FN-stat-item">
+                    <div className="FN-stat-icon">⏱️</div>
+                    <div className="FN-stat-value">
+                        {responseTimes.current.length > 0
+                          ? (responseTimes.current.reduce((a,b)=>a+b,0) / responseTimes.current.length / 1000).toFixed(1) + 's'
                         : '—'}
                     </div>
-                    <div className="fn-stat-label">Avg Time</div>
+                    <div className="FN-stat-label">Avg Time</div>
                   </div>
                 </div>
-                
-                <div className="fn-coin-reward-box">
-                  <span className="fn-coin-icon">🪙</span>
-                  <span className="fn-coin-value">+{coinsEarned}</span>
-                  <span className="fn-coin-label">Coins Earned!</span>
-                </div>
+              
                 
                 <div style={{ display: 'flex', gap: 14, marginTop: 28, justifyContent: 'center' }}>
                   <button onClick={resetGame} style={{
@@ -981,7 +944,7 @@ export default function FacesNamesGame({
                     fontSize: 18, fontWeight: 700, cursor: 'pointer',
                     boxShadow: '0 8px 25px rgba(0,168,150,0.4)',
                     transition: 'transform 0.2s, box-shadow 0.2s',
-                  }}>🔄 Play Again</button>
+                  }}> Play Again</button>
                   <button onClick={goBack} style={{
                     padding: '16px 40px', borderRadius: 50,
                     border: '2px solid rgba(255,255,255,0.25)', background: 'rgba(255,255,255,0.06)',

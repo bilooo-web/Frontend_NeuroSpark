@@ -1,6 +1,7 @@
 /* ─── Scene ─────────────────────────────────────────────── */
 .ginger-scene3 {
   background-color: #9AD0EE;
+  margin-top: -58px;
   position: relative;
   width: 100%;
   height: 100vh;
@@ -12,7 +13,7 @@
 /* ─── Scene characters ───────────────────────────────────── */
 .giraffe-monkey {
   position: absolute;
-  margin-top: 420px;
+  margin-top: 330px;
   left: 5%;
   width: 570px;
   height: auto;

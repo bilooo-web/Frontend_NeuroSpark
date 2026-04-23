@@ -150,9 +150,8 @@ function Header({ totalCoins }) {
         <nav className={`nav ${isMobileMenuOpen ? 'mobile-open' : ''}`}>
           <NavLink to="/home" className={isHomeActive() ? 'active' : ''} end onClick={() => setIsMobileMenuOpen(false)}>Home</NavLink>
           <NavLink to="/challenges" className={({ isActive }) => isActive ? 'active' : ''} onClick={() => setIsMobileMenuOpen(false)}>Challenges</NavLink>
-          <NavLink to="/spark-city" className={({ isActive }) => isActive ? 'active' : ''} onClick={() => setIsMobileMenuOpen(false)}>Spark City</NavLink>
+          <NavLink to="/ReadingPage" className={({ isActive }) => isActive ? 'active' : ''} onClick={() => setIsMobileMenuOpen(false)}>Reading</NavLink>
           <NavLink to="/customization" className={({ isActive }) => isActive ? 'active' : ''} onClick={() => setIsMobileMenuOpen(false)}>Customization</NavLink>
-          <NavLink to="/homework" className={({ isActive }) => isActive ? 'active' : ''} onClick={() => setIsMobileMenuOpen(false)}>Homework</NavLink>
           <NavLink to="/about" className={({ isActive }) => isActive ? 'active' : ''} onClick={() => setIsMobileMenuOpen(false)}>About Us</NavLink>
         </nav>
         <div className="header-right">
@@ -231,7 +230,6 @@ function Header({ totalCoins }) {
 
             <div className="profile-container" onClick={goToDashboard}>
               <img src={profileImage} alt="Profile" className="profile-img" style={{ cursor:'pointer' }} />
-              <span className="profile-name">{user.full_name}</span>
             </div>
           </>) : (
             <button className="header-btn signin" onClick={openSignIn}>Sign In</button>

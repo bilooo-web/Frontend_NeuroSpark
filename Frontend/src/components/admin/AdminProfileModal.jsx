@@ -16,7 +16,6 @@ const AdminProfileModal = ({ open, onClose }) => {
 
   useEffect(() => {
     if (open) {
-      // Load current user data from localStorage
       try {
         const user = JSON.parse(localStorage.getItem("user") || "{}");
         setFormData({
@@ -36,7 +35,6 @@ const AdminProfileModal = ({ open, onClose }) => {
 
   const handleChange = (field, value) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
-    // Clear error on change
     if (errors[field]) {
       setErrors((prev) => {
         const next = { ...prev };
@@ -63,7 +61,6 @@ const AdminProfileModal = ({ open, onClose }) => {
 
       const res = await adminService.updateProfile(payload);
 
-      // Update localStorage
       if (res.user) {
         localStorage.setItem("user", JSON.stringify(res.user));
       }
@@ -89,110 +86,110 @@ const AdminProfileModal = ({ open, onClose }) => {
   if (!open) return null;
 
   return (
-    <div className="profile-modal-overlay" onClick={onClose}>
-      <div className="profile-modal" onClick={(e) => e.stopPropagation()}>
-        <div className="profile-modal-header">
+    <div className="ad-profile-modal-overlay" onClick={onClose}>
+      <div className="ad-profile-modal" onClick={(e) => e.stopPropagation()}>
+        <div className="ad-profile-modal-header">
           <h2>Edit Profile</h2>
-          <button className="profile-modal-close" onClick={onClose}>
+          <button className="ad-profile-modal-close" onClick={onClose}>
             <X size={20} />
           </button>
         </div>
 
-        <div className="profile-modal-body">
+        <div className="ad-profile-modal-body">
           {errors.general && (
-            <div className="profile-modal-error">{errors.general}</div>
+            <div className="ad-profile-modal-error">{errors.general}</div>
           )}
 
           {success && (
-            <div className="profile-modal-success">
+            <div className="ad-profile-modal-success">
               <Check size={16} /> Profile updated successfully!
             </div>
           )}
 
-          <div className="profile-modal-field">
+          <div className="ad-profile-modal-field">
             <label>
               <User size={14} /> Full Name
             </label>
             <input
-              className="form-input"
+              className="ad-form-input"
               type="text"
               value={formData.full_name}
               onChange={(e) => handleChange("full_name", e.target.value)}
               placeholder="Your full name"
             />
             {errors.full_name && (
-              <p className="profile-modal-field-error">
+              <p className="ad-profile-modal-field-error">
                 {Array.isArray(errors.full_name) ? errors.full_name[0] : errors.full_name}
               </p>
             )}
           </div>
 
-          <div className="profile-modal-field">
+          <div className="ad-profile-modal-field">
             <label>
               <AtSign size={14} /> Username
             </label>
             <input
-              className="form-input"
+              className="ad-form-input"
               type="text"
               value={formData.username}
               onChange={(e) => handleChange("username", e.target.value)}
               placeholder="Username"
             />
             {errors.username && (
-              <p className="profile-modal-field-error">
+              <p className="ad-profile-modal-field-error">
                 {Array.isArray(errors.username) ? errors.username[0] : errors.username}
               </p>
             )}
           </div>
 
-          <div className="profile-modal-field">
+          <div className="ad-profile-modal-field">
             <label>
               <Mail size={14} /> Email
             </label>
             <input
-              className="form-input"
+              className="ad-form-input"
               type="email"
               value={formData.email}
               onChange={(e) => handleChange("email", e.target.value)}
               placeholder="admin@example.com"
             />
             {errors.email && (
-              <p className="profile-modal-field-error">
+              <p className="ad-profile-modal-field-error">
                 {Array.isArray(errors.email) ? errors.email[0] : errors.email}
               </p>
             )}
           </div>
 
-          <div className="profile-modal-divider" />
+          <div className="ad-profile-modal-divider" />
 
-          <p className="text-muted text-sm" style={{ marginBottom: 12 }}>
+          <p className="ad-text-muted ad-text-sm" style={{ marginBottom: 12 }}>
             Leave password fields empty to keep your current password.
           </p>
 
-          <div className="profile-modal-field">
+          <div className="ad-profile-modal-field">
             <label>
               <Lock size={14} /> New Password
             </label>
             <input
-              className="form-input"
+              className="ad-form-input"
               type="password"
               value={formData.password}
               onChange={(e) => handleChange("password", e.target.value)}
               placeholder="New password (optional)"
             />
             {errors.password && (
-              <p className="profile-modal-field-error">
+              <p className="ad-profile-modal-field-error">
                 {Array.isArray(errors.password) ? errors.password[0] : errors.password}
               </p>
             )}
           </div>
 
-          <div className="profile-modal-field">
+          <div className="ad-profile-modal-field">
             <label>
               <Lock size={14} /> Confirm Password
             </label>
             <input
-              className="form-input"
+              className="ad-form-input"
               type="password"
               value={formData.password_confirmation}
               onChange={(e) => handleChange("password_confirmation", e.target.value)}
@@ -201,12 +198,12 @@ const AdminProfileModal = ({ open, onClose }) => {
           </div>
         </div>
 
-        <div className="profile-modal-footer">
-          <button className="btn-cancel" onClick={onClose}>
+        <div className="ad-profile-modal-footer">
+          <button className="ad-btn-cancel" onClick={onClose}>
             Cancel
           </button>
           <button
-            className="btn btn-primary"
+            className="ad-btn ad-btn-primary"
             onClick={handleSubmit}
             disabled={loading}
           >

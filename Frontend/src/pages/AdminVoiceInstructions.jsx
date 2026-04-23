@@ -13,6 +13,7 @@ import {
   Power,
   Mic,
   Target,
+  CheckCircle,
 } from "lucide-react";
 import Modal from "../components/admin/Modal";
 import adminService from "../services/adminService";
@@ -33,6 +34,13 @@ const AdminVoiceInstructions = () => {
   const [formData, setFormData] = useState({});
   const [formErrors, setFormErrors] = useState({});
   const [formLoading, setFormLoading] = useState(false);
+  const [deleteError, setDeleteError] = useState("");
+  const [successToast, setSuccessToast] = useState({ show: false, message: "", detail: "" });
+
+  const showSuccess = (message, detail = "") => {
+    setSuccessToast({ show: true, message, detail });
+    setTimeout(() => setSuccessToast({ show: false, message: "", detail: "" }), 2500);
+  };
 
   // Extra metrics
   const [voiceStats, setVoiceStats] = useState({ totalAttempts: 0, avgAccuracy: 0, avgDuration: 0, avgSpeechRate: 0 });
@@ -137,6 +145,7 @@ const AdminVoiceInstructions = () => {
 
       await adminService.createVoiceInstruction(payload);
       setAddModal(false);
+      showSuccess("Voice Instruction Created", `${formData.title} has been added.`);
       fetchInstructions(pagination.current_page);
     } catch (err) {
       if (err.data?.errors) setFormErrors(err.data.errors);
@@ -211,6 +220,7 @@ const AdminVoiceInstructions = () => {
 
       await adminService.updateVoiceInstruction(editModal.item.id, payload);
       setEditModal({ open: false, item: null });
+      showSuccess("Voice Instruction Updated", `${formData.title} has been updated.`);
       fetchInstructions(pagination.current_page);
     } catch (err) {
       if (err.data?.errors) setFormErrors(err.data.errors);
@@ -222,31 +232,34 @@ const AdminVoiceInstructions = () => {
 
   const handleDelete = async () => {
     setFormLoading(true);
+    setDeleteError("");
     try {
+      const deletedTitle = deleteModal.item?.title;
       await adminService.deleteVoiceInstruction(deleteModal.item.id);
       setDeleteModal({ open: false, item: null });
+      showSuccess("Voice Instruction Deleted", `${deletedTitle} has been removed.`);
       fetchInstructions(pagination.current_page);
     } catch (err) {
-      alert(err.data?.message || err.message || "Failed to delete");
+      setDeleteError(err.data?.message || err.message || "Failed to delete");
     } finally {
       setFormLoading(false);
     }
   };
 
   const renderField = (label, name, type = "text", options = null, extra = {}) => (
-    <div className="form-group" style={{ marginBottom: 14 }}>
-      <label>{label}{extra.required && <span style={{ color: "var(--destructive)" }}> *</span>}</label>
-      {extra.hint && <p style={{ fontSize: 11, color: "var(--muted-foreground)", margin: "2px 0 6px" }}>{extra.hint}</p>}
+    <div className="ad-form-group" style={{ marginBottom: 14 }}>
+      <label>{label}{extra.required && <span style={{ color: "var(--ad-destructive)" }}> *</span>}</label>
+      {extra.hint && <p style={{ fontSize: 11, color: "var(--ad-muted-foreground)", margin: "2px 0 6px" }}>{extra.hint}</p>}
       {options ? (
-        <select className="form-select" value={formData[name] ?? ""} onChange={(e) => setFormData({ ...formData, [name]: e.target.value })}>
+        <select className="ad-form-select" value={formData[name] ?? ""} onChange={(e) => setFormData({ ...formData, [name]: e.target.value })}>
           {options.map((o) => (<option key={o.value} value={o.value}>{o.label}</option>))}
         </select>
       ) : type === "textarea" ? (
-        <textarea className="form-input" value={formData[name] || ""} onChange={(e) => setFormData({ ...formData, [name]: e.target.value })} placeholder={extra.placeholder || label} rows={extra.rows || 3} style={extra.style || {}} />
+        <textarea className="ad-form-input" value={formData[name] || ""} onChange={(e) => setFormData({ ...formData, [name]: e.target.value })} placeholder={extra.placeholder || label} rows={extra.rows || 3} style={extra.style || {}} />
       ) : (
-        <input className="form-input" type={type} value={formData[name] ?? ""} onChange={(e) => setFormData({ ...formData, [name]: e.target.value })} placeholder={extra.placeholder || label} min={type === "number" ? "1" : undefined} step={type === "number" ? "1" : undefined} />
+        <input className="ad-form-input" type={type} value={formData[name] ?? ""} onChange={(e) => setFormData({ ...formData, [name]: e.target.value })} placeholder={extra.placeholder || label} min={type === "number" ? "1" : undefined} step={type === "number" ? "1" : undefined} />
       )}
-      {formErrors[name] && <p style={{ color: "var(--destructive)", fontSize: 12, marginTop: 4 }}>{Array.isArray(formErrors[name]) ? formErrors[name][0] : formErrors[name]}</p>}
+      {formErrors[name] && <p style={{ color: "var(--ad-destructive)", fontSize: 12, marginTop: 4 }}>{Array.isArray(formErrors[name]) ? formErrors[name][0] : formErrors[name]}</p>}
     </div>
   );
 
@@ -265,65 +278,65 @@ const AdminVoiceInstructions = () => {
   );
 
   return (
-    <div className="page-section">
-      <div className="page-header">
+    <div className="ad-page-section">
+      <div className="ad-page-header">
         <div>
           <h1>Voice Instructions</h1>
           <p>Manage speech therapy voice instructions</p>
         </div>
-        <button className="btn btn-primary" onClick={openAddModal}>
+        <button className="ad-btn ad-btn-primary" onClick={openAddModal}>
           <Plus style={{ height: 16, width: 16 }} />
           Add Instruction
         </button>
       </div>
 
       {/* Summary Cards */}
-      <div className="admin-summary-cards">
-        <div className="admin-summary-card">
-          <div className="admin-summary-card-icon primary"><BookOpen style={{ height: 22, width: 22 }} /></div>
-          <div className="admin-summary-card-content">
-            <div className="admin-summary-card-label">Total Stories</div>
-            <div className="admin-summary-card-value">{stats.total}</div>
+      <div className="ad-summary-cards">
+        <div className="ad-summary-card">
+          <div className="ad-summary-card-icon ad-primary"><BookOpen style={{ height: 22, width: 22 }} /></div>
+          <div className="ad-summary-card-content">
+            <div className="ad-summary-card-label">Total Stories</div>
+            <div className="ad-summary-card-value">{stats.total}</div>
           </div>
         </div>
-        <div className="admin-summary-card">
-          <div className="admin-summary-card-icon success"><Power style={{ height: 22, width: 22 }} /></div>
-          <div className="admin-summary-card-content">
-            <div className="admin-summary-card-label">Active</div>
-            <div className="admin-summary-card-value">{stats.active}</div>
+        <div className="ad-summary-card">
+          <div className="ad-summary-card-icon ad-success"><Power style={{ height: 22, width: 22 }} /></div>
+          <div className="ad-summary-card-content">
+            <div className="ad-summary-card-label">Active</div>
+            <div className="ad-summary-card-value">{stats.active}</div>
           </div>
         </div>
-        <div className="admin-summary-card">
-          <div className="admin-summary-card-icon accent"><Mic style={{ height: 22, width: 22 }} /></div>
-          <div className="admin-summary-card-content">
-            <div className="admin-summary-card-label">Total Readings</div>
-            <div className="admin-summary-card-value">{voiceStats.totalAttempts.toLocaleString()}</div>
+        <div className="ad-summary-card">
+          <div className="ad-summary-card-icon ad-accent"><Mic style={{ height: 22, width: 22 }} /></div>
+          <div className="ad-summary-card-content">
+            <div className="ad-summary-card-label">Total Readings</div>
+            <div className="ad-summary-card-value">{voiceStats.totalAttempts.toLocaleString()}</div>
           </div>
         </div>
-        <div className="admin-summary-card">
-          <div className="admin-summary-card-icon info"><Target style={{ height: 22, width: 22 }} /></div>
-          <div className="admin-summary-card-content">
-            <div className="admin-summary-card-label">Avg Score</div>
-            <div className="admin-summary-card-value">{voiceStats.avgAccuracy}%</div>
+        <div className="ad-summary-card">
+          <div className="ad-summary-card-icon ad-info"><Target style={{ height: 22, width: 22 }} /></div>
+          <div className="ad-summary-card-content">
+            <div className="ad-summary-card-label">Avg Score</div>
+            <div className="ad-summary-card-value">{voiceStats.avgAccuracy}%</div>
           </div>
         </div>
-        <div className="admin-summary-card">
-          <div className="admin-summary-card-icon primary"><Clock style={{ height: 22, width: 22 }} /></div>
-          <div className="admin-summary-card-content">
-            <div className="admin-summary-card-label">Avg Duration</div>
-            <div className="admin-summary-card-value">{voiceStats.avgDuration}s</div>
+        <div className="ad-summary-card">
+          <div className="ad-summary-card-icon ad-primary"><Clock style={{ height: 22, width: 22 }} /></div>
+          <div className="ad-summary-card-content">
+            <div className="ad-summary-card-label">Avg Duration</div>
+            <div className="ad-summary-card-value">{voiceStats.avgDuration}s</div>
           </div>
         </div>
       </div>
 
-      <div className="filters-row">
-        <div className="search-box">
-          <Search style={{ height: 16, width: 16, color: "var(--muted-foreground)" }} />
+      <div className="ad-filters-row">
+        <div className="ad-search-box">
+          <Search style={{ height: 16, width: 16, color: "var(--ad-muted-foreground)" }} />
           <input placeholder="Search instructions..." value={search} onChange={(e) => setSearch(e.target.value)} />
         </div>
-        <div className="filter-group">
+        <div className="ad-filter-group">
           {["all", "active", "inactive"].map((f) => (
-            <button key={f} className={`filter-btn ${activeFilter === f ? "active" : ""}`} onClick={() => setActiveFilter(f)}>
+            <button key={f} className={`ad-filter-btn ${activeFilter === f ? "ad-active" : ""}`} onClick={() => setActiveFilter(f)}>
               {f.charAt(0).toUpperCase() + f.slice(1)}
             </button>
           ))}
@@ -331,39 +344,39 @@ const AdminVoiceInstructions = () => {
       </div>
 
       {loading ? (
-        <div style={{ textAlign: "center", padding: 48 }}><div className="admin-spinner" /></div>
+        <div style={{ textAlign: "center", padding: 48 }}><div className="ad-spinner" /></div>
       ) : filteredInstructions.length === 0 ? (
-        <div className="glass-card empty-state"><BookOpen style={{ height: 40, width: 40 }} /><p>No voice instructions found</p></div>
+        <div className="ad-glass-card ad-empty-state"><BookOpen style={{ height: 40, width: 40 }} /><p>No voice instructions found</p></div>
       ) : (
-        <div className="grid-cards">
+        <div className="ad-grid-cards">
           {filteredInstructions.map((item) => (
-            <div key={item.id} className="entity-card">
-              <div className="entity-card-header">
+            <div key={item.id} className="ad-entity-card">
+              <div className="ad-entity-card-header">
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <div className="entity-card-title">{item.title}</div>
-                  <div className="entity-card-badges">
-                    <span className={`badge ${item.is_active ? "badge-success" : "badge-muted"}`}>{item.is_active ? "Active" : "Inactive"}</span>
+                  <div className="ad-entity-card-title">{item.title}</div>
+                  <div className="ad-entity-card-badges">
+                    <span className={`ad-badge ${item.is_active ? "ad-badge-success" : "ad-badge-muted"}`}>{item.is_active ? "Active" : "Inactive"}</span>
                   </div>
                 </div>
-                <div className={`status-dot ${item.is_active ? "active" : "inactive"}`} />
+                <div className={`ad-status-dot ${item.is_active ? "ad-active" : "ad-inactive"}`} />
               </div>
-              <p className="text-muted text-sm" style={{ marginBottom: 12, lineHeight: 1.5 }}>{item.description?.slice(0, 120)}{item.description?.length > 120 ? "..." : ""}</p>
-              <div className="entity-card-stats">
-                <div className="entity-card-stat"><div className="entity-card-stat-label">Pages</div><div className="entity-card-stat-value">{item.page_count || 0}</div></div>
-                <div className="entity-card-stat"><div className="entity-card-stat-label">Max Coins</div><div className="entity-card-stat-value accent">{item.reward_coins}</div></div>
-                <div className="entity-card-stat"><div className="entity-card-stat-label">Attempts</div><div className="entity-card-stat-value">{item.computed_stats?.total_attempts || 0}</div></div>
+              <p className="ad-text-muted ad-text-sm" style={{ marginBottom: 12, lineHeight: 1.5 }}>{item.description?.slice(0, 120)}{item.description?.length > 120 ? "..." : ""}</p>
+              <div className="ad-entity-card-stats">
+                <div className="ad-entity-card-stat"><div className="ad-entity-card-stat-label">Pages</div><div className="ad-entity-card-stat-value">{item.page_count || 0}</div></div>
+                <div className="ad-entity-card-stat"><div className="ad-entity-card-stat-label">Max Coins</div><div className="ad-entity-card-stat-value ad-accent">{item.reward_coins}</div></div>
+                <div className="ad-entity-card-stat"><div className="ad-entity-card-stat-label">Attempts</div><div className="ad-entity-card-stat-value">{item.computed_stats?.total_attempts || 0}</div></div>
               </div>
-              <div className="entity-card-stats" style={{ marginTop: 0 }}>
-                <div className="entity-card-stat"><div className="entity-card-stat-label">Avg Score</div><div className="entity-card-stat-value">{item.computed_stats?.avg_accuracy || 0}%</div></div>
-                <div className="entity-card-stat"><div className="entity-card-stat-label">Avg Duration</div><div className="entity-card-stat-value">{item.computed_stats?.avg_duration || 0}s</div></div>
-                <div className="entity-card-stat"><div className="entity-card-stat-label">Slug</div><div className="entity-card-stat-value" style={{ fontSize: 11 }}>{item.story_slug || "—"}</div></div>
+              <div className="ad-entity-card-stats" style={{ marginTop: 0 }}>
+                <div className="ad-entity-card-stat"><div className="ad-entity-card-stat-label">Avg Score</div><div className="ad-entity-card-stat-value">{item.computed_stats?.avg_accuracy || 0}%</div></div>
+                <div className="ad-entity-card-stat"><div className="ad-entity-card-stat-label">Avg Duration</div><div className="ad-entity-card-stat-value">{item.computed_stats?.avg_duration || 0}s</div></div>
+                <div className="ad-entity-card-stat"><div className="ad-entity-card-stat-label">Slug</div><div className="ad-entity-card-stat-value" style={{ fontSize: 11 }}>{item.story_slug || "—"}</div></div>
               </div>
-              <div className="entity-card-footer">
-                <div className="entity-card-meta"><Clock style={{ height: 12, width: 12 }} />{item.created_at ? new Date(item.created_at).toLocaleDateString() : "—"}</div>
-                <div className="entity-card-actions" style={{ opacity: 1 }}>
-                  <button className="btn-ghost" onClick={() => setViewModal({ open: true, item })}><Eye style={{ height: 16, width: 16 }} /></button>
-                  <button className="btn-ghost" onClick={() => openEditModal(item)}><Edit2 style={{ height: 16, width: 16 }} /></button>
-                  <button className="btn-danger" onClick={() => setDeleteModal({ open: true, item })}><Trash2 style={{ height: 16, width: 16 }} /></button>
+              <div className="ad-entity-card-footer">
+                <div className="ad-entity-card-meta"><Clock style={{ height: 12, width: 12 }} />{item.created_at ? new Date(item.created_at).toLocaleDateString() : "—"}</div>
+                <div className="ad-entity-card-actions" style={{ opacity: 1 }}>
+                  <button className="ad-btn-ghost" onClick={() => setViewModal({ open: true, item })}><Eye style={{ height: 16, width: 16 }} /></button>
+                  <button className="ad-btn-ghost" onClick={() => openEditModal(item)}><Edit2 style={{ height: 16, width: 16 }} /></button>
+                  <button className="ad-btn-danger" onClick={() => setDeleteModal({ open: true, item })}><Trash2 style={{ height: 16, width: 16 }} /></button>
                 </div>
               </div>
             </div>
@@ -372,10 +385,10 @@ const AdminVoiceInstructions = () => {
       )}
 
       {pagination.last_page > 1 && (
-        <div className="glass-card" style={{ padding: 0 }}>
-          <div className="table-pagination">
+        <div className="ad-glass-card" style={{ padding: 0 }}>
+          <div className="ad-table-pagination">
             <span>Showing {pagination.from}–{pagination.to} of {pagination.total}</span>
-            <div className="table-pagination-btns">
+            <div className="ad-table-pagination-btns">
               <button disabled={pagination.current_page === 1} onClick={() => fetchInstructions(pagination.current_page - 1)}><ChevronLeft style={{ height: 16, width: 16 }} /></button>
               <button disabled={pagination.current_page === pagination.last_page} onClick={() => fetchInstructions(pagination.current_page + 1)}><ChevronRight style={{ height: 16, width: 16 }} /></button>
             </div>
@@ -383,8 +396,8 @@ const AdminVoiceInstructions = () => {
         </div>
       )}
 
-      <Modal open={addModal} onClose={() => setAddModal(false)} title="Add Voice Instruction" footer={<><button className="btn-cancel" onClick={() => setAddModal(false)}>Cancel</button><button className="btn btn-primary" onClick={handleAdd} disabled={formLoading}>{formLoading ? "Creating..." : "Create"}</button></>}>{formFields()}</Modal>
-      <Modal open={editModal.open} onClose={() => setEditModal({ open: false, item: null })} title={`Edit — ${editModal.item?.title || ""}`} footer={<><button className="btn-cancel" onClick={() => setEditModal({ open: false, item: null })}>Cancel</button><button className="btn btn-primary" onClick={handleEdit} disabled={formLoading}>{formLoading ? "Saving..." : "Save Changes"}</button></>}>{formFields()}</Modal>
+      <Modal open={addModal} onClose={() => setAddModal(false)} title="Add Voice Instruction" footer={<><button className="ad-btn-cancel" onClick={() => setAddModal(false)}>Cancel</button><button className="ad-btn ad-btn-primary" onClick={handleAdd} disabled={formLoading}>{formLoading ? "Creating..." : "Create"}</button></>}>{formFields()}</Modal>
+      <Modal open={editModal.open} onClose={() => setEditModal({ open: false, item: null })} title={`Edit — ${editModal.item?.title || ""}`} footer={<><button className="ad-btn-cancel" onClick={() => setEditModal({ open: false, item: null })}>Cancel</button><button className="ad-btn ad-btn-primary" onClick={handleEdit} disabled={formLoading}>{formLoading ? "Saving..." : "Save Changes"}</button></>}>{formFields()}</Modal>
       <Modal open={viewModal.open} onClose={() => setViewModal({ open: false, item: null })} title="Voice Instruction Details">
         {viewModal.item && (() => {
           const vi = viewModal.item;
@@ -442,46 +455,46 @@ const AdminVoiceInstructions = () => {
                     { label: "Coins Awarded", value: cs.total_coins || 0, color: "#fdcb6e", icon: "🪙" },
                   ].map((m, i) => (
                     <div key={i} style={{
-                      textAlign: "center", padding: "14px 8px", background: "var(--muted)", borderRadius: 12,
-                      border: "1px solid var(--border)", transition: "transform 0.15s",
+                      textAlign: "center", padding: "14px 8px", background: "var(--ad-muted)", borderRadius: 12,
+                      border: "1px solid var(--ad-border)", transition: "transform 0.15s",
                     }}>
                       <span style={{ fontSize: 20 }}>{m.icon}</span>
                       <div style={{ fontSize: 22, fontWeight: 800, color: m.color, marginTop: 2 }}>{typeof m.value === "number" ? m.value.toLocaleString() : m.value}</div>
-                      <div style={{ fontSize: 10, color: "var(--muted-foreground)", fontWeight: 600, textTransform: "uppercase", letterSpacing: 0.5, marginTop: 2 }}>{m.label}</div>
+                      <div style={{ fontSize: 10, color: "var(--ad-muted-foreground)", fontWeight: 600, textTransform: "uppercase", letterSpacing: 0.5, marginTop: 2 }}>{m.label}</div>
                     </div>
                   ))}
                 </div>
               ) : (
                 <div style={{
-                  textAlign: "center", padding: "24px 16px", background: "var(--muted)", borderRadius: 12,
-                  marginBottom: 20, border: "1px dashed var(--border)",
+                  textAlign: "center", padding: "24px 16px", background: "var(--ad-muted)", borderRadius: 12,
+                  marginBottom: 20, border: "1px dashed var(--ad-border)",
                 }}>
-                  <Mic style={{ height: 32, width: 32, color: "var(--muted-foreground)", marginBottom: 8 }} />
-                  <p style={{ fontSize: 13, color: "var(--muted-foreground)", margin: 0 }}>No reading attempts yet</p>
+                  <Mic style={{ height: 32, width: 32, color: "var(--ad-muted-foreground)", marginBottom: 8 }} />
+                  <p style={{ fontSize: 13, color: "var(--ad-muted-foreground)", margin: 0 }}>No reading attempts yet</p>
                 </div>
               )}
 
               {/* Accuracy & Pronunciation Bars */}
               {hasStats && (
                 <div style={{ marginBottom: 20 }}>
-                  <div style={{ fontSize: 11, fontWeight: 700, color: "var(--muted-foreground)", textTransform: "uppercase", letterSpacing: 1, marginBottom: 10 }}>Reading Quality</div>
+                  <div style={{ fontSize: 11, fontWeight: 700, color: "var(--ad-muted-foreground)", textTransform: "uppercase", letterSpacing: 1, marginBottom: 10 }}>Reading Quality</div>
                   {[
                     { label: "Accuracy", value: accuracyPct, desc: "Correct words ÷ total words" },
                     { label: "Pronunciation", value: pronPct, desc: "Correct spoken ÷ words attempted" },
                   ].map((bar, i) => (
                     <div key={i} style={{ marginBottom: 12 }}>
                       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 4 }}>
-                        <span style={{ fontSize: 13, fontWeight: 600, color: "var(--foreground)" }}>{bar.label}</span>
+                        <span style={{ fontSize: 13, fontWeight: 600, color: "var(--ad-foreground)" }}>{bar.label}</span>
                         <span style={{ fontSize: 18, fontWeight: 800, color: barColor(bar.value) }}>{Math.round(bar.value)}%</span>
                       </div>
-                      <div style={{ height: 10, background: "var(--muted)", borderRadius: 5, overflow: "hidden" }}>
+                      <div style={{ height: 10, background: "var(--ad-muted)", borderRadius: 5, overflow: "hidden" }}>
                         <div style={{
                           height: "100%", width: `${Math.min(bar.value, 100)}%`,
                           background: `linear-gradient(90deg, ${barColor(bar.value)}, ${barColor(bar.value)}cc)`,
                           borderRadius: 5, transition: "width 0.6s ease",
                         }} />
                       </div>
-                      <div style={{ fontSize: 10, color: "var(--muted-foreground)", marginTop: 2 }}>{bar.desc}</div>
+                      <div style={{ fontSize: 10, color: "var(--ad-muted-foreground)", marginTop: 2 }}>{bar.desc}</div>
                     </div>
                   ))}
                 </div>
@@ -490,7 +503,7 @@ const AdminVoiceInstructions = () => {
               {/* Engagement Metrics */}
               {hasStats && (cs.avg_speaker_clicks > 0 || cs.avg_word_clicks > 0 || cs.avg_speech_rate > 0) && (
                 <div style={{ marginBottom: 20 }}>
-                  <div style={{ fontSize: 11, fontWeight: 700, color: "var(--muted-foreground)", textTransform: "uppercase", letterSpacing: 1, marginBottom: 10 }}>Help & Engagement</div>
+                  <div style={{ fontSize: 11, fontWeight: 700, color: "var(--ad-muted-foreground)", textTransform: "uppercase", letterSpacing: 1, marginBottom: 10 }}>Help & Engagement</div>
                   <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
                     {[
                       { icon: "🔊", label: "Avg Read-Alouds", value: cs.avg_speaker_clicks || 0 },
@@ -499,13 +512,13 @@ const AdminVoiceInstructions = () => {
                       { icon: "⏸️", label: "Avg Pause Time", value: `${Math.round(cs.avg_pause_duration || 0)}s` },
                     ].map((m, i) => (
                       <div key={i} style={{
-                        background: "var(--card-hover)", borderRadius: 10, padding: "10px 12px",
-                        display: "flex", alignItems: "center", gap: 8, border: "1px solid var(--border)",
+                        background: "var(--ad-card-hover)", borderRadius: 10, padding: "10px 12px",
+                        display: "flex", alignItems: "center", gap: 8, border: "1px solid var(--ad-border)",
                       }}>
                         <span style={{ fontSize: 18 }}>{m.icon}</span>
                         <div>
-                          <div style={{ fontSize: 10, color: "var(--muted-foreground)", fontWeight: 600 }}>{m.label}</div>
-                          <div style={{ fontSize: 15, fontWeight: 800, color: "var(--foreground)" }}>{m.value}</div>
+                          <div style={{ fontSize: 10, color: "var(--ad-muted-foreground)", fontWeight: 600 }}>{m.label}</div>
+                          <div style={{ fontSize: 15, fontWeight: 800, color: "var(--ad-foreground)" }}>{m.value}</div>
                         </div>
                       </div>
                     ))}
@@ -514,28 +527,62 @@ const AdminVoiceInstructions = () => {
               )}
 
               {/* Description & Details */}
-              <div style={{ fontSize: 11, fontWeight: 700, color: "var(--muted-foreground)", textTransform: "uppercase", letterSpacing: 1, marginBottom: 8 }}>Details</div>
-              <div className="modal-field"><div className="modal-field-label">Description</div><div className="modal-field-value" style={{ lineHeight: 1.7 }}>{vi.description || "—"}</div></div>
+              <div style={{ fontSize: 11, fontWeight: 700, color: "var(--ad-muted-foreground)", textTransform: "uppercase", letterSpacing: 1, marginBottom: 8 }}>Details</div>
+              <div className="ad-modal-field"><div className="ad-modal-field-label">Description</div><div className="ad-modal-field-value" style={{ lineHeight: 1.7 }}>{vi.description || "—"}</div></div>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginTop: 4 }}>
-                <div className="modal-field">
-                  <div className="modal-field-label">Max Reward</div>
-                  <div className="modal-field-value" style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                <div className="ad-modal-field">
+                  <div className="ad-modal-field-label">Max Reward</div>
+                  <div className="ad-modal-field-value" style={{ display: "flex", alignItems: "center", gap: 4 }}>
                     <Coins style={{ height: 14, width: 14, color: "#e6a014" }} />
                     <span style={{ fontWeight: 700, color: "#e6a014" }}>{vi.reward_coins}</span> coins
                   </div>
                 </div>
-                <div className="modal-field">
-                  <div className="modal-field-label">Created</div>
-                  <div className="modal-field-value">{vi.created_at ? new Date(vi.created_at).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" }) : "—"}</div>
+                <div className="ad-modal-field">
+                  <div className="ad-modal-field-label">Created</div>
+                  <div className="ad-modal-field-value">{vi.created_at ? new Date(vi.created_at).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" }) : "—"}</div>
                 </div>
               </div>
             </div>
           );
         })()}
       </Modal>
-      <Modal open={deleteModal.open} onClose={() => setDeleteModal({ open: false, item: null })} title="Delete Voice Instruction" footer={<><button className="btn-cancel" onClick={() => setDeleteModal({ open: false, item: null })}>Cancel</button><button className="btn-confirm-delete" onClick={handleDelete} disabled={formLoading}>{formLoading ? "Deleting..." : "Delete"}</button></>}>
-        <p style={{ fontSize: 14, color: "var(--foreground)" }}>Are you sure you want to delete <strong>{deleteModal.item?.title}</strong>? Instructions with existing voice attempts cannot be deleted.</p>
+      <Modal open={deleteModal.open} onClose={() => { setDeleteModal({ open: false, item: null }); setDeleteError(""); }} title="Delete Voice Instruction" footer={<><button className="ad-btn-cancel" onClick={() => { setDeleteModal({ open: false, item: null }); setDeleteError(""); }}>Cancel</button><button className="ad-btn-confirm-delete" onClick={handleDelete} disabled={formLoading}>{formLoading ? "Deleting..." : "Delete"}</button></>}>
+        <div style={{ textAlign: "center", padding: "8px 0" }}>
+          <div style={{ width: 64, height: 64, borderRadius: "50%", background: "rgba(239,68,68,0.1)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 16px" }}>
+            <Trash2 style={{ height: 28, width: 28, color: "#ef4444" }} />
+          </div>
+          <p style={{ fontSize: 16, fontWeight: 600, color: "var(--ad-foreground)", marginBottom: 8 }}>Delete {deleteModal.item?.title}?</p>
+          <p style={{ fontSize: 13, color: "var(--ad-muted-foreground)", lineHeight: 1.6 }}>
+            This will permanently remove this voice instruction. Instructions with existing voice attempts cannot be deleted.
+          </p>
+          {deleteError && (
+            <div style={{ marginTop: 16, padding: "10px 16px", background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.2)", borderRadius: 8 }}>
+              <p style={{ color: "#ef4444", fontSize: 13, margin: 0 }}>{deleteError}</p>
+            </div>
+          )}
+        </div>
       </Modal>
+
+      {/* Success Toast */}
+      {successToast.show && (
+        <div style={{
+          position: "fixed", top: 24, right: 24, zIndex: 10000,
+          background: "var(--ad-card)", border: "1px solid var(--ad-border)",
+          borderLeft: "4px solid #10b981", borderRadius: 12,
+          padding: "16px 20px", minWidth: 320, maxWidth: 420,
+          boxShadow: "0 20px 60px rgba(0,0,0,0.15)", display: "flex", alignItems: "flex-start", gap: 12,
+          animation: "slideInRight 0.3s ease-out",
+        }}>
+          <div style={{ width: 40, height: 40, borderRadius: "50%", background: "rgba(16,185,129,0.1)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+            <CheckCircle style={{ height: 20, width: 20, color: "#10b981" }} />
+          </div>
+          <div style={{ flex: 1 }}>
+            <p style={{ fontSize: 14, fontWeight: 600, color: "var(--ad-foreground)", margin: 0 }}>{successToast.message}</p>
+            {successToast.detail && <p style={{ fontSize: 12, color: "var(--ad-muted-foreground)", margin: "4px 0 0" }}>{successToast.detail}</p>}
+          </div>
+        </div>
+      )}
+      <style>{`@keyframes slideInRight { from { opacity: 0; transform: translateX(40px); } to { opacity: 1; transform: translateX(0); } }`}</style>
     </div>
   );
 };

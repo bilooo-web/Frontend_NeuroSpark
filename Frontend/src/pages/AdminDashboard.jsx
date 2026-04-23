@@ -62,9 +62,9 @@ const AdminDashboard = () => {
 
   if (loading) {
     return (
-      <div className="page-section">
-        <div className="admin-loading-page">
-          <div className="admin-spinner" />
+      <div className="ad-page-section">
+        <div className="ad-loading-page">
+          <div className="ad-spinner" />
           <p>Loading dashboard...</p>
         </div>
       </div>
@@ -73,11 +73,11 @@ const AdminDashboard = () => {
 
   if (error) {
     return (
-      <div className="page-section">
-        <div className="glass-card" style={{ textAlign: "center", padding: 40 }}>
-          <p className="text-destructive" style={{ marginBottom: 12 }}>Failed to load dashboard</p>
-          <p className="text-muted text-sm">{error}</p>
-          <button className="btn btn-primary" style={{ marginTop: 16 }} onClick={fetchData}>
+      <div className="ad-page-section">
+        <div className="ad-glass-card" style={{ textAlign: "center", padding: 40 }}>
+          <p className="ad-text-destructive" style={{ marginBottom: 12 }}>Failed to load dashboard</p>
+          <p className="ad-text-muted ad-text-sm">{error}</p>
+          <button className="ad-btn ad-btn-primary" style={{ marginTop: 16 }} onClick={fetchData}>
             Retry
           </button>
         </div>
@@ -128,34 +128,34 @@ const AdminDashboard = () => {
   const recentVoiceAttempts = metrics?.recent_activity?.voice_attempts || [];
 
   return (
-    <div className="page-section">
-      <div className="page-header">
+    <div className="ad-page-section">
+      <div className="ad-page-header">
         <div>
           <h1>Dashboard Overview</h1>
           <p>Real-time platform analytics and insights</p>
         </div>
-        <button className="btn btn-outline" onClick={fetchData}>
+        <button className="ad-btn ad-btn-outline" onClick={fetchData}>
           <Activity style={{ height: 16, width: 16 }} />
           Refresh
         </button>
       </div>
 
-      <div className="grid-4">
+      <div className="ad-grid-4">
         <StatCard title="Total Users" value={stats?.total_users || 0} icon={Users} variant="primary" trend={{ value: stats?.user_growth_percent ?? 0, label: "vs last week" }} delay={0} />
         <StatCard title="Children" value={stats?.total_children || 0} icon={Baby} variant="info" trend={{ value: stats?.children_growth_percent ?? 0, label: "vs last week" }} delay={100} />
         <StatCard title="Guardians" value={stats?.total_guardians || 0} icon={ShieldCheck} variant="success" trend={{ value: stats?.guardians_growth_percent ?? 0, label: `${stats?.total_parents || 0} parents, ${stats?.total_therapists || 0} therapists` }} delay={200} />
         <StatCard title="Total Coins" value={(stats?.total_coins_distributed || 0).toLocaleString()} icon={Coins} variant="accent" trend={{ value: stats?.coins_growth_percent ?? 0, label: "vs last week" }} delay={300} />
       </div>
 
-      <div className="grid-4">
+      <div className="ad-grid-4">
         <StatCard title="Total Games" value={stats?.total_games || 0} icon={Gamepad2} trend={{ value: stats?.games_growth_percent ?? 0, label: "vs last week" }} delay={400} />
         <StatCard title="Game Sessions" value={stats?.total_game_sessions || 0} icon={Activity} trend={{ value: stats?.sessions_growth_percent ?? 0, label: "vs last week" }} delay={500} />
         <StatCard title="Voice Instructions" value={stats?.total_voice_instructions || 0} icon={BookOpen} trend={{ value: stats?.vi_growth_percent ?? 0, label: "vs last week" }} delay={600} />
         <StatCard title="Voice Attempts" value={stats?.total_voice_attempts || 0} icon={TrendingUp} trend={{ value: stats?.voice_growth_percent ?? 0, label: "vs last week" }} delay={700} />
       </div>
 
-      <div className="grid-charts">
-        <div className="glass-card chart-card">
+      <div className="ad-grid-charts">
+        <div className="ad-glass-card ad-chart-card">
           <h3>User Growth (Weekly)</h3>
           {userGrowthData.length > 0 ? (
             <ResponsiveContainer width="100%" height={280}>
@@ -180,11 +180,11 @@ const AdminDashboard = () => {
               </AreaChart>
             </ResponsiveContainer>
           ) : (
-            <div className="empty-state"><p>No user growth data yet</p></div>
+            <div className="ad-empty-state"><p>No user growth data yet</p></div>
           )}
         </div>
 
-        <div className="glass-card chart-card">
+        <div className="ad-glass-card ad-chart-card">
           <h3>Game Sessions (Daily)</h3>
           {gameSessionData.length > 0 ? (
             <ResponsiveContainer width="100%" height={280}>
@@ -197,11 +197,11 @@ const AdminDashboard = () => {
               </BarChart>
             </ResponsiveContainer>
           ) : (
-            <div className="empty-state"><p>No game session data yet</p></div>
+            <div className="ad-empty-state"><p>No game session data yet</p></div>
           )}
         </div>
 
-        <div className="glass-card chart-card">
+        <div className="ad-glass-card ad-chart-card">
           <h3>Voice Attempts (Daily)</h3>
           {voiceAttemptData.length > 0 ? (
             <ResponsiveContainer width="100%" height={280}>
@@ -220,15 +220,15 @@ const AdminDashboard = () => {
               </AreaChart>
             </ResponsiveContainer>
           ) : (
-            <div className="empty-state"><p>No voice attempt data available yet</p></div>
+            <div className="ad-empty-state"><p>No voice attempt data available yet</p></div>
           )}
         </div>
 
-        <div className="glass-card chart-card">
+        <div className="ad-glass-card ad-chart-card">
           <h3>Distribution</h3>
           <div style={{ display: "flex", gap: 16, flexWrap: "wrap" }}>
             <div style={{ flex: 1, minWidth: 180 }}>
-              <p className="text-sm text-muted" style={{ textAlign: "center", marginBottom: 8 }}>Game Types</p>
+              <p className="ad-text-sm ad-text-muted" style={{ textAlign: "center", marginBottom: 8 }}>Game Types</p>
               {gameTypeData.length > 0 ? (
                 <>
                   <ResponsiveContainer width="100%" height={160}>
@@ -239,21 +239,21 @@ const AdminDashboard = () => {
                       <Tooltip />
                     </PieChart>
                   </ResponsiveContainer>
-                  <div className="pie-legend">
+                  <div className="ad-pie-legend">
                     {gameTypeData.map((entry, i) => (
-                      <div key={i} className="pie-legend-item">
-                        <div className="pie-legend-dot" style={{ background: COLORS[i % COLORS.length] }} />
-                        <span className="pie-legend-label">{entry.name}</span>
+                      <div key={i} className="ad-pie-legend-item">
+                        <div className="ad-pie-legend-dot" style={{ background: COLORS[i % COLORS.length] }} />
+                        <span className="ad-pie-legend-label">{entry.name}</span>
                       </div>
                     ))}
                   </div>
                 </>
               ) : (
-                <p className="text-muted text-sm" style={{ textAlign: "center" }}>No data</p>
+                <p className="ad-text-muted ad-text-sm" style={{ textAlign: "center" }}>No data</p>
               )}
             </div>
             <div style={{ flex: 1, minWidth: 180 }}>
-              <p className="text-sm text-muted" style={{ textAlign: "center", marginBottom: 8 }}>Guardian Types</p>
+              <p className="ad-text-sm ad-text-muted" style={{ textAlign: "center", marginBottom: 8 }}>Guardian Types</p>
               {guardianTypeData.some((d) => d.value > 0) ? (
                 <>
                   <ResponsiveContainer width="100%" height={160}>
@@ -265,13 +265,13 @@ const AdminDashboard = () => {
                       <Tooltip />
                     </PieChart>
                   </ResponsiveContainer>
-                  <div className="pie-legend">
-                    <div className="pie-legend-item"><div className="pie-legend-dot" style={{ background: "#00a896" }} /><span className="pie-legend-label">Parents ({guardianTypeData[0]?.value || 0})</span></div>
-                    <div className="pie-legend-item"><div className="pie-legend-dot" style={{ background: "#e6a014" }} /><span className="pie-legend-label">Therapists ({guardianTypeData[1]?.value || 0})</span></div>
+                  <div className="ad-pie-legend">
+                    <div className="ad-pie-legend-item"><div className="ad-pie-legend-dot" style={{ background: "#00a896" }} /><span className="ad-pie-legend-label">Parents ({guardianTypeData[0]?.value || 0})</span></div>
+                    <div className="ad-pie-legend-item"><div className="ad-pie-legend-dot" style={{ background: "#e6a014" }} /><span className="ad-pie-legend-label">Therapists ({guardianTypeData[1]?.value || 0})</span></div>
                   </div>
                 </>
               ) : (
-                <p className="text-muted text-sm" style={{ textAlign: "center" }}>No data</p>
+                <p className="ad-text-muted ad-text-sm" style={{ textAlign: "center" }}>No data</p>
               )}
             </div>
           </div>
@@ -279,28 +279,28 @@ const AdminDashboard = () => {
       </div>
 
       {perfOverview && (
-        <div className="glass-card chart-card">
+        <div className="ad-glass-card ad-chart-card">
           <h3>Performance Overview</h3>
-          <div className="grid-4" style={{ marginTop: 16 }}>
-            <div className="report-kpi"><div className="report-kpi-value">{perfOverview.avg_game_score ?? 0}%</div><div className="report-kpi-label">Avg Game Score</div></div>
-            <div className="report-kpi"><div className="report-kpi-value">{perfOverview.avg_voice_accuracy ?? 0}%</div><div className="report-kpi-label">Avg Voice Accuracy</div></div>
-            <div className="report-kpi"><div className="report-kpi-value">{perfOverview.avg_voice_pronunciation ?? 0}%</div><div className="report-kpi-label">Avg Pronunciation</div></div>
-            <div className="report-kpi"><div className="report-kpi-value">{(perfOverview.total_coins_earned || 0).toLocaleString()}</div><div className="report-kpi-label">Total Coins Earned</div></div>
+          <div className="ad-grid-4" style={{ marginTop: 16 }}>
+            <div className="ad-report-kpi"><div className="ad-report-kpi-value">{perfOverview.avg_game_score ?? 0}%</div><div className="ad-report-kpi-label">Avg Game Score</div></div>
+            <div className="ad-report-kpi"><div className="ad-report-kpi-value">{perfOverview.avg_voice_accuracy ?? 0}%</div><div className="ad-report-kpi-label">Avg Voice Accuracy</div></div>
+            <div className="ad-report-kpi"><div className="ad-report-kpi-value">{perfOverview.avg_voice_pronunciation ?? 0}%</div><div className="ad-report-kpi-label">Avg Pronunciation</div></div>
+            <div className="ad-report-kpi"><div className="ad-report-kpi-value">{(perfOverview.total_coins_earned || 0).toLocaleString()}</div><div className="ad-report-kpi-label">Total Coins Earned</div></div>
           </div>
         </div>
       )}
 
-      <div className="grid-bottom">
-        <div className="glass-card">
+      <div className="ad-grid-bottom">
+        <div className="ad-glass-card">
           <h3 style={{ fontSize: 16, fontWeight: 600, marginBottom: 16 }}>Recent Game Sessions</h3>
           {recentGameSessions.length > 0 ? (
             <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
               {recentGameSessions.slice(0, 6).map((session) => (
-                <div key={session.id} className="activity-item">
-                  <div className="activity-avatar" style={{ background: "rgba(0,168,150,0.08)", color: "var(--primary)" }}>
+                <div key={session.id} className="ad-activity-item">
+                  <div className="ad-activity-avatar" style={{ background: "rgba(0,168,150,0.08)", color: "var(--ad-primary)" }}>
                     {session.child?.user?.full_name?.[0] || "?"}
                   </div>
-                  <div className="activity-text">
+                  <div className="ad-activity-text">
                     <p>{session.child?.user?.full_name || "Unknown"}</p>
                     <p>{session.game?.name || "Unknown Game"} — Score: {session.score || 0}</p>
                   </div>
@@ -308,39 +308,39 @@ const AdminDashboard = () => {
               ))}
             </div>
           ) : (
-            <div className="empty-state"><p>No recent game sessions</p></div>
+            <div className="ad-empty-state"><p>No recent game sessions</p></div>
           )}
         </div>
 
-        <div className="glass-card">
+        <div className="ad-glass-card">
           <h3 style={{ fontSize: 16, fontWeight: 600, marginBottom: 16 }}>Recent Voice Attempts</h3>
           {recentVoiceAttempts.length > 0 ? (
-            <div className="data-table-wrapper">
-              <table className="data-table">
+            <div className="ad-data-table-wrapper">
+              <table className="ad-data-table">
                 <thead>
                   <tr>
                     <th>Child</th>
                     <th>Instruction</th>
-                    <th className="th-hide-md">Accuracy</th>
-                    <th className="th-hide-md">Pronunciation</th>
+                    <th className="ad-th-hide-md">Accuracy</th>
+                    <th className="ad-th-hide-md">Pronunciation</th>
                     <th>Coins</th>
                   </tr>
                 </thead>
                 <tbody>
                   {recentVoiceAttempts.slice(0, 8).map((attempt) => (
                     <tr key={attempt.id}>
-                      <td><span className="font-medium">{attempt.child?.user?.full_name || "Unknown"}</span></td>
-                      <td className="text-muted">{attempt.voice_instruction?.title || "—"}</td>
-                      <td className="td-hide-md"><span className="badge badge-primary">{attempt.accuracy_score || 0}%</span></td>
-                      <td className="td-hide-md"><span className="badge badge-info">{attempt.pronunciation_score || 0}%</span></td>
-                      <td><span className="badge badge-accent">{attempt.coins_earned || 0}</span></td>
+                      <td><span className="ad-font-medium">{attempt.child?.user?.full_name || "Unknown"}</span></td>
+                      <td className="ad-text-muted">{attempt.voice_instruction?.title || "—"}</td>
+                      <td className="ad-td-hide-md"><span className="ad-badge ad-badge-primary">{attempt.accuracy_score || 0}%</span></td>
+                      <td className="ad-td-hide-md"><span className="ad-badge ad-badge-info">{attempt.pronunciation_score || 0}%</span></td>
+                      <td><span className="ad-badge ad-badge-accent">{attempt.coins_earned || 0}</span></td>
                     </tr>
                   ))}
                 </tbody>
               </table>
             </div>
           ) : (
-            <div className="empty-state"><p>No recent voice attempts</p></div>
+            <div className="ad-empty-state"><p>No recent voice attempts</p></div>
           )}
         </div>
       </div>

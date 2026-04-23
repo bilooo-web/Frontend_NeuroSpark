@@ -7,6 +7,8 @@ import Ginger2Slide from "../components/StoryReader/slides/Ginger/Ginger2Slide";
 import Ginger3Slide from "../components/StoryReader/slides/Ginger/Ginger3Slide";
 import Ginger4Slide from "../components/StoryReader/slides/Ginger/Ginger4Slide";
 import voiceService from "../services/voiceService";
+import AuthModal from '../components/Auth/AuthModal';
+import Header from "../components/common/Header/Header";
 import api from "../services/api";
 import { useApp } from "../context/AppContext";
 import micIcon from "../assets/mic.png";
@@ -14,7 +16,21 @@ import noMicIcon from "../assets/no-mic.png";
 import "./StoryBook.css";
 
 const StoryBook = () => {
+  const [showLeaveModal, setShowLeaveModal] = useState(false);
   const { id } = useParams();
+  const [headerTotalCoins, setHeaderTotalCoins] = useState(0);
+
+  // Handle coins-updated event (like in games)
+  useEffect(() => {
+    const handleCoinsUpdated = (e) => {
+      if (e.detail?.totalCoins != null) {
+        setHeaderTotalCoins(e.detail.totalCoins);
+      }
+    };
+    window.addEventListener('coins-updated', handleCoinsUpdated);
+    return () => window.removeEventListener('coins-updated', handleCoinsUpdated);
+  }, []);
+
   const navigate = useNavigate();
   const story = stories[id];
   const { user } = useApp();
@@ -534,9 +550,11 @@ const StoryBook = () => {
 
   return (
     <>
+      <Header totalCoins={headerTotalCoins} />
       <div className="storybook-container">
         {renderCurrentSlide()}
       </div>
+
 
       {showFeedback && (
         <div className="feedback-overlay correct">
@@ -551,6 +569,37 @@ const StoryBook = () => {
           <span className="coin-amount">+{coinsEarned} coins!</span>
         </div>
       )}
+
+      {/* ── Leave / Back confirmation modal ── */}
+      {showLeaveModal && (
+        <div className="sb-leave-backdrop" onClick={() => setShowLeaveModal(false)}>
+          <div className="sb-leave-modal" onClick={e => e.stopPropagation()}>
+            <div className="sb-leave-icon">⚠️</div>
+            <h2 className="sb-leave-title">Leave Story?</h2>
+            <p className="sb-leave-body">
+              Your reading progress will be lost and this session will be abandoned.<br />
+              Are you sure?
+            </p>
+            <div className="sb-leave-actions">
+              <button className="sb-leave-btn sb-leave-stay" onClick={() => setShowLeaveModal(false)}>
+                No, Stay
+              </button>
+              <button className="sb-leave-btn sb-leave-go" onClick={() => navigate(-1)}>
+                Yes, Leave
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+       <button
+        className="si-back-btn"
+        onClick={() => setShowLeaveModal(true)}
+        aria-label="Back to reading page"
+      >
+        ← Back
+      </button>
+
 
       {error && <div className="error-overlay">⚠️ {error}</div>}
 

@@ -1,4 +1,4 @@
-import React, { useEffect, useLayoutEffect, useState } from 'react';
+import React, { useEffect, useLayoutEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { stories } from '../data/storiesData';
 import api from '../services/api';
@@ -50,6 +50,8 @@ const StoryIntro = () => {
   const [loadingProgress, setLoadingProgress] = useState(true);
   // ── Leave modal (shown when user clicks the back button) ──────────────────
   const [showLeaveModal, setShowLeaveModal] = useState(false);
+  const [pendingNavigation, setPendingNavigation] = useState(null);
+  const introActiveRef = useRef(true);
 
   const isAuthenticated = () => !!localStorage.getItem('token');
 
@@ -57,6 +59,76 @@ const StoryIntro = () => {
     try { return JSON.parse(localStorage.getItem('user') || '{}'); }
     catch { return {}; }
   };
+
+  const handleConfirmLeave = () => {
+    setShowLeaveModal(false);
+    introActiveRef.current = false;
+    if (pendingNavigation) {
+      navigate(pendingNavigation);
+    } else {
+      navigate('/ReadingPage');
+    }
+  };
+
+  const handleCancelLeave = () => {
+    setShowLeaveModal(false);
+    setPendingNavigation(null);
+  };
+
+  // Browser tab close / refresh guard
+  useEffect(() => {
+    const handleBeforeUnload = (e) => {
+      if (introActiveRef.current) {
+        e.preventDefault();
+        e.returnValue = '';
+      }
+    };
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, []);
+
+  // Browser back button guard
+  useEffect(() => {
+    if (!introActiveRef.current) return;
+    window.history.pushState({ introGuard: true }, '');
+    const handlePopState = (e) => {
+      if (introActiveRef.current) {
+        window.history.pushState({ introGuard: true }, '');
+        setShowLeaveModal(true);
+        setPendingNavigation('/ReadingPage');
+      }
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
+
+  // Intercept all link clicks during active intro
+  useEffect(() => {
+    const handleLinkClick = (e) => {
+      if (!introActiveRef.current) return;
+      const link = e.target.closest('a[href]');
+      if (!link) return;
+      const href = link.getAttribute('href');
+      if (href && href.startsWith('/') && !href.includes('/story')) {
+        e.preventDefault();
+        e.stopPropagation();
+        setShowLeaveModal(true);
+        setPendingNavigation(href);
+      }
+    };
+    const handleHeaderNavigate = (e) => {
+      if (!introActiveRef.current) return;
+      e.preventDefault();
+      setShowLeaveModal(true);
+      setPendingNavigation(e.detail?.path || '/');
+    };
+    document.addEventListener('click', handleLinkClick, true);
+    window.addEventListener('header-navigate', handleHeaderNavigate);
+    return () => {
+      document.removeEventListener('click', handleLinkClick, true);
+      window.removeEventListener('header-navigate', handleHeaderNavigate);
+    };
+  }, []);
 
   useEffect(() => {
     if (!isAuthenticated()) {
@@ -375,16 +447,16 @@ const StoryIntro = () => {
         <div className="sb-leave-backdrop" onClick={() => setShowLeaveModal(false)}>
           <div className="sb-leave-modal" onClick={e => e.stopPropagation()}>
             <div className="sb-leave-icon">⚠️</div>
-            <h2 className="sb-leave-title">Leave Game?</h2>
+            <h2 className="sb-leave-title">Leave Story?</h2>
             <p className="sb-leave-body">
               Your progress will be lost and this session will be abandoned.<br />
               Are you sure?
             </p>
             <div className="sb-leave-actions">
-              <button className="sb-leave-btn sb-leave-stay" onClick={() => setShowLeaveModal(false)}>
+              <button className="sb-leave-btn sb-leave-stay" onClick={handleCancelLeave}>
                 No, Stay
               </button>
-              <button className="sb-leave-btn sb-leave-go" onClick={() => navigate('/ReadingPage')}>
+              <button className="sb-leave-btn sb-leave-go" onClick={handleConfirmLeave}>
                 Yes, Leave
               </button>
             </div>

@@ -5,17 +5,16 @@
  * 1. Lazy chat creation: no chat is created when opening chatbot. Chat is created
  *    on first message send only.
  * 2. User message appears instantly (optimistic UI) before API response.
- * 3. Each chat can use multiple models — model badge shown per message.
+ * 3. Model badge shown per message.
  * 4. Copy button on ALL messages (user + assistant).
  * 5. Performance: cached API status, debounced chat load, memoized components.
  * 
  * PREVIOUS FIXES (preserved):
  * 1. Auth sync: listens to 'login-success' and 'logout' events.
- * 2. Gemini incomplete responses: increased maxOutputTokens (backend).
- * 3. Sidebar overlay in compact mode.
- * 4. AI-generated chat titles.
- * 5. Rich markdown rendering for AI responses.
- * 6. Draggable chatbot button.
+ * 2. Sidebar overlay in compact mode.
+ * 3. AI-generated chat titles.
+ * 4. Rich markdown rendering for AI responses.
+ * 5. Draggable chatbot button.
  */
 
 import React, { useState, useRef, useEffect, useCallback, useMemo, memo } from "react";
@@ -422,20 +421,6 @@ const MODELS = {
     hint: 'OpenAI GPT-4 (via GitHub Models)',
     needsKey: true
   },
-  gemini: { 
-    name: 'Gemini', 
-    emoji: '💎', 
-    color: '#4285F4', 
-    hint: 'Google AI (recommended)',
-    needsKey: true
-  },
-  openai: { 
-    name: 'OpenAI', 
-    emoji: '⚡', 
-    color: '#10A37F', 
-    hint: 'OpenAI GPT-4o Mini',
-    needsKey: true
-  },
 };
 
 /* ========== WELCOME MESSAGE (shown locally, never sent to backend) ========== */
@@ -547,7 +532,7 @@ const Chatbot = ({ isAuthenticated: propIsAuthenticated }) => {
   const [loading, setLoading] = useState(false);
   const [thinkingSeconds, setThinkingSeconds] = useState(0);
   const thinkingTimerRef = useRef(null);
-  const [model, setModel] = useState('gemini');
+  const [model, setModel] = useState('github');
   const [copiedIndex, setCopiedIndex] = useState(null);
   const [apiStatus, setApiStatus] = useState({});
   const [isAuthenticated, setIsAuthenticated] = useState(propIsAuthenticated || false);
@@ -859,8 +844,6 @@ const loadChatMessages = useCallback(async (chatId) => {
       console.error('Error checking API status:', error);
       setApiStatus({
         github: false,
-        openai: false,
-        gemini: false,
       });
     }
   }, []);
@@ -993,7 +976,7 @@ const loadChatMessages = useCallback(async (chatId) => {
     return { reply: fullReply, chat_id: newChatId, model_used: model };
   }, [model, timeStr]);
 
-  // ========== REGULAR SEND (non-streaming, for Gemini) ==========
+  // ========== REGULAR SEND (non-streaming fallback) ==========
   const sendToBackend = useCallback(async (messageContent, chatId) => {
     try {
       const token = localStorage.getItem('token') || sessionStorage.getItem('token');
@@ -1062,20 +1045,8 @@ const loadChatMessages = useCallback(async (chatId) => {
     try {
       let response;
 
-      // Use streaming for ChatGPT (github/openai), regular for Gemini
-      if (model === 'github' || model === 'openai') {
-        response = await sendStreaming(messageContent, currentChatId);
-      } else {
-        response = await sendToBackend(messageContent, currentChatId);
-        
-        const assistantMsg = { 
-          role: 'assistant', 
-          content: response.reply, 
-          time: timeStr(), 
-          model: response.model_used 
-        };
-        setMessages(prev => [...prev, assistantMsg]);
-      }
+      // Always use streaming with ChatGPT
+      response = await sendStreaming(messageContent, currentChatId);
 
       // If this was a new chat, update state
       if (!currentChatId && response.chat_id) {
@@ -1412,35 +1383,6 @@ const loadChatMessages = useCallback(async (chatId) => {
             </div>
           </div>
 
-          {/* Model Tabs */}
-          <div className="model-selector-bar">
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <span style={{ fontSize: '12px', color: '#666' }}>Model:</span>
-              <select
-                value={model}
-                onChange={(e) => setModel(e.target.value)}
-                className="model-select"
-              >
-                {Object.entries(MODELS).map(([key, config]) => {
-                  const isAvailable = apiStatus[key];
-                  return (
-                    <option 
-                      key={key} 
-                      value={key}
-                      disabled={!isAvailable}
-                      style={{ 
-                        color: !isAvailable ? '#999' : 'inherit',
-                        backgroundColor: !isAvailable ? '#f5f5f5' : 'inherit'
-                      }}
-                    >
-                      {config.emoji} {config.name} {!isAvailable ? ' (unavailable)' : ''}
-                    </option>
-                  );
-                })}
-              </select>
-            </div>
-          </div>
-
           {/* Messages */}
           <div className="messages-area">
             {messagesLoading ? (
@@ -1518,11 +1460,6 @@ const loadChatMessages = useCallback(async (chatId) => {
               {apiStatus.github && (
                 <span className="model-status github">
                   🤖 ChatGPT
-                </span>
-              )}
-              {apiStatus.gemini && (
-                <span className="model-status gemini">
-                  💎 Gemini
                 </span>
               )}
             </div>

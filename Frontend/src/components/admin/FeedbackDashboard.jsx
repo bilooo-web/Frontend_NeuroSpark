@@ -288,9 +288,9 @@ const FeedbackDashboard = () => {
           <div className="ad-summary-card-icon" style={{ background: 'rgba(16, 185, 129, 0.1)', color: COLORS.positive }}>
             <CheckCircle size={24} />
           </div>
-          <div className="admin-summary-card-content">
-            <div className="admin-summary-card-label">Approved</div>
-            <div className="admin-summary-card-value">{stats?.approved ?? 0}</div>
+          <div className="ad-summary-card-content">
+            <div className="ad-summary-card-label">Approved</div>
+            <div className="ad-summary-card-value">{stats?.approved ?? 0}</div>
           </div>
         </div>
 
@@ -298,9 +298,9 @@ const FeedbackDashboard = () => {
           <div className="ad-summary-card-icon" style={{ background: 'rgba(245, 158, 11, 0.1)', color: COLORS.neutral }}>
             <Clock size={24} />
           </div>
-          <div className="admin-summary-card-content">
-            <div className="admin-summary-card-label">Pending Review</div>
-            <div className="admin-summary-card-value">{stats?.pending ?? 0}</div>
+          <div className="ad-summary-card-content">
+            <div className="ad-summary-card-label">Pending Review</div>
+            <div className="ad-summary-card-value">{stats?.pending ?? 0}</div>
           </div>
         </div>
 

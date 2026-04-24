@@ -127,32 +127,15 @@
   padding: 24px;
 }
 
-.fn-intro-screen::before {
-  content: "";
-  position: absolute;
-  top: 6%;
-  right: 6%;
-  width: 220px;
-  height: 220px;
-  background: url('../../assets/fn-astronaut.png') center / contain no-repeat;
-  animation: fn-float 4s ease-in-out infinite;
-  filter: drop-shadow(0 14px 22px rgba(79,227,255,0.45));
-  pointer-events: none;
-  z-index: 2002;
-}
 
-.fn-intro-screen::after {
-  content: "";
-  position: absolute;
-  bottom: 8%;
-  left: 5%;
-  width: 160px;
-  height: 160px;
-  background: url('../../assets/fn-planet.png') center / contain no-repeat;
-  animation: fn-bob 4s ease-in-out infinite;
-  filter: drop-shadow(0 10px 20px rgba(155,92,255,0.55));
+.fn-breathing-video {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: 2001;
   pointer-events: none;
-  z-index: 2002;
 }
 
 .fn-intro-title {
@@ -698,7 +681,7 @@
 }
 
 .fn-faces-grid.fn-compact .fn-face-card { width: 172px; }
-.fn-faces-grid.fn-compact .fn-face-img-wrap { height: 140px; font-size: 70px; }
+.fn-faces-grid.fn-compact .fn-face-img-wrap { height: 140px; }
 .fn-faces-grid.fn-compact .fn-name-shown { font-size: 14px; padding: 8px 14px; }
 .fn-faces-grid.fn-compact .fn-drop-zone { width: 132px; font-size: 12px; height: 42px; }
 
@@ -736,9 +719,16 @@
   justify-content: center;
   font-size: 100px;
   line-height: 1;
-  padding: 10px 0 5px;
+  padding: 0;
   position: relative;
   overflow: hidden;
+}
+.fn-face-img-wrap img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top center;
+  display: block;
 }
 .fn-face-img-wrap::after {
   content: "✨";

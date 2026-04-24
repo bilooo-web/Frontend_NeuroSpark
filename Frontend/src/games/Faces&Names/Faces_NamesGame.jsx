@@ -5,16 +5,30 @@ import Header from "../../components/common/Header/Header";
 import breathingexercise from "../../assets/breathing-video.mp4"; 
 import relaxGiraffe from "../../assets/relax-giraffe.png";
 
+import face2 from "../../assets/face2.png";
+import face4 from "../../assets/face4.png";
+import face6 from "../../assets/face6.png";
+import face8 from "../../assets/face8.png";
+import face10 from "../../assets/face10.png";
+import face12 from "../../assets/face12.png";
+import face1 from "../../assets/face1.png";
+import face3 from "../../assets/face3.png";
+import face5 from "../../assets/face5.png";
+import face7 from "../../assets/face7.png";
+import face9 from "../../assets/face9.png";
+import face11 from "../../assets/face11.png";
+import face13 from "../../assets/face13.png";
+
 const MALE_FACES = [
-  { id:2, emoji:"🧔", gender:"male" }, { id:4, emoji:"👨‍🦱", gender:"male" },
-  { id:6, emoji:"👨‍🦲", gender:"male" }, { id:8, emoji:"👴", gender:"male" },
-  { id:10, emoji:"🧑", gender:"male" }, { id:12, emoji:"👨‍🦳", gender:"male" },
+  { id:2, img:face2, gender:"male" }, { id:4, img:face4, gender:"male" },
+  { id:6, img:face6, gender:"male" }, { id:8, img:face8, gender:"male" },
+  { id:10, img:face10, gender:"male" }, { id:12, img:face12, gender:"male" },
 ];
 const FEMALE_FACES = [
-  { id:1, emoji:"👵", gender:"female" }, { id:3, emoji:"👩", gender:"female" },
-  { id:5, emoji:"👩‍🦳", gender:"female" }, { id:7, emoji:"🧕", gender:"female" },
-  { id:9, emoji:"👱‍♀️", gender:"female" }, { id:11, emoji:"👩‍🦰", gender:"female" },
-  { id:13, emoji:"👩‍🦱", gender:"female" },
+  { id:1, img:face1, gender:"female" }, { id:3, img:face3, gender:"female" },
+  { id:5, img:face5, gender:"female" }, { id:7, img:face7, gender:"female" },
+  { id:9, img:face9, gender:"female" }, { id:11, img:face11, gender:"female" },
+  { id:13, img:face13, gender:"female" },
 ];
 const MALE_NAMES = ["James","Carlos","Marcus","Derek","Ethan","Leo"];
 const FEMALE_NAMES = ["Ashley","Sophie","Linda","Priya","Mia","Yara","Nina"];
@@ -165,8 +179,6 @@ export default function FacesNamesGame({
   const totalAttemptsRef = useRef(0);
   const completedRoundsRef = useRef(0);
   const videoRef = useRef(null);
-  const breathingIntervalRef = useRef(null);
-  const breathingAudioCtxRef = useRef(null);
 
   useEffect(() => {
     const handleCoinsUpdated = (e) => {
@@ -190,6 +202,30 @@ export default function FacesNamesGame({
     setMotivation(msg); 
     setTimeout(()=>setMotivation(null),1800); 
   };
+
+  // Stop video when leaving intro screen
+  useEffect(() => {
+    if (screen !== 'intro' && videoRef.current) {
+      videoRef.current.pause();
+      videoRef.current.currentTime = 0;
+    }
+  }, [screen]);
+
+  // Stop video when navigating away from the page
+  useEffect(() => {
+    const stopVideo = () => {
+      if (videoRef.current) {
+        videoRef.current.pause();
+        videoRef.current.currentTime = 0;
+      }
+    };
+    const handleVisibility = () => { if (document.hidden) stopVideo(); };
+    document.addEventListener('visibilitychange', handleVisibility);
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibility);
+      stopVideo();
+    };
+  }, []);
 
   useEffect(() => {
     inactivityInterval.current = setInterval(() => {
@@ -404,6 +440,7 @@ export default function FacesNamesGame({
       const rem=Math.ceil((totalMs-(Date.now()-start))/1000);
       if(rem<=0){
         clearInterval(memTimerRef.current);
+        setFaces(f => shuffle([...f]));
         setScreen("recall");
         setIsTimerPaused(false);
         lastActionTime.current=Date.now();
@@ -568,7 +605,6 @@ export default function FacesNamesGame({
               ref={videoRef}
               src={breathingexercise} 
               autoPlay 
-              muted 
               className="fn-breathing-video"
               onEnded={startGameFromIntro}
             />
@@ -626,7 +662,7 @@ export default function FacesNamesGame({
             <div className={`fn-faces-grid${isCompact?" fn-compact":""}`}>
               {faces.map(face => (
                 <div className="fn-face-card" key={face.id}>
-                  <div className="fn-face-img-wrap">{face.emoji}</div>
+                  <div className="fn-face-img-wrap"><img src={face.img} alt="face" /></div>
                   <div className="fn-name-badge"><span className="fn-name-shown">{face.name}</span></div>
                 </div>
               ))}
@@ -809,7 +845,7 @@ export default function FacesNamesGame({
                       }
                     }}
                   >
-                    <div className="fn-face-img-wrap">{face.emoji}</div>
+                    <div className="fn-face-img-wrap"><img src={face.img} alt="face" /></div>
                     <div className="fn-name-badge">
                       <div className={dropClass}>
                         {assigned ? (

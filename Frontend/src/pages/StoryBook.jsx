@@ -17,6 +17,9 @@ import "./StoryBook.css";
 
 const StoryBook = () => {
   const [showLeaveModal, setShowLeaveModal] = useState(false);
+  const [pendingNavigation, setPendingNavigation] = useState(null);
+  const readingActiveRef = useRef(false);
+  const storyFinishedRef = useRef(false);
   const { id } = useParams();
   const [headerTotalCoins, setHeaderTotalCoins] = useState(0);
 
@@ -53,6 +56,70 @@ const StoryBook = () => {
     startTimeRef.current = Date.now();
     totalPauseDurationRef.current = 0;
     pauseStartRef.current = null;
+  }, []);
+
+  // Mark reading as active on mount
+  useEffect(() => {
+    readingActiveRef.current = true;
+    storyFinishedRef.current = false;
+    return () => {
+      readingActiveRef.current = false;
+    };
+  }, []);
+
+  // Browser tab close / refresh guard
+  useEffect(() => {
+    const handleBeforeUnload = (e) => {
+      if (readingActiveRef.current && !storyFinishedRef.current) {
+        e.preventDefault();
+        e.returnValue = '';
+      }
+    };
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, []);
+
+  // Browser back button guard
+  useEffect(() => {
+    if (!readingActiveRef.current || storyFinishedRef.current) return;
+    window.history.pushState({ storyGuard: true }, '');
+    const handlePopState = (e) => {
+      if (readingActiveRef.current && !storyFinishedRef.current) {
+        window.history.pushState({ storyGuard: true }, '');
+        setShowLeaveModal(true);
+        setPendingNavigation(`/story/${id}/intro`);
+      }
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, [id]);
+
+  // Intercept all link clicks during active reading
+  useEffect(() => {
+    const handleLinkClick = (e) => {
+      if (!readingActiveRef.current || storyFinishedRef.current) return;
+      const link = e.target.closest('a[href]');
+      if (!link) return;
+      const href = link.getAttribute('href');
+      if (href && href.startsWith('/') && !href.includes('/story')) {
+        e.preventDefault();
+        e.stopPropagation();
+        setShowLeaveModal(true);
+        setPendingNavigation(href);
+      }
+    };
+    const handleHeaderNavigate = (e) => {
+      if (!readingActiveRef.current || storyFinishedRef.current) return;
+      e.preventDefault();
+      setShowLeaveModal(true);
+      setPendingNavigation(e.detail?.path || '/');
+    };
+    document.addEventListener('click', handleLinkClick, true);
+    window.addEventListener('header-navigate', handleHeaderNavigate);
+    return () => {
+      document.removeEventListener('click', handleLinkClick, true);
+      window.removeEventListener('header-navigate', handleHeaderNavigate);
+    };
   }, []);
 
   // Fetch the voice instruction's reward_coins from backend
@@ -433,6 +500,10 @@ const StoryBook = () => {
       if (isSubmittingRef.current) return;
       isSubmittingRef.current = true;
 
+      // Mark story as finished so leave guards deactivate
+      storyFinishedRef.current = true;
+      readingActiveRef.current = false;
+
       // Compute final stats synchronously using the ref-based summaries
       // instead of inside a state updater (which React StrictMode calls twice)
       const allSummaries = [...pageSummaries];
@@ -509,6 +580,22 @@ const StoryBook = () => {
     setPageIndex((prev) => prev - 1);
   };
 
+  const handleConfirmLeave = () => {
+    setShowLeaveModal(false);
+    storyFinishedRef.current = true;
+    readingActiveRef.current = false;
+    if (pendingNavigation) {
+      navigate(pendingNavigation);
+    } else {
+      navigate(-1);
+    }
+  };
+
+  const handleCancelLeave = () => {
+    setShowLeaveModal(false);
+    setPendingNavigation(null);
+  };
+
   const handleMicClick = useCallback(() => {
     if (isListening) {
       stopListening();
@@ -572,7 +659,7 @@ const StoryBook = () => {
 
       {/* ── Leave / Back confirmation modal ── */}
       {showLeaveModal && (
-        <div className="sb-leave-backdrop" onClick={() => setShowLeaveModal(false)}>
+        <div className="sb-leave-backdrop" onClick={handleCancelLeave}>
           <div className="sb-leave-modal" onClick={e => e.stopPropagation()}>
             <div className="sb-leave-icon">⚠️</div>
             <h2 className="sb-leave-title">Leave Story?</h2>
@@ -581,10 +668,10 @@ const StoryBook = () => {
               Are you sure?
             </p>
             <div className="sb-leave-actions">
-              <button className="sb-leave-btn sb-leave-stay" onClick={() => setShowLeaveModal(false)}>
+              <button className="sb-leave-btn sb-leave-stay" onClick={handleCancelLeave}>
                 No, Stay
               </button>
-              <button className="sb-leave-btn sb-leave-go" onClick={() => navigate(-1)}>
+              <button className="sb-leave-btn sb-leave-go" onClick={handleConfirmLeave}>
                 Yes, Leave
               </button>
             </div>

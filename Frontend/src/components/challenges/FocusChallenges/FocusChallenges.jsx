@@ -3,7 +3,9 @@ import "./FocusChallenges.css";
 import { Link } from "react-router-dom";
 import api from "../../../services/api";
 
-import game1 from "../../../assets/duck-game1.png";
+import game1 from "../../../assets/challenges-game1.png";
+import game2 from  "../../../assets/challenges-game2.png";
+import game3 from "../../../assets/challenges-game3.png";
 import game7 from "../../../assets/game4_c.jpg";
 import tape from "../../../assets/tape.png";
 
@@ -11,8 +13,8 @@ import tape from "../../../assets/tape.png";
 const defaultImages = {
   "path-change": game1,
   "padlocks": game1,
-  "faces-and-names": game1,
-  "pair-of-cards": game1,
+  "faces-and-names": game3,
+  "pair-of-cards": game2,
   "painting": game1,
   "colored-words": game1,
   "puzzles": game1,

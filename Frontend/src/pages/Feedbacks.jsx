@@ -97,10 +97,10 @@ const Feedbacks = () => {
         setStatistics(prev => {
           if (!prev) return prev;
           const newTotal    = (prev.total || 0) + 1;
-          const bySentiment = { ...(prev.by_sentiment || { positive: 0, neutral: 0, negative: 0 }) };
+          const bySentiment = { ...(prev.by_sentiment || { positive: 0, negative: 0 }) };
           if (label === 'positive')      bySentiment.positive = (bySentiment.positive || 0) + 1;
           else if (label === 'negative') bySentiment.negative = (bySentiment.negative || 0) + 1;
-          else                           bySentiment.neutral  = (bySentiment.neutral  || 0) + 1;
+          // neutral is ignored — not tracked in the UI
           const allRatings   = [...(prev._ratings || []), savedRating];
           const avgRating    = (allRatings.reduce((a, b) => a + b, 0) / allRatings.length).toFixed(1);
           return { ...prev, total: newTotal, by_sentiment: bySentiment, average_rating: avgRating, _ratings: allRatings };
@@ -156,12 +156,12 @@ const Feedbacks = () => {
     setStatistics(prev => {
       if (!prev || !fbToDelete) return prev;
       const newTotal    = Math.max(0, (prev.total || 1) - 1);
-      const bySentiment = { ...(prev.by_sentiment || { positive: 0, neutral: 0, negative: 0 }) };
+      const bySentiment = { ...(prev.by_sentiment || { positive: 0, negative: 0 }) };
       const deletedSentiment = typeof fbToDelete.sentiment === 'object'
         ? fbToDelete.sentiment?.result : fbToDelete.sentiment;
       if (deletedSentiment === 'positive') bySentiment.positive = Math.max(0, (bySentiment.positive || 1) - 1);
       else if (deletedSentiment === 'negative') bySentiment.negative = Math.max(0, (bySentiment.negative || 1) - 1);
-      else bySentiment.neutral = Math.max(0, (bySentiment.neutral || 1) - 1);
+      // neutral: ignored, no counter to update
       return { ...prev, total: newTotal, by_sentiment: bySentiment };
     });
     try {
@@ -182,7 +182,7 @@ const Feedbacks = () => {
     setFeedbacks([]);
     setStatistics(prev => prev ? {
       ...prev, total: 0,
-      by_sentiment: { positive: 0, neutral: 0, negative: 0 },
+      by_sentiment: { positive: 0, negative: 0 },
       average_rating: 0, _ratings: [],
     } : prev);
 
@@ -229,8 +229,8 @@ const Feedbacks = () => {
         )}
       </div>
 
-      {/* Sentiment toast */}
-      {sentimentResult && (
+      {/* Sentiment toast — only for positive / negative */}
+      {sentimentResult && sentimentResult !== 'neutral' && (
         <div style={{ backgroundColor:sentimentColor(sentimentResult), color:'white', padding:'12px 20px', borderRadius:8, marginBottom:20, display:'flex', alignItems:'center', gap:10 }}>
           <span style={{ fontSize:22 }}>{sentimentEmoji(sentimentResult)}</span>
           <div>
@@ -247,7 +247,6 @@ const Feedbacks = () => {
             { label:'Total',      value:statistics.total,                        color:'#6366f1', emoji:'📊' },
             { label:'Avg Rating', value:`${statistics.average_rating}★`,          color:'#f59e0b', emoji:'⭐' },
             { label:'Positive',   value:statistics.by_sentiment?.positive || 0,   color:'#4caf50', emoji:'😊' },
-            { label:'Neutral',    value:statistics.by_sentiment?.neutral  || 0,   color:'#ff9800', emoji:'😐' },
             { label:'Negative',   value:statistics.by_sentiment?.negative || 0,   color:'#f44336', emoji:'😞' },
           ].map(s => (
             <div key={s.label} style={{ background:'#fff', border:`1.5px solid ${s.color}22`, borderRadius:10, padding:'10px 18px', display:'flex', flexDirection:'column', alignItems:'center', minWidth:80 }}>

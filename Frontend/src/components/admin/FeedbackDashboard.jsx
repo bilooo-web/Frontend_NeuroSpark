@@ -4,7 +4,6 @@ import {
   MessageSquare,
   ThumbsUp,
   ThumbsDown,
-  Minus,
   Download,
   Search,
   RefreshCw,
@@ -179,7 +178,7 @@ const FeedbackDashboard = () => {
     switch(sentiment) {
       case 'positive': return <ThumbsUp size={14} />;
       case 'negative': return <ThumbsDown size={14} />;
-      default: return <Minus size={14} />;
+      default: return <ThumbsDown size={14} />;
     }
   };
 
@@ -207,7 +206,6 @@ const FeedbackDashboard = () => {
 
   const pieData = stats ? [
     { name: 'Positive', value: stats.breakdown?.positive || 0, color: COLORS.positive },
-    { name: 'Neutral', value: stats.breakdown?.neutral || 0, color: COLORS.neutral },
     { name: 'Negative', value: stats.breakdown?.negative || 0, color: COLORS.negative }
   ].filter(item => item.value > 0) : [];
 
@@ -395,10 +393,6 @@ const FeedbackDashboard = () => {
                     <stop offset="5%" stopColor={COLORS.positive} stopOpacity={0.2} />
                     <stop offset="95%" stopColor={COLORS.positive} stopOpacity={0} />
                   </linearGradient>
-                  <linearGradient id="neutralGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor={COLORS.neutral} stopOpacity={0.2} />
-                    <stop offset="95%" stopColor={COLORS.neutral} stopOpacity={0} />
-                  </linearGradient>
                   <linearGradient id="negativeGradient" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="5%" stopColor={COLORS.negative} stopOpacity={0.2} />
                     <stop offset="95%" stopColor={COLORS.negative} stopOpacity={0} />
@@ -414,13 +408,6 @@ const FeedbackDashboard = () => {
                   stroke={COLORS.positive} 
                   fill="url(#positiveGradient)" 
                   name="Positive"
-                />
-                <Area 
-                  type="monotone" 
-                  dataKey="neutral" 
-                  stroke={COLORS.neutral} 
-                  fill="url(#neutralGradient)" 
-                  name="Neutral"
                 />
                 <Area 
                   type="monotone" 
@@ -464,13 +451,6 @@ const FeedbackDashboard = () => {
           >
             <ThumbsUp size={14} style={{ marginRight: 6 }} />
             Positive
-          </button>
-          <button 
-            className={`ad-filter-btn ${filterSentiment === 'neutral' ? 'ad-active' : ''}`}
-            onClick={() => setFilterSentiment('neutral')}
-          >
-            <Minus size={14} style={{ marginRight: 6 }} />
-            Neutral
           </button>
           <button 
             className={`ad-filter-btn ${filterSentiment === 'negative' ? 'ad-active' : ''}`}
@@ -745,7 +725,7 @@ const FeedbackDashboard = () => {
             {selectedFeedback.scores && (
               <div className="ad-modal-field">
                 <div className="ad-modal-field-label">Detailed Sentiment Scores</div>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16 }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 16 }}>
                   <div style={{ 
                     textAlign: 'center', 
                     padding: 12, 
@@ -757,19 +737,6 @@ const FeedbackDashboard = () => {
                     </div>
                     <div style={{ fontSize: 20, fontWeight: 700, color: COLORS.positive }}>
                       {(selectedFeedback.scores.positive * 100).toFixed(1)}%
-                    </div>
-                  </div>
-                  <div style={{ 
-                    textAlign: 'center', 
-                    padding: 12, 
-                    background: 'rgba(245, 158, 11, 0.05)',
-                    borderRadius: 8
-                  }}>
-                    <div style={{ color: COLORS.neutral, fontWeight: 600, marginBottom: 4, fontSize: 13 }}>
-                      Neutral
-                    </div>
-                    <div style={{ fontSize: 20, fontWeight: 700, color: COLORS.neutral }}>
-                      {(selectedFeedback.scores.neutral * 100).toFixed(1)}%
                     </div>
                   </div>
                   <div style={{ 
